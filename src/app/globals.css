@@ -1,0 +1,388 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Raw brand palette */
+    --cm-indigo: #2c1f73;
+    --cm-gradient-start: #24185f;
+    --cm-gradient-middle: #2c1f73;
+    --cm-gradient-end: #1a245a;
+    --cm-deep-violet: #6d28d9;
+    --cm-aqua: #27e8c7;
+    --cm-cyan: #22d3ee;
+    --cm-soft-white: #f8fafc;
+    --cm-cool-gray: #b8c0d9;
+    --cm-navy-text: #111827;
+
+    /* Semantic surfaces */
+    --background: var(--cm-indigo);
+    --background-elevated: color-mix(in srgb, var(--cm-indigo) 78%, white 10%);
+    --background-deep: var(--cm-gradient-end);
+    --foreground: var(--cm-soft-white);
+    --foreground-muted: var(--cm-cool-gray);
+    --surface: color-mix(in srgb, var(--cm-indigo) 70%, white 8%);
+    --surface-light: color-mix(
+      in srgb,
+      var(--cm-soft-white) 92%,
+      var(--cm-indigo) 8%
+    );
+    --surface-glass: color-mix(in srgb, white 8%, transparent);
+
+    --primary: var(--cm-aqua);
+    --primary-hover: color-mix(in srgb, var(--cm-aqua) 82%, white 18%);
+    --primary-foreground: var(--cm-navy-text);
+    --accent: var(--cm-cyan);
+    --accent-secondary: var(--cm-deep-violet);
+    --accent-foreground: var(--cm-navy-text);
+
+    --secondary: var(--cm-deep-violet);
+    --secondary-foreground: var(--cm-soft-white);
+    --muted: color-mix(in srgb, var(--cm-indigo) 80%, white 12%);
+    --muted-foreground: var(--cm-cool-gray);
+    --card: var(--surface);
+    --card-foreground: var(--cm-soft-white);
+    --popover: #2a1f6b;
+    --popover-foreground: var(--cm-soft-white);
+    --destructive: #ef4444;
+    --destructive-foreground: var(--cm-soft-white);
+
+    --border: color-mix(in srgb, var(--cm-cool-gray) 28%, transparent);
+    --border-strong: color-mix(in srgb, var(--cm-cool-gray) 48%, transparent);
+    --input: var(--border);
+    --ring: var(--cm-aqua);
+    --focus-ring: var(--cm-aqua);
+
+    /* Gradients */
+    --background-gradient: linear-gradient(
+      165deg,
+      var(--cm-gradient-start) 0%,
+      var(--cm-gradient-middle) 48%,
+      var(--cm-gradient-end) 100%
+    );
+    --gradient-hero:
+      radial-gradient(
+        ellipse 80% 55% at 50% 0%,
+        color-mix(in srgb, var(--cm-deep-violet) 35%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 50% 40% at 80% 30%,
+        color-mix(in srgb, var(--cm-cyan) 18%, transparent) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 45% 35% at 15% 70%,
+        color-mix(in srgb, var(--cm-aqua) 14%, transparent) 0%,
+        transparent 50%
+      ),
+      var(--background-gradient);
+    --gradient-highlight: linear-gradient(
+      105deg,
+      var(--cm-deep-violet) 0%,
+      var(--cm-cyan) 100%
+    );
+    --gradient-cta: linear-gradient(
+      120deg,
+      var(--cm-aqua) 0%,
+      var(--cm-cyan) 100%
+    );
+    --gradient-accent-soft: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--cm-deep-violet) 55%, transparent),
+      color-mix(in srgb, var(--cm-cyan) 35%, transparent)
+    );
+
+    /* Layout */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-pill: 999px;
+
+    --shadow-soft: 0 18px 40px rgba(16, 12, 48, 0.28);
+    --shadow-card: 0 12px 32px rgba(12, 8, 40, 0.32);
+    --shadow-floating: 0 22px 50px rgba(10, 6, 36, 0.4);
+
+    --container-max: 72rem;
+    --container-wide: 84rem;
+    --container-reading: 42rem;
+    --section-space: clamp(3.5rem, 7vw, 6.5rem);
+    --pad-mobile: 1.25rem;
+    --pad-tablet: 1.75rem;
+    --pad-desktop: 2rem;
+    --nav-height: 4.25rem;
+    --nav-height-compact: 3.75rem;
+
+    --z-base: 1;
+    --z-elevated: 10;
+    --z-sticky: 40;
+    --z-header: 50;
+    --z-overlay: 60;
+    --z-modal: 70;
+    --z-toast: 80;
+
+    --motion-fast: 150ms;
+    --motion-base: 280ms;
+    --motion-slow: 480ms;
+    --motion-ambient: 8s;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Fonts — Arabic-first modern stack (next/font vars on html/:root) */
+    --font-heading-ar: var(--font-noto-kufi-arabic, "Segoe UI"), sans-serif;
+    --font-body-ar: var(--font-cairo, "Segoe UI"), sans-serif;
+    --font-heading-en: var(--font-noto-kufi-arabic, system-ui), sans-serif;
+    --font-body-en: var(--font-cairo, system-ui), sans-serif;
+    --font-headline: var(--font-heading-ar);
+    --font-body: var(--font-body-ar);
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--background);
+    background-image: var(--background-gradient);
+    color: var(--foreground);
+    font-family: var(--font-body);
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-headline);
+    letter-spacing: 0;
+    color: var(--foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--cm-aqua) 35%, transparent);
+    color: var(--cm-soft-white);
+  }
+
+  /*
+   * Admin CMS theme scope (Phase 5). Light soft-white surface, indigo
+   * primary, violet/aqua accents, dark navy text — intentionally isolated
+   * from the public marketing dark theme above. Every Tailwind utility
+   * that reads a `--*` token (bg-background, text-foreground, bg-primary,
+   * border-border, bg-card, …) automatically becomes "light admin" for any
+   * markup nested under `.admin-shell`, with no component changes needed.
+   */
+  .admin-shell {
+    color-scheme: light;
+    --background: var(--cm-soft-white);
+    --background-elevated: #ffffff;
+    --background-deep: #eef0fb;
+    --foreground: var(--cm-navy-text);
+    --foreground-muted: #5b6178;
+    --surface: #ffffff;
+    --surface-light: #f4f5fb;
+    --surface-glass: color-mix(in srgb, var(--cm-indigo) 5%, white 95%);
+    --primary: var(--cm-indigo);
+    --primary-hover: color-mix(in srgb, var(--cm-indigo) 88%, black 6%);
+    --primary-foreground: #ffffff;
+    --accent: var(--cm-aqua);
+    --accent-secondary: var(--cm-deep-violet);
+    --accent-foreground: var(--cm-navy-text);
+    --secondary: var(--cm-deep-violet);
+    --secondary-foreground: #ffffff;
+    --muted: #eef0f7;
+    --muted-foreground: #6b7290;
+    --card: #ffffff;
+    --card-foreground: var(--cm-navy-text);
+    --popover: #ffffff;
+    --popover-foreground: var(--cm-navy-text);
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #e2e4f0;
+    --border-strong: #c7cbe3;
+    --input: #e2e4f0;
+    --ring: var(--cm-indigo);
+    --focus-ring: var(--cm-indigo);
+    min-height: 100vh;
+    background-color: var(--background);
+    background-image: none;
+    color: var(--foreground);
+  }
+}
+
+@layer components {
+  .admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground-muted);
+    transition:
+      background-color var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard);
+  }
+
+  .admin-nav-link:hover {
+    background-color: var(--muted);
+    color: var(--foreground);
+  }
+
+  .admin-nav-link[data-active="true"] {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .admin-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+  }
+
+  .admin-table th {
+    text-align: start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--foreground-muted);
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .admin-table td {
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    vertical-align: middle;
+  }
+
+  .admin-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .admin-input {
+    display: block;
+    width: 100%;
+    min-height: 2.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--input);
+    background-color: #ffffff;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
+  }
+
+  .admin-input:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring);
+  }
+
+  .admin-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  /* Intentional horizontal scroll for dense admin tables on narrow screens */
+  .admin-card.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 36rem;
+  }
+}
+
+@layer utilities {
+  .container-brand {
+    margin-inline: auto;
+    width: min(100% - (var(--pad-mobile) * 2), var(--container-max));
+  }
+
+  @media (min-width: 768px) {
+    .container-brand {
+      width: min(100% - (var(--pad-tablet) * 2), var(--container-max));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-brand {
+      width: min(100% - (var(--pad-desktop) * 2), var(--container-max));
+    }
+  }
+
+  .container-wide {
+    margin-inline: auto;
+    width: min(100% - (var(--pad-mobile) * 2), var(--container-wide));
+  }
+
+  .container-reading {
+    margin-inline: auto;
+    width: min(100% - (var(--pad-mobile) * 2), var(--container-reading));
+  }
+
+  .section-space {
+    padding-block: var(--section-space);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-text {
+    background-image: var(--gradient-highlight);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass-panel {
+    background: var(--surface-glass);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .scroll-mt-nav {
+    scroll-margin-top: calc(var(--nav-height) + 1rem);
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+.next
+.vercel
+dist
+build
+src/generated
+*.min.js
+*.min.css
