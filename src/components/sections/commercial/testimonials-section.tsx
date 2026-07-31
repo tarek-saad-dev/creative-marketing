@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/motion/reveal";
 import type { PublicTestimonial } from "@/server/services/commercial-landing.service";
@@ -26,11 +27,13 @@ export function TestimonialsSection({
   }
 
   return (
-    <section
+    <CinematicSection
       aria-labelledby="testimonials-heading"
-      className="scroll-mt-nav section-space border-t border-border/30"
+      className="scroll-mt-nav section-space"
+      backdropWord="VOICE"
+      backdropPosition="start"
     >
-      <Container className="space-y-8">
+      <Container className="space-y-10">
         <Reveal>
           <SectionHeading
             id="testimonials-heading"
@@ -41,8 +44,8 @@ export function TestimonialsSection({
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map(item => (
             <li key={item.id}>
-              <figure className="h-full rounded-2xl border border-border/40 bg-surface-glass p-6 shadow-card">
-                <blockquote className="text-sm leading-7 text-foreground">
+              <figure className="card-glow h-full rounded-2xl card-glass p-6 transition-colors hover:border-white/20">
+                <blockquote className="body-text">
                   “{item.quote}”
                 </blockquote>
                 <figcaption className="mt-4 space-y-1 text-sm">
@@ -50,13 +53,13 @@ export function TestimonialsSection({
                     {item.clientName}
                   </p>
                   {item.projectName ? (
-                    <p className="text-foreground-muted">{item.projectName}</p>
+                    <p className="body-text-muted">{item.projectName}</p>
                   ) : null}
                   {item.industry ? (
                     <p className="text-xs text-brand-aqua">{item.industry}</p>
                   ) : null}
                   {item.serviceLabel ? (
-                    <p className="text-xs text-foreground-muted">
+                    <p className="body-text-muted text-xs">
                       {item.serviceLabel}
                     </p>
                   ) : null}
@@ -66,6 +69,6 @@ export function TestimonialsSection({
           ))}
         </ul>
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

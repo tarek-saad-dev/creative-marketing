@@ -25,7 +25,11 @@ export function MarketingFooter({
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border/50 bg-background-deep/60">
+    <footer className="relative border-t border-border/30 bg-background-deep/60">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border-strong/40 to-transparent"
+        aria-hidden="true"
+      />
       <Container className="section-space grid gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
         <div className="space-y-3">
           <BrandLogo />

@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { VisualNoise } from "@/components/ui/visual-noise";
 import { HeroContent } from "@/components/sections/hero/hero-content";
 import { HeroVisual } from "@/components/sections/hero/hero-visual";
@@ -19,15 +20,16 @@ export function HeroSection({
   showHandAsset,
 }: HeroSectionProps) {
   return (
-    <section
+    <CinematicSection
       id="hero"
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden pt-[calc(var(--nav-height)+1.25rem)] pb-16 sm:pb-20 lg:min-h-[min(100svh,56rem)] lg:pb-24"
-      style={{ backgroundImage: "var(--gradient-hero)" }}
+      className="relative flex min-h-[min(100svh,58rem)] items-center bg-[image:var(--gradient-hero-cinematic)] pb-16 pt-[calc(var(--nav-height)+1.25rem)] sm:pb-20 lg:pb-24"
+      backdropWord="BRAND"
+      backdropPosition="center"
     >
-      <VisualNoise opacity={0.035} />
+      <VisualNoise opacity={0.03} />
 
-      <Container className="relative grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-8 xl:gap-12">
+      <Container className="relative grid items-center gap-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10 xl:gap-12">
         <div className="order-1">
           <HeroContent copy={copy} />
         </div>
@@ -36,6 +38,6 @@ export function HeroSection({
           <HeroVisual brandName={brandName} showHandAsset={showHandAsset} />
         </div>
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

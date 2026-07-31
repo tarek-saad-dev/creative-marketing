@@ -8,6 +8,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { PublicFaq } from "@/server/services/commercial-landing.service";
 
@@ -19,17 +20,19 @@ export function FaqSection({ faqs }: FaqSectionProps) {
   if (faqs.length === 0) return null;
 
   return (
-    <section
+    <CinematicSection
       aria-labelledby="faq-heading"
-      className="scroll-mt-nav section-space border-t border-border/30"
+      className="scroll-mt-nav section-space"
+      backdropWord="FAQ"
+      backdropPosition="end"
     >
-      <Container className="space-y-8">
+      <Container className="space-y-10">
         <SectionHeading
           id="faq-heading"
           eyebrow="FAQ"
           title="أسئلة تتكرر قبل ما نبدأ."
         />
-        <div className="divide-y divide-border/30 rounded-2xl border border-border/40 bg-surface-glass">
+        <div className="card-glow divide-y divide-white/10 rounded-2xl card-glass">
           {faqs.map(faq => (
             <Disclosure key={faq.id} as="div" className="p-1">
               {({ open }) => (
@@ -43,13 +46,13 @@ export function FaqSection({ faqs }: FaqSectionProps) {
                     </span>
                     <ChevronDown
                       className={cn(
-                        "h-5 w-5 shrink-0 text-foreground-muted transition-transform",
+                        "h-5 w-5 shrink-0 text-primary transition-transform",
                         open && "rotate-180"
                       )}
                       aria-hidden="true"
                     />
                   </DisclosureButton>
-                  <DisclosurePanel className="px-4 pb-4 text-sm leading-7 text-foreground-muted">
+                  <DisclosurePanel className="body-text px-4 pb-4">
                     {faq.answer}
                   </DisclosurePanel>
                 </>
@@ -58,6 +61,6 @@ export function FaqSection({ faqs }: FaqSectionProps) {
           ))}
         </div>
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

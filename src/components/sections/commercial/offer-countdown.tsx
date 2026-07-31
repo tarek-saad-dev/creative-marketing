@@ -8,6 +8,7 @@ type OfferCountdownProps = {
   endsAtIso: string;
   onExpired?: () => void;
   className?: string;
+  variant?: "default" | "onDark";
 };
 
 type Parts = { days: number; hours: number; minutes: number; seconds: number };
@@ -31,6 +32,7 @@ export function OfferCountdown({
   endsAtIso,
   onExpired,
   className,
+  variant = "default",
 }: OfferCountdownProps) {
   const endsAt = useMemo(() => new Date(endsAtIso).getTime(), [endsAtIso]);
   const reduced = usePrefersReducedMotion();
@@ -46,9 +48,17 @@ export function OfferCountdown({
     return () => window.clearInterval(id);
   }, [parts, onExpired]);
 
+  const isDark = variant === "onDark";
+
   if (!parts) {
     return (
-      <p className={cn("text-sm font-medium text-brand-navy", className)}>
+      <p
+        className={cn(
+          "text-sm font-medium",
+          isDark ? "text-foreground" : "text-brand-navy",
+          className
+        )}
+      >
         انتهى العرض
       </p>
     );
@@ -62,7 +72,12 @@ export function OfferCountdown({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="text-sm text-brand-navy/80">
+      <p
+        className={cn(
+          "text-sm",
+          isDark ? "text-foreground-muted" : "text-brand-navy/80"
+        )}
+      >
         ينتهي العرض في <time dateTime={endsAtIso}>{deadlineLabel}</time>
       </p>
       <div
@@ -82,17 +97,29 @@ export function OfferCountdown({
         ].map(unit => (
           <div
             key={unit.label}
-            className="min-w-[4.25rem] rounded-xl border border-brand-indigo/10 bg-white px-3 py-2 text-center shadow-soft"
+            className={cn(
+              "min-w-[4.25rem] rounded-xl px-3 py-2 text-center shadow-soft",
+              isDark
+                ? "card-glass text-foreground"
+                : "border border-brand-indigo/10 bg-white text-brand-navy"
+            )}
           >
             <div
               className={cn(
-                "font-heading-en text-xl font-bold tabular-nums text-brand-navy",
+                "font-heading-en text-xl font-bold tabular-nums",
                 reduced && "transition-none"
               )}
             >
               {unit.value}
             </div>
-            <div className="text-[11px] text-brand-navy/70">{unit.label}</div>
+            <div
+              className={cn(
+                "text-[11px]",
+                isDark ? "text-foreground-muted" : "text-brand-navy/70"
+              )}
+            >
+              {unit.label}
+            </div>
           </div>
         ))}
       </div>

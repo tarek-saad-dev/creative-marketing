@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/motion/reveal";
 import { ServiceCategoryCard } from "@/components/sections/services/service-category-card";
@@ -10,12 +11,14 @@ type ServicesSectionProps = {
 
 export function ServicesSection({ ecosystem }: ServicesSectionProps) {
   return (
-    <section
+    <CinematicSection
       id="services"
       aria-labelledby="services-heading"
-      className="scroll-mt-nav section-space border-t border-border/30"
+      className="scroll-mt-nav section-space"
+      backdropWord="SYSTEM"
+      backdropPosition="center"
     >
-      <Container className="space-y-10">
+      <Container className="space-y-12">
         <Reveal>
           <SectionHeading
             id="services-heading"
@@ -34,12 +37,12 @@ export function ServicesSection({ ecosystem }: ServicesSectionProps) {
         </div>
 
         <Reveal delay={0.1}>
-          <div className="rounded-2xl border border-border/40 bg-background-elevated/50 px-6 py-8 text-center sm:px-10">
-            <p className="font-headline text-lg font-semibold text-foreground sm:text-xl text-balance">
+          <div className="card-glow rounded-2xl card-glass px-6 py-8 text-center sm:px-10">
+            <p className="font-headline text-lg font-semibold text-foreground text-balance sm:text-xl">
               المنظومة جاهزة — التسعير والباكدجات تُعرض عندما تكون الأسعار
               حقيقية ومعتمدة.
             </p>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-foreground-muted">
+            <p className="body-text mx-auto mt-3 max-w-2xl">
               لا أسعار تجريبية هنا. انتقل للأسفل عندما تصبح الباكدجات جاهزة
               للنشر، أو ابدأ حديثًا عن مشروعك مباشرة.
             </p>
@@ -52,6 +55,6 @@ export function ServicesSection({ ecosystem }: ServicesSectionProps) {
           </div>
         </Reveal>
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

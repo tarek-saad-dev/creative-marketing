@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/motion/reveal";
 import { WorkWall } from "@/components/sections/work/work-wall";
@@ -15,12 +16,14 @@ export function WorkSection({ projects }: WorkSectionProps) {
   const isDevelopment = process.env.NODE_ENV === "development";
 
   return (
-    <section
+    <CinematicSection
       id="work"
       aria-labelledby="work-heading"
       className="scroll-mt-nav section-space"
+      backdropWord="WORK"
+      backdropPosition="end"
     >
-      <Container className="space-y-10">
+      <Container className="space-y-12">
         <Reveal>
           <SectionHeading
             id="work-heading"
@@ -53,6 +56,6 @@ export function WorkSection({ projects }: WorkSectionProps) {
 
         <WorkToServicesBridge />
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

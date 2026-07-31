@@ -15,7 +15,7 @@ export function ProcessTimeline({ steps }: ProcessTimelineProps) {
   return (
     <ol className="relative grid gap-6 lg:grid-cols-5">
       <div
-        className="pointer-events-none absolute start-0 end-0 top-7 hidden h-px bg-border-strong/50 lg:block"
+        className="pointer-events-none absolute start-0 end-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-border-strong/50 to-transparent lg:block"
         aria-hidden="true"
       />
       {steps.map((step, index) => (
@@ -24,7 +24,9 @@ export function ProcessTimeline({ steps }: ProcessTimelineProps) {
             <div className="space-y-3">
               <div
                 className={cn(
-                  "relative z-[1] flex h-14 w-14 items-center justify-center rounded-full border border-border-strong bg-background-elevated font-heading-en text-sm font-bold text-brand-aqua shadow-soft"
+                  "relative flex items-center justify-center rounded-full card-glass",
+                  "h-11 w-11 shrink-0 text-sm font-bold sm:h-12 sm:w-12",
+                  index === 0 ? "text-brand-aqua" : "text-foreground-muted"
                 )}
               >
                 {step.number}
@@ -32,7 +34,7 @@ export function ProcessTimeline({ steps }: ProcessTimelineProps) {
               <h3 className="font-headline text-lg font-semibold text-foreground">
                 {step.title}
               </h3>
-              <p className="text-sm leading-7 text-foreground-muted">
+              <p className="body-text-muted">
                 {step.description}
               </p>
             </div>

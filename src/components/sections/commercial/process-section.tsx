@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Reveal } from "@/components/motion/reveal";
 import { PROCESS_STEPS } from "@/lib/content/process-steps";
@@ -6,12 +7,14 @@ import { ProcessTimeline } from "@/components/sections/commercial/process-timeli
 
 export function ProcessSection() {
   return (
-    <section
+    <CinematicSection
       id="process"
       aria-labelledby="process-heading"
-      className="scroll-mt-nav section-space border-t border-border/30"
+      className="scroll-mt-nav section-space"
+      backdropWord="PROCESS"
+      backdropPosition="end"
     >
-      <Container className="space-y-10">
+      <Container className="space-y-12">
         <Reveal>
           <SectionHeading
             id="process-heading"
@@ -22,6 +25,6 @@ export function ProcessSection() {
         </Reveal>
         <ProcessTimeline steps={PROCESS_STEPS} />
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

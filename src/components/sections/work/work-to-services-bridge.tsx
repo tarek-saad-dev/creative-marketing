@@ -7,7 +7,7 @@ import { Reveal } from "@/components/motion/reveal";
 export function WorkToServicesBridge() {
   return (
     <Reveal delay={0.08}>
-      <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-background-elevated/60 px-5 py-6 sm:px-8 sm:py-8">
+      <div className="card-glow relative overflow-hidden rounded-2xl card-glass px-5 py-6 sm:px-8 sm:py-8">
         <p className="font-heading-en text-[11px] tracking-[0.28em] text-white/40 uppercase">
           We prove the work → We explain the system
         </p>

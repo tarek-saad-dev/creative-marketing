@@ -15,10 +15,10 @@ export function PackageCard({ pkg }: PackageCardProps) {
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col rounded-2xl border p-6 shadow-card",
+        "card-glow relative flex h-full flex-col rounded-2xl card-glass p-6 transition-all duration-500 ease-standard",
         pkg.isFeatured
-          ? "border-brand-aqua/40 bg-surface-glass lg:-translate-y-2"
-          : "border-border/40 bg-background-elevated/50"
+          ? "border-brand-aqua/40 lg:-translate-y-2"
+          : "hover:border-white/20"
       )}
     >
       {pkg.isFeatured ? (
@@ -34,12 +34,8 @@ export function PackageCard({ pkg }: PackageCardProps) {
         {pkg.tagline ? (
           <p className="text-sm text-brand-aqua">{pkg.tagline}</p>
         ) : null}
-        <p className="text-sm leading-7 text-foreground-muted">
-          مناسب لـ: {pkg.idealFor}
-        </p>
-        <p className="text-sm leading-7 text-foreground-muted">
-          {pkg.description}
-        </p>
+        <p className="body-text-muted">مناسب لـ: {pkg.idealFor}</p>
+        <p className="body-text-muted">{pkg.description}</p>
       </header>
 
       <div className="mt-5">
@@ -48,15 +44,14 @@ export function PackageCard({ pkg }: PackageCardProps) {
           offerPrice={pkg.offerPrice}
           currency={pkg.currency}
           savingAmount={pkg.savingAmount}
+          variant="onDark"
         />
         {pkg.billingPeriod ? (
-          <p className="mt-1 text-xs text-foreground-muted">
-            {pkg.billingPeriod}
-          </p>
+          <p className="body-text-muted mt-1">{pkg.billingPeriod}</p>
         ) : null}
       </div>
 
-      <dl className="mt-4 space-y-1 text-sm text-foreground-muted">
+      <dl className="body-text-muted mt-4 space-y-1">
         {pkg.startTimeText ? (
           <div>
             <dt className="inline">بداية متوقعة: </dt>
@@ -87,7 +82,7 @@ export function PackageCard({ pkg }: PackageCardProps) {
         {excluded.map(feature => (
           <li
             key={feature.id}
-            className="flex gap-2 text-sm text-foreground-muted"
+            className="body-text-muted flex gap-2"
           >
             <X
               className="mt-0.5 h-4 w-4 shrink-0 text-foreground-muted"
@@ -101,7 +96,7 @@ export function PackageCard({ pkg }: PackageCardProps) {
         ))}
       </ul>
 
-      <p className="mt-4 text-xs text-foreground-muted">
+      <p className="body-text-muted mt-4">
         لا توجد مصاريف مخفية.
       </p>
 

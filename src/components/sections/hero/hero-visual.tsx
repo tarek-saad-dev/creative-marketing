@@ -24,10 +24,12 @@ export function HeroVisual({ brandName, showHandAsset }: HeroVisualProps) {
     <div className="relative mx-auto w-full max-w-xl">
       <BackgroundGlow
         tone="violet"
-        className="start-1/2 top-8 h-56 w-56 -translate-x-1/2"
+        className="start-1/2 top-8 h-64 w-64 -translate-x-1/2 opacity-70"
       />
-      <BackgroundGlow tone="aqua" className="-end-4 bottom-10 h-40 w-40" />
-      <BackgroundGlow tone="cyan" className="start-0 top-1/3 h-36 w-36" />
+      <BackgroundGlow
+        tone="aqua"
+        className="-end-8 bottom-12 h-48 w-48 opacity-60"
+      />
 
       <MouseParallax
         strength={10}
@@ -58,52 +60,34 @@ export function HeroVisual({ brandName, showHandAsset }: HeroVisualProps) {
           </FloatingElement>
         </div>
 
-        {/* Desktop / tablet floating cards */}
+        {/* Desktop / tablet: two floating cards only */}
         <FloatingElement
-          className="absolute start-0 top-8 hidden sm:block md:start-2"
-          amplitude={7}
-          duration={7.5}
+          className="absolute start-0 top-12 hidden sm:block md:start-2"
+          amplitude={5}
+          duration={8}
           delay={0.2}
         >
-          <FloatingContentCard card={cards[0]} className="rotate-[-8deg]" />
+          <FloatingContentCard card={cards[0]} className="rotate-[-6deg]" />
         </FloatingElement>
 
         <FloatingElement
-          className="absolute end-0 top-16 hidden sm:block md:end-2"
-          amplitude={9}
-          duration={8.2}
+          className="absolute end-0 top-20 hidden sm:block md:end-2"
+          amplitude={6}
+          duration={8.5}
           delay={0.4}
         >
-          <FloatingContentCard card={cards[1]} className="rotate-[7deg]" />
-        </FloatingElement>
-
-        <FloatingElement
-          className="absolute bottom-16 start-2 hidden md:block"
-          amplitude={6}
-          duration={7.8}
-          delay={0.1}
-        >
-          <FloatingContentCard card={cards[2]} className="rotate-[5deg]" />
-        </FloatingElement>
-
-        <FloatingElement
-          className="absolute -end-1 bottom-24 hidden lg:block"
-          amplitude={8}
-          duration={9}
-          delay={0.35}
-        >
-          <FloatingContentCard card={cards[3]} className="rotate-[-5deg]" />
+          <FloatingContentCard card={cards[1]} className="rotate-[5deg]" />
         </FloatingElement>
 
         {/* Mobile: keep two cards only */}
         <div className="absolute inset-x-0 top-2 flex justify-between px-1 sm:hidden">
           <FloatingContentCard
             card={cards[0]}
-            className="w-[7.75rem] rotate-[-6deg] scale-90"
+            className="w-[7.75rem] rotate-[-5deg] scale-90"
           />
           <FloatingContentCard
             card={cards[1]}
-            className="w-[7.75rem] rotate-[6deg] scale-90"
+            className="w-[7.75rem] rotate-[5deg] scale-90"
           />
         </div>
       </MouseParallax>

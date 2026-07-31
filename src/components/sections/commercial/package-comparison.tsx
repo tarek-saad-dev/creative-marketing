@@ -42,7 +42,7 @@ export function PackageComparison({ packages }: PackageComparisonProps) {
   if (packages.length < 2 || rows.length === 0) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="card-glow space-y-4 rounded-2xl card-glass p-5 sm:p-6">
       <h3 className="font-headline text-xl font-semibold text-foreground">
         مقارنة سريعة
       </h3>
@@ -53,7 +53,7 @@ export function PackageComparison({ packages }: PackageComparisonProps) {
           <caption className="sr-only">مقارنة مميزات الباكدجات</caption>
           <thead>
             <tr>
-              <th scope="col" className="p-3 text-start text-foreground-muted">
+              <th scope="col" className="body-text-muted p-3 text-start">
                 الميزة
               </th>
               {packages.map(pkg => (
@@ -71,7 +71,7 @@ export function PackageComparison({ packages }: PackageComparisonProps) {
             {rows.map(row => (
               <tr
                 key={`${row.category}-${row.title}`}
-                className="border-t border-border/30"
+                className="border-t border-white/10"
               >
                 <th
                   scope="row"
@@ -119,7 +119,7 @@ export function PackageComparison({ packages }: PackageComparisonProps) {
                     "min-h-11 shrink-0 rounded-pill px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     selected
                       ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-surface-glass text-foreground"
+                      : "card-glass text-foreground"
                   )
                 }
               >
@@ -133,7 +133,7 @@ export function PackageComparison({ packages }: PackageComparisonProps) {
                 {pkg.features.map(feature => (
                   <div
                     key={feature.id}
-                    className="flex items-start gap-2 rounded-xl border border-border/30 bg-surface-glass px-3 py-2 text-sm"
+                    className="flex items-start gap-2 rounded-xl card-glass px-3 py-2 text-sm"
                   >
                     {feature.included ? (
                       <Check

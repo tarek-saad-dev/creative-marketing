@@ -11,18 +11,14 @@ type ServiceCategoryCardProps = {
 
 export function ServiceCategoryCard({
   group,
-  index,
 }: ServiceCategoryCardProps) {
-  const lightSurface = index % 2 === 1;
+  const lightSurface = false;
 
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-2xl border p-6 shadow-card sm:p-7",
-        lightSurface
-          ? "border-border/30 bg-surface-light text-brand-navy"
-          : "border-border/40 bg-surface-glass text-foreground",
-        "lg:-rotate-0 lg:transition-transform lg:duration-300 lg:hover:-translate-y-1 motion-reduce:transform-none"
+        "card-glow relative overflow-hidden rounded-2xl card-glass p-6 transition-all duration-500 ease-standard sm:p-7 lg:hover:-translate-y-1",
+        "text-foreground motion-reduce:transform-none"
       )}
     >
       <p

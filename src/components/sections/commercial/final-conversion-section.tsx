@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { CinematicSection } from "@/components/ui/cinematic-section";
 import { BrandButton } from "@/components/ui/brand-button";
 import { LeadOpenButton } from "@/components/lead/lead-open-button";
 import { DistributedProof } from "@/components/sections/commercial/distributed-proof";
@@ -14,22 +15,27 @@ export function FinalConversionSection({
   responseHours,
 }: FinalConversionSectionProps) {
   return (
-    <section
+    <CinematicSection
       id="contact"
       aria-labelledby="contact-heading"
-      className="scroll-mt-nav section-space border-t border-border/30"
+      className="scroll-mt-nav section-space"
+      backdropWord="START"
+      backdropPosition="center"
     >
-      <Container className="max-w-3xl space-y-6 text-center">
+      <Container className="relative z-10 max-w-3xl space-y-8 text-center">
+        <p className="font-heading-en text-xs tracking-[0.18em] text-primary uppercase">
+          Ready
+        </p>
         <h2
           id="contact-heading"
-          className="font-headline text-display-md text-foreground text-balance"
+          className="font-headline text-display-xl text-foreground text-balance text-editorial"
         >
           مشروعك يستحق يظهر بالشكل اللي يخلي الناس تثق فيه.
         </h2>
-        <p className="text-base leading-8 text-foreground-muted">
+        <p className="body-text mx-auto max-w-xl">
           احكِ لنا عن مشروعك، وسنقترح عليك الباكدج الأنسب بدون تعقيد.
         </p>
-        <p className="text-sm text-foreground-muted">
+        <p className="body-text-muted">
           تواصل مباشر · خطوات واضحة · بدون رسائل مزعجة
           {responseHours ? ` · ${responseHours}` : ""}
         </p>
@@ -45,6 +51,6 @@ export function FinalConversionSection({
           <DistributedProof testimonial={testimonial} slot="final_cta" />
         ) : null}
       </Container>
-    </section>
+    </CinematicSection>
   );
 }

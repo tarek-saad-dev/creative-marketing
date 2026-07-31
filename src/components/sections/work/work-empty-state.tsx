@@ -6,7 +6,7 @@ type WorkEmptyStateProps = {
 
 export function WorkEmptyState({ isDevelopment = false }: WorkEmptyStateProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-surface-glass p-8 shadow-card sm:p-10">
+    <div className="card-glow relative overflow-hidden rounded-2xl card-glass p-8 sm:p-10">
       <div
         className="pointer-events-none absolute -end-16 -top-16 h-48 w-48 rounded-full bg-brand-violet/20 blur-3xl"
         aria-hidden="true"
@@ -18,11 +18,11 @@ export function WorkEmptyState({ isDevelopment = false }: WorkEmptyStateProps) {
 
       <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div className="space-y-4">
-          <p className="font-headline text-xl font-semibold text-foreground sm:text-2xl text-balance">
+          <p className="font-headline text-xl font-semibold text-foreground text-balance sm:text-2xl">
             نجهّز حاليًا دراسات أعمالنا بالتفاصيل التي توضّح الفكرة، التنفيذ،
             والنتيجة.
           </p>
-          <p className="max-w-xl text-sm leading-7 text-foreground-muted sm:text-base">
+          <p className="body-text max-w-xl">
             جدار الأعمال سيعرض مشاريع منشورة كاملة فقط — بدون نتائج مفبركة أو
             صور عشوائية. إلى ذلك الحين، يمكنك استكشاف منظومة الخدمات أو بدء حديث
             عن مشروعك.

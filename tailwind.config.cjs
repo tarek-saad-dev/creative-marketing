@@ -82,9 +82,13 @@ module.exports = {
         "body-en": ["var(--font-body-en)"],
       },
       fontSize: {
+        "display-2xl": [
+          "clamp(2.75rem, 7vw, 5.5rem)",
+          { lineHeight: "1.05", fontWeight: "800" },
+        ],
         "display-xl": [
           "clamp(2.25rem, 4.5vw, 3.75rem)",
-          { lineHeight: "1.15", fontWeight: "700" },
+          { lineHeight: "1.1", fontWeight: "700" },
         ],
         "display-lg": [
           "clamp(1.85rem, 3.5vw, 2.75rem)",
@@ -93,6 +97,10 @@ module.exports = {
         "display-md": [
           "clamp(1.5rem, 2.5vw, 2rem)",
           { lineHeight: "1.25", fontWeight: "600" },
+        ],
+        "display-sm": [
+          "clamp(1.15rem, 1.6vw, 1.4rem)",
+          { lineHeight: "1.35", fontWeight: "500" },
         ],
       },
       zIndex: {
@@ -115,12 +123,16 @@ module.exports = {
       transitionTimingFunction: {
         standard: "var(--ease-standard)",
         emphasized: "var(--ease-emphasized)",
+        cinematic: "var(--ease-cinematic)",
       },
       animation: {
         "fade-in": "fadeIn var(--motion-base) var(--ease-standard)",
         "slide-up": "slideUp var(--motion-base) var(--ease-emphasized)",
         "slide-down": "slideDown var(--motion-base) var(--ease-emphasized)",
         float: "float var(--motion-ambient) var(--ease-standard) infinite",
+        shimmer: "shimmer 14s ease-in-out infinite",
+        "fade-cinematic":
+          "cinematicFade var(--motion-cinematic) var(--ease-cinematic) forwards",
       },
       keyframes: {
         fadeIn: {
@@ -138,6 +150,14 @@ module.exports = {
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
+        },
+        shimmer: {
+          "0%, 100%": { opacity: "0.45" },
+          "50%": { opacity: "0.75" },
+        },
+        cinematicFade: {
+          "0%": { opacity: "0", transform: "translateY(22px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
     },

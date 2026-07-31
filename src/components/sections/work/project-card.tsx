@@ -27,7 +27,7 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-border/40 bg-surface-glass shadow-card",
+        "group card-glow relative overflow-hidden rounded-2xl card-glass ring-editorial transition-all duration-500 ease-standard hover:border-white/20",
         workRoleClassName(role)
       )}
     >
@@ -73,7 +73,7 @@ export function ProjectCard({
             {project.title}
           </h3>
           {project.clientName ? (
-            <p className="text-sm text-foreground-muted">
+            <p className="body-text-muted">
               {project.clientName}
             </p>
           ) : null}
@@ -95,11 +95,11 @@ export function ProjectCard({
               </ul>
             ) : null}
             {project.resultText ? (
-              <p className="line-clamp-2 text-sm leading-6 text-foreground/90">
+              <p className="body-text-muted line-clamp-2">
                 {project.resultText}
               </p>
             ) : (
-              <p className="line-clamp-2 text-sm leading-6 text-foreground-muted">
+              <p className="body-text-muted line-clamp-2">
                 {project.summary}
               </p>
             )}

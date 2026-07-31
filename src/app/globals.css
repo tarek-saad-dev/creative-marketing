@@ -94,6 +94,47 @@
       color-mix(in srgb, var(--cm-cyan) 35%, transparent)
     );
 
+    /* Cinematic editorial layer */
+    --gradient-cinematic: linear-gradient(
+      170deg,
+      #24185f 0%,
+      #2c1f73 38%,
+      #1f2368 70%,
+      #1a245a 100%
+    );
+    --gradient-hero-cinematic:
+      radial-gradient(
+        ellipse 70% 55% at 20% 10%,
+        color-mix(in srgb, var(--cm-deep-violet) 32%, transparent) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 60% 45% at 85% 25%,
+        color-mix(in srgb, var(--cm-cyan) 14%, transparent) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 55% 40% at 50% 100%,
+        color-mix(in srgb, var(--cm-aqua) 10%, transparent) 0%,
+        transparent 45%
+      ),
+      var(--gradient-cinematic);
+    --gradient-bridge: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cm-gradient-end) 80%, transparent) 0%,
+      transparent 100%
+    );
+    --gradient-bridge-bottom: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--cm-gradient-start) 60%, transparent) 100%
+    );
+    --cm-soft-glow: color-mix(in srgb, var(--cm-aqua) 8%, transparent);
+    --cm-violet-glow: color-mix(in srgb, var(--cm-deep-violet) 14%, transparent);
+
+    --motion-cinematic: 900ms;
+    --ease-cinematic: cubic-bezier(0.22, 0.61, 0.36, 1);
+
     /* Layout */
     --radius: 0.75rem;
     --radius-sm: 0.5rem;
@@ -384,5 +425,117 @@
 
   .scroll-mt-nav {
     scroll-margin-top: calc(var(--nav-height) + 1rem);
+  }
+
+  .editorial-section {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .editorial-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--gradient-bridge);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .editorial-section + .editorial-section::before {
+    background-image: var(--gradient-bridge-bottom);
+    opacity: 0.35;
+  }
+
+  .bg-word {
+    pointer-events: none;
+    user-select: none;
+    position: absolute;
+    font-family: var(--font-headline);
+    font-weight: 800;
+    color: var(--cm-soft-white);
+    opacity: 0.035;
+    line-height: 0.85;
+    white-space: nowrap;
+    z-index: 0;
+    letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 1024px) {
+    .bg-word {
+      opacity: 0.05;
+    }
+  }
+
+  .gradient-mask-b {
+    mask-image: linear-gradient(to top, transparent 0%, black 22%);
+    -webkit-mask-image: linear-gradient(to top, transparent 0%, black 22%);
+  }
+
+  .gradient-mask-tb {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 15%,
+      black 85%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 15%,
+      black 85%,
+      transparent 100%
+    );
+  }
+
+  .text-editorial {
+    text-shadow: 0 2px 22px rgba(0, 0, 0, 0.25);
+  }
+
+  .ring-editorial {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--cm-cool-gray) 12%, transparent),
+      0 22px 48px rgba(10, 6, 36, 0.28);
+  }
+
+  .card-glass {
+    background: color-mix(in srgb, white 4%, transparent);
+    border: 1px solid color-mix(in srgb, white 10%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .card-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--cm-aqua) 10%, transparent),
+      color-mix(in srgb, var(--cm-deep-violet) 10%, transparent),
+      transparent 60%
+    );
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .body-text {
+    font-size: clamp(0.9375rem, 1vw, 1.0625rem);
+    line-height: 1.8;
+    color: color-mix(in srgb, var(--cm-soft-white) 82%, transparent);
+  }
+
+  .body-text-muted {
+    font-size: 0.875rem;
+    line-height: 1.75;
+    color: color-mix(in srgb, var(--cm-soft-white) 62%, transparent);
   }
 }

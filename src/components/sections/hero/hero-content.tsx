@@ -16,7 +16,7 @@ export function HeroContent({ copy }: HeroContentProps) {
   const parts = splitTitleWithHighlight(copy.title, copy.highlightPhrase);
 
   return (
-    <div className="relative z-[4] max-w-xl space-y-6 lg:max-w-lg xl:max-w-xl">
+    <div className="relative z-10 max-w-2xl space-y-8 lg:max-w-xl xl:max-w-2xl">
       <Reveal>
         <Eyebrow>{copy.eyebrow}</Eyebrow>
       </Reveal>
@@ -24,7 +24,7 @@ export function HeroContent({ copy }: HeroContentProps) {
       <Reveal delay={0.06}>
         <h1
           id="hero-heading"
-          className="font-headline text-display-xl text-balance text-foreground"
+          className="font-headline text-display-2xl text-balance text-foreground text-editorial"
         >
           {parts.highlight ? (
             <>
@@ -39,14 +39,14 @@ export function HeroContent({ copy }: HeroContentProps) {
       </Reveal>
 
       <Reveal delay={0.12}>
-        <p className="max-w-lg text-base leading-8 text-foreground-muted sm:text-lg">
+        <p className="body-text max-w-xl">
           {copy.description}
         </p>
       </Reveal>
 
       <Stagger
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
-        delayChildren={0.18}
+        className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center"
+        delayChildren={0.2}
       >
         <BrandButton href="#work" size="lg">
           {copy.primaryCta}
@@ -56,8 +56,8 @@ export function HeroContent({ copy }: HeroContentProps) {
         </BrandButton>
       </Stagger>
 
-      <Reveal delay={0.28}>
-        <p className="text-sm text-foreground-muted">{copy.microcopy}</p>
+      <Reveal delay={0.34}>
+        <p className="body-text-muted">{copy.microcopy}</p>
       </Reveal>
     </div>
   );
