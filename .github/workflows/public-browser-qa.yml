@@ -1,0 +1,30 @@
+name: Public browser QA
+on:
+  workflow_dispatch:
+  deployment_status:
+permissions:
+  contents: read
+jobs:
+  browser:
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm install --no-save --package-lock=false --ignore-scripts playwright
+      - run: npx playwright install --with-deps chromium
+      - run: npm run qa:browser -- https://creative-marketing-gray.vercel.app
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portfolio-browser-screenshots
+          path: qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

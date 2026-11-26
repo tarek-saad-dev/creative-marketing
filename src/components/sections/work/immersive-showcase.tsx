@@ -82,19 +82,19 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
   const activeIndex=length ? index%length : 0;
   const active=items[activeIndex];
   const media=active?.project ? buildHeroMedia(active.project,gallery.find(p=>p.id===active.project?.id)?.media??[]) : [];
-  const mediaIndex=mediaChoice?.projectId===active?.id ? Math.min(mediaChoice.index,Math.max(0,media.length-1)):0;
+  const mediaIndex=mediaChoice && mediaChoice.projectId===active?.id ? Math.min(mediaChoice.index,Math.max(0,media.length-1)):0;
   const selectedMedia=media[mediaIndex];
   const {phone:extra,panels:extraPanels}=heroExtraMedia(media,mediaIndex);
   const projectPositions=heroScenePositions(length,activeIndex);
   const emptyOffsets=[-1,1,-2,2].filter(offset=>!projectPositions.some(pos=>pos.offset===offset));
   const mediaPanels=extraPanels.slice(0,emptyOffsets.length).map((item,i)=>({item,offset:emptyOffsets[i]}));
-  function chooseMedia(index:number){if(!active)return;setPlaying(false);setMediaChoice({projectId:active.id,index});}
+  function chooseMedia(index:number){if(!active||index<0||index>=media.length)return;setPlaying(false);setMediaChoice({projectId:active.id,index});}
   function openMedia(index:number){setPlaying(false);setLightbox(index);}
   const next=length>1?items[(activeIndex+1)%length]:null;
 
   useEffect(()=>{
     if(!playing||hovered||reduced||paused||lightbox!==null||length<2)return;
-    const timer=window.setInterval(()=>{if(!document.hidden)setIndex(current=>(current+1)%length)},4800);
+    const timer=window.setInterval(()=>{if(!document.hidden){setMediaChoice(null);setIndex(current=>(current+1)%length)}},4800);
     return ()=>window.clearInterval(timer);
   },[playing,hovered,reduced,paused,length,lightbox]);
   function move(delta:number){
