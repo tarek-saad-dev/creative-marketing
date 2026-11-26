@@ -15,6 +15,7 @@ import {
   findProjectByIdForAdmin,
   findProjectBySlugForAdmin,
   listProjectsForAdmin,
+  moveProjectMedia,
   restoreProject,
   setProjectStatus,
   setProjectCoverFromMedia,
@@ -193,4 +194,11 @@ export async function removeProjectMediaAdmin(id: string) {
   const project = await findProjectByIdForAdmin(removed.projectId);
   revalidateProject(project?.slug);
   return removed;
+}
+
+export async function moveProjectMediaAdmin(projectId:string,mediaId:string,direction:-1|1) {
+  if(direction!==-1 && direction!==1)throw new Error("اتجاه ترتيب غير صالح");
+  const project=await moveProjectMedia(projectId,mediaId,direction);
+  revalidateProject(project.slug);
+  return project;
 }

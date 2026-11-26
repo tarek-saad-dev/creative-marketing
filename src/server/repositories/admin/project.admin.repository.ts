@@ -1,4 +1,5 @@
 import "server-only";
+import { planMediaMove } from "@/lib/media/portfolio-layout";
 
 import { prisma } from "@/lib/db/prisma";
 import { ContentStatus, type Prisma } from "@/generated/prisma";
@@ -75,7 +76,7 @@ export const adminProjectDetailSelect = {
   updatedAt: true,
   deletedAt: true,
   media: {
-    orderBy: { displayOrder: "asc" as const },
+    orderBy: [{ displayOrder: "asc" as const }, { id: "asc" as const }],
     select: {
       id: true,
       type: true,
@@ -320,4 +321,17 @@ export async function countProjectsByStatus() {
 
 export async function setProjectCoverFromMedia(id: string, url: string, alt: string) {
   return prisma.project.update({where:{id,deletedAt:null},data:{coverImageUrl:url,coverImageAlt:alt},select:{id:true,slug:true}});
+}
+
+/** Atomically reorder only media belonging to the active project. */
+export async function moveProjectMedia(projectId: string, mediaId: string, direction: -1 | 1) {
+  return prisma.$transaction(async tx => {
+    const project=await tx.project.findFirst({where:{id:projectId,deletedAt:null},select:{id:true,slug:true}});
+    if(!project)throw new Error("المشروع غير موجود");
+    const items=await tx.projectMedia.findMany({where:{projectId},select:{id:true,displayOrder:true}});
+    if(!items.some(item=>item.id===mediaId))throw new Error("الوسيط غير موجود داخل المشروع");
+    const updates=planMediaMove(items,mediaId,direction);
+    for(const item of updates)await tx.projectMedia.update({where:{id:item.id},data:{displayOrder:item.displayOrder}});
+    return project;
+  },{isolationLevel:"Serializable",timeout:20000});
 }

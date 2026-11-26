@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpLeft, Maximize2, Play, Images } from "lucide-react";
 import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-lightbox";
 import { buildCreativeGallery, type CreativeGalleryProject, type Comparison, type GalleryEntry } from "@/lib/content/creative-gallery";
+import { mediaAspectRatio } from "@/lib/media/portfolio-layout";
 import { videoPoster } from "@/lib/media/public-media";
 import { getItems, Artwork } from "./immersive-showcase";
 import styles from "./creative-gallery.module.css";
@@ -22,7 +23,7 @@ function ComparePanel({ pair }: { pair: Comparison }) {
   return (
     <article className={styles.compareCard}>
       <div className={styles.compareMeta}><div><p>BRAND TRANSFORMATION</p><h3>{pair.title}</h3></div><Link href={"/work/" + pair.slug} className={styles.link}>تفاصيل المشروع <ArrowUpLeft size={17} aria-hidden="true" /></Link></div>
-      <div className={styles.compareStage} dir="ltr">
+      <div className={styles.compareStage} dir="ltr" style={{aspectRatio:mediaAspectRatio(pair.after.width,pair.after.height,4/3)}}>
         <MediaImage url={pair.before.url} alt={pair.before.altText || "قبل التطوير"} sizes="(max-width: 768px) 95vw, 750px" />
         <div className={styles.afterLayer} style={{ clipPath: "inset(0 " + (100 - position) + "% 0 0)" }}>
           <MediaImage url={pair.after.url} alt={pair.after.altText || "بعد التطوير"} sizes="(max-width: 768px) 95vw, 750px" />
@@ -42,7 +43,8 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { 
   const [limit, setLimit] = useState(9);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [pairIndex, setPairIndex] = useState(0);
-  const filtered = entries.filter(entry => filter === "all" || entry.type === filter);
+  const effectiveFilter = entries.some(entry => entry.type === filter) ? filter : "all";
+  const filtered = entries.filter(entry => effectiveFilter === "all" || entry.type === effectiveFilter);
   const shown = filtered.slice(0, limit);
   const pair = comparisons[pairIndex % Math.max(1, comparisons.length)];
   const hasImages = entries.some(entry => entry.type === "IMAGE");
@@ -55,14 +57,14 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { 
         <p className={styles.description}>{entries.length ? "تصفّح تفاصيل الحملات والتصميمات والفيديوهات، وافتح أي عمل بالحجم الكبير." : "دراسات تصميم توضيحية من الاستوديو. ليست أعمال عملاء."}</p>
       </header>
       {hasImages && hasVideos && <div className={styles.filters} aria-label="فلترة المعرض">
-        {([{ value: "all", label: "الكل" }, { value: "IMAGE", label: "تصميمات" }, { value: "VIDEO", label: "فيديوهات" }] as const).map(option => <button type="button" key={option.value} aria-pressed={filter === option.value} onClick={() => { setFilter(option.value); setLimit(9); setOpenIndex(null); }}>{option.label}</button>)}
+        {([{ value: "all", label: "الكل" }, { value: "IMAGE", label: "تصميمات" }, { value: "VIDEO", label: "فيديوهات" }] as const).map(option => <button type="button" key={option.value} aria-pressed={effectiveFilter === option.value} onClick={() => { setFilter(option.value); setLimit(9); setOpenIndex(null); }}>{option.label}</button>)}
       </div>}
       <div className={styles.grid}>
         {shown.length ? shown.map((entry, index) => {
           const thumb = preview(entry);
           return (
             <article key={entry.id} className={styles.tile}>
-              <button type="button" className={styles.tileButton} onClick={() => setOpenIndex(index)} aria-label={"فتح " + (entry.altText || entry.projectTitle)}>
+              <button type="button" className={styles.tileButton} style={{aspectRatio:mediaAspectRatio(entry.width,entry.height,1)}} onClick={() => setOpenIndex(index)} aria-label={"فتح " + (entry.altText || entry.projectTitle)}>
                 {thumb ? <MediaImage url={thumb} alt={entry.altText || entry.projectTitle} sizes="(max-width: 600px) 48vw, (max-width: 1000px) 33vw, 440px" /> : <div className={styles.videoPlaceholder}><Play size={40} aria-hidden="true" /><span>VIDEO</span></div>}
                 <span className={styles.tileIcon}>{entry.type === "VIDEO" ? <Play size={19} aria-hidden="true" /> : <Maximize2 size={19} aria-hidden="true" />}</span>
               </button>
