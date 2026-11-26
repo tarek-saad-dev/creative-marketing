@@ -114,17 +114,21 @@ export function buildContactAndSocialLinks(settings: Record<string, unknown>) {
     }
   }
 
-  if (instagram) {
+  const safeSocial = (value: string) => {
+    try { return new URL(value).protocol === "https:"; } catch { return false; }
+  };
+
+  if (safeSocial(instagram)) {
     socialLinks.push({
       label: "Instagram",
       href: instagram,
       external: true,
     });
   }
-  if (facebook) {
+  if (safeSocial(facebook)) {
     socialLinks.push({ label: "Facebook", href: facebook, external: true });
   }
-  if (behance) {
+  if (safeSocial(behance)) {
     socialLinks.push({ label: "Behance", href: behance, external: true });
   }
 

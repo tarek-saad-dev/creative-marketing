@@ -41,6 +41,9 @@
     "admin:test-revalidation": "tsx scripts/test-admin-revalidation.ts",
     "admin:test-preview": "tsx scripts/test-draft-preview.ts",
     "admin:audit-test-data": "tsx scripts/audit-phase-5-test-data.ts",
+    "qa:unit": "tsx --test tests/creative-gallery.test.ts",
+    "qa:smoke": "node scripts/qa-public-site.mjs",
+    "qa:browser": "node scripts/qa-browser.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

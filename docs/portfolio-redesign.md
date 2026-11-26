@@ -32,3 +32,6 @@ Homepage uses a bounded gallery query (16 published projects, up to 16 media per
 
 ## Final UI polish
 Home prioritizes hero, selected projects, services and creative media feed. Moving strip requires three real projects; device studio requires two. Work wall limited to six projects; video rail used as standalone showreel only. Gallery retains all bounded feed items through load-more. Project cards and case-study media preserve artwork with contain sizing and metadata outside art. Canonical home anchors work from detail pages; active nav state on homepage. Mobile CTA respects actual WhatsApp configuration and hides near contact/footer. Branded reduced-motion loading routes added. Remaining: visual QA on real phones, browser screenshots, Web Vitals, real media/official logo, and production CTA tests.
+
+## Launch QA
+See [Production readiness](production-readiness.md) for read-only browser/HTTP checks, test commands, and content gates.
