@@ -1,9 +1,12 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+import { projectDraftSlug, projectPublishChecklist } from "@/lib/content/project-publishing";
 import { isImageCandidate } from "@/lib/media/public-media";
 import { ContentStatus } from "@/generated/prisma";
 import {
   projectInputSchema,
+  quickProjectSchema,
   projectMediaInputSchema,
   projectMediaMetaSchema,
   type ProjectFormInput,
@@ -82,6 +85,11 @@ export async function createProjectAdmin(rawInput: unknown) {
   return project;
 }
 
+export async function createQuickProjectAdmin(raw:unknown){
+  const input=quickProjectSchema.parse(raw);
+  return createProjectAdmin({...input,slug:projectDraftSlug(input.title,randomUUID().replace(/-/g,"")),featured:false,displayOrder:0});
+}
+
 export async function updateProjectAdmin(id: string, rawInput: unknown) {
   const input = projectInputSchema.parse(rawInput);
   await assertSlugAvailable(input.slug, id);
@@ -99,14 +107,7 @@ export async function publishProjectAdmin(id: string) {
   const project = await findProjectByIdForAdmin(id);
   if (!project || project.deletedAt) throw new Error("المشروع غير موجود");
 
-  const missing: string[] = [];
-  if (!project.title.trim()) missing.push("العنوان");
-  if (!project.slug.trim()) missing.push("الرابط");
-  if (!project.industry?.trim()) missing.push("المجال");
-  if (!project.summary.trim()) missing.push("الملخص");
-  if (!isImageCandidate(project.coverImageUrl)) missing.push("صورة الغلاف");
-  if (!project.coverImageAlt?.trim()) missing.push("النص البديل لصورة الغلاف");
-
+  const missing = projectPublishChecklist(project).filter(item=>!item.ok).map(item=>item.label);
   if (missing.length > 0) {
     throw new Error(`لا يمكن النشر — الحقول الناقصة: ${missing.join("، ")}`);
   }
@@ -160,7 +161,7 @@ export async function addProjectMediaAdmin(rawInput: unknown) {
     format: toEmptyNull(input.format),
     bytes: input.bytes ?? null,
     duration: input.duration ?? null,
-  });
+  }, input.autoCover && input.type==="IMAGE" ? input.altText?.trim() || owner.title : undefined);
 
   const project = await findProjectByIdForAdmin(input.projectId);
   revalidateProject(project?.slug);

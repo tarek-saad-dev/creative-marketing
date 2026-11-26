@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ResilientImage } from "@/components/ui/resilient-media";
-import { isImageCandidate } from "@/lib/media/public-media";
+import { projectPublishChecklist } from "@/lib/content/project-publishing";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/server/auth/require-admin";
@@ -33,16 +33,9 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
     listAdminServices(),
   ]);
 
-  if (!project) notFound();
+  if (!project || project.deletedAt) notFound();
 
-  const publishChecklist = [
-    { label: "العنوان", ok: Boolean(project.title.trim()) },
-    { label: "الرابط", ok: Boolean(project.slug.trim()) },
-    { label: "المجال", ok: Boolean(project.industry?.trim()) },
-    { label: "الملخص", ok: Boolean(project.summary.trim()) },
-    { label: "صورة الغلاف", ok: isImageCandidate(project.coverImageUrl) },
-    { label: "النص البديل للغلاف", ok: Boolean(project.coverImageAlt?.trim()) },
-  ];
+  const publishChecklist = projectPublishChecklist(project);
   const readyToPublish = publishChecklist.every(item => item.ok);
 
   return (
@@ -84,7 +77,8 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
         }
       />
 
-      <div className="mb-4 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+      <div className="mb-4 grid gap-2 sm:grid-cols-3">{[{label:"01 · البيانات",done:publishChecklist.slice(0,4).every(i=>i.ok),href:"#details"},{label:"02 · الوسائط والغلاف",done:publishChecklist.slice(4).every(i=>i.ok),href:"#media"},{label:"03 · النشر",done:project.status===ContentStatus.PUBLISHED,href:"#publish"}].map(step=><a key={step.label} href={step.href} className={"rounded-lg border p-3 text-sm "+(step.done?"border-primary/50 text-primary":"border-border text-foreground-muted")}>{step.done?"✓ ":""}{step.label}</a>)}</div>
+      <div id="publish" className="mb-4 scroll-mt-nav rounded-lg border border-border bg-muted/30 p-3 text-sm">
         <p className="font-medium">
           جاهزية النشر: {readyToPublish ? "مكتمل" : "ناقص"}
         </p>
@@ -102,7 +96,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
 
       <div className="mb-4 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-[160px_1fr]"><div className="relative aspect-square overflow-hidden rounded-lg bg-muted"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt || project.title} sizes="160px" /></div><div className="space-y-2"><h2 className="font-bold">معاينة الغلاف في الموقع</h2><p className="text-sm text-foreground-muted">أضف الوسائط ثم اختر صورة كغلاف. المشاريع المنشورة تظهر تلقائيًا في المعارض حسب الترتيب والتمييز.</p>{project.status===ContentStatus.PUBLISHED && <Link href={"/work/"+project.slug} target="_blank" className="text-sm text-primary underline">فتح صفحة المشروع المنشورة</Link>}</div></div>
       <div className="space-y-6">
-        <div className="admin-card p-4">
+        <div id="details" className="admin-card scroll-mt-nav p-4">
           <ProjectForm
             key={project.coverImageUrl || "no-cover"}
             project={project}
@@ -116,13 +110,14 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
           />
         </div>
 
-        <section className="admin-card space-y-3 p-4">
+        <section id="media" className="admin-card scroll-mt-nav space-y-3 p-4">
           <h2 className="text-lg font-semibold">وسائط المشروع</h2>
           <ProjectMediaManager
             projectId={project.id}
             projectSlug={project.slug}
             media={project.media}
             coverImageUrl={project.coverImageUrl}
+            canAutoCover={project.status===ContentStatus.DRAFT}
             cloudinaryConfigured={isCloudinaryConfigured()}
           />
         </section>

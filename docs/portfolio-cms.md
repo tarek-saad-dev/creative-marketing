@@ -27,3 +27,6 @@ Hero projects automatically resolve a book, social, brand, screen or plain frame
 
 ## Hero editorial typography
 Replaces tiny showcase labels with a two-level editorial title, portfolio index and clearly differentiated selected work/concept label. The stage remains below typography; the title has a compact responsive treatment and desktop stage height reserves the new title space. Private preview detail links stay within the preview. Visual acceptance pending.
+
+## Project publishing studio
+Quick creation collects title, industry, summary and optional client/services, uses a server-generated unique ASCII slug (including Arabic-only titles), saves only a draft, then navigates to media. Optional first-image cover assignment is conditional and transactional, draft-only and never replaces an existing cover. Media supports file drop. One readiness checklist is reused for server publish and admin views. Deleted projects cannot be edited. No migration, actual uploads or production project mutations. Authenticated end-to-end acceptance remains required.

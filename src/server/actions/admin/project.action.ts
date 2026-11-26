@@ -9,6 +9,7 @@ import {
   chooseProjectCoverAdmin,
   archiveProjectAdmin,
   createProjectAdmin,
+  createQuickProjectAdmin,
   publishProjectAdmin,
   removeProjectMediaAdmin,
   restoreProjectAdmin,
@@ -175,3 +176,5 @@ export async function moveProjectMediaAction(projectId:string,mediaId:string,dir
 export async function dropProjectMediaAction(projectId:string,mediaId:string,targetId:string){
   return withAdminMutation({minimumRole:AdminRole.EDITOR,audit:result=>({action:"project.media.drag_reorder",entityType:"Project",entityId:result.id,metadata:{mediaId,targetId}})},()=>dropProjectMediaAdmin(projectId,mediaId,targetId));
 }
+
+export async function createQuickProjectAction(rawInput:unknown){return withAdminMutation({minimumRole:AdminRole.EDITOR,audit:result=>({action:"project.create",entityType:"Project",entityId:result.id,metadata:{slug:result.slug}})},()=>createQuickProjectAdmin(rawInput));}

@@ -45,7 +45,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
   { href: "/admin/brand", label: "الهوية واللوجو", icon: Images, minimumRole: "ADMIN" },
   { href: "/admin/portfolio", label: "استعراض الأعمال", icon: Images, minimumRole: "ADMIN" },
-  { href: "/admin/projects", label: "المشاريع (متقدم)", icon: Briefcase },
+  { href: "/admin/projects", label: "المشاريع والأعمال", icon: Briefcase },
   { href: "/admin/services", label: "الخدمات (متقدم)", icon: Layers },
   { href: "/admin/packages", label: "الباقات (متقدم)", icon: Package },
   { href: "/admin/offers", label: "العروض (متقدم)", icon: Percent },

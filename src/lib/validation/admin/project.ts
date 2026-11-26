@@ -26,10 +26,13 @@ export const projectInputSchema = z.object({
   serviceIds: z.array(z.string()).default([]),
 });
 
+export const quickProjectSchema=projectInputSchema.pick({title:true,summary:true,clientName:true,serviceIds:true}).extend({industry:z.string().trim().min(1,"المجال مطلوب").max(120)});
+
 export type ProjectFormInput = z.infer<typeof projectInputSchema>;
 
 export const projectMediaInputSchema = z.object({
   projectId: z.string().min(1),
+  autoCover: z.boolean().default(false),
   type: z.enum(["IMAGE", "VIDEO"]),
   url: z.string().trim().refine(isUsableMediaUrl, "رابط الملف غير صالح"),
   thumbnailUrl: z.string().trim().refine(value => !value || isImageCandidate(value), "رابط المعاينة يجب أن يكون صورة").optional(),

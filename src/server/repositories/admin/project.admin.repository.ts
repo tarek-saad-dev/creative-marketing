@@ -11,6 +11,7 @@ export const adminProjectListSelect = {
   title: true,
   clientName: true,
   industry: true,
+  summary: true,
   status: true,
   featured: true,
   displayOrder: true,
@@ -270,10 +271,11 @@ export type ProjectMediaCreateInput = {
   duration: number | null;
 };
 
-export async function createProjectMedia(input: ProjectMediaCreateInput) {
-  return prisma.projectMedia.create({
-    data: input,
-    select: { id: true, projectId: true },
+export async function createProjectMedia(input: ProjectMediaCreateInput, autoCoverAlt?:string) {
+  return prisma.$transaction(async tx=>{
+    const media=await tx.projectMedia.create({data:input,select:{id:true,projectId:true}});
+    if(autoCoverAlt && input.type==="IMAGE") await tx.project.updateMany({where:{id:input.projectId,deletedAt:null,status:ContentStatus.DRAFT,OR:[{coverImageUrl:null},{coverImageUrl:""}]},data:{coverImageUrl:input.url,coverImageAlt:autoCoverAlt}});
+    return media;
   });
 }
 
