@@ -88,3 +88,78 @@
   .stageCard, .railArt, .controls button { transition: none; }
   .railArt:hover { transform: none; }
 }
+
+/* Visual-first hero. Gallery geometry is scoped to the hero, not project cards. */
+.hero{padding:calc(var(--nav-height) + clamp(1rem,4vh,2.75rem)) clamp(1rem,3.5vw,4rem) 1.2rem;overflow:hidden;background:radial-gradient(ellipse at 30% 49%,#7c56dd4d,transparent 55%),radial-gradient(ellipse at 8% 85%,#1bd3db2b,transparent 58%)}
+.heroInner{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.62fr);align-items:center;gap:clamp(.75rem,2vw,2.5rem);max-width:100rem;min-height:min(630px,calc(100svh - var(--nav-height) - 6rem))}
+.heroCopy{margin:0;max-width:100%;min-width:0;text-align:start;justify-items:start;gap:.9rem;z-index:3}
+.heroCopy h1{font-size:clamp(1.85rem,3.1vw,3.6rem);line-height:1.4;letter-spacing:-.035em;text-wrap:balance;overflow-wrap:anywhere}
+.heroCopy h1 span{color:#76f9e1}
+.heroCopy .description{font-size:clamp(.88rem,1.08vw,1.06rem);line-height:1.8;max-width:31rem}
+.heroCopy .slogan{font-size:.66rem;letter-spacing:.13em;color:#f8fafc}
+.heroCopy .eyebrow{font-size:.7rem;line-height:1.6}
+.ctas{justify-content:start;gap:.6rem}
+.hero[data-artwork=false] .heroInner{grid-template-columns:minmax(0,1fr);min-height:unset;padding:3rem 0}
+.hero[data-artwork=false] .heroCopy{max-width:42rem;justify-items:center;text-align:center;margin:auto}
+.hero[data-artwork=false] .ctas{justify-content:center}
+.coverflow{min-width:0;width:100%;max-width:none;margin:0;isolation:isolate}
+.sceneTop{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:.63rem;letter-spacing:.12em;color:#f3f4ff;padding:0 .75rem}
+.sceneTop span{display:flex;align-items:center;gap:.5rem}
+.sceneTop i,.heroRibbon i{display:inline-block;width:6px;height:6px;background:#27e8c7;border-radius:50%;flex:none;box-shadow:0 0 12px #27e8c780}
+.stage{height:clamp(340px,32vw,565px);perspective:1250px;overflow:visible;isolation:isolate;direction:ltr;margin:.3rem 0 .7rem}
+.sceneHalo{position:absolute;inset:4% 5% 10%;background:radial-gradient(ellipse at 45% 48%,#86a5ff50 0,#7848d948 42%,transparent 69%);pointer-events:none}
+.sceneOrbit{position:absolute;left:17%;top:7%;width:66%;height:83%;border:1px solid #d6cfff40;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 50px #a4a0ff16,inset 0 0 40px #a4a0ff16;pointer-events:none}
+.sceneFloor{position:absolute;left:9%;width:82%;height:27%;bottom:-1%;background:radial-gradient(ellipse,#121c486a 0,transparent 69%);transform:rotateX(40deg);pointer-events:none}
+.sceneWord{position:absolute;top:5%;left:8%;font-size:clamp(3rem,10vw,10rem);font-weight:900;line-height:1;letter-spacing:-.085em;color:#f8fafc0c;pointer-events:none}
+.sceneRig{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--scene-x,0deg)) rotateY(var(--scene-y,0deg));transition:transform .25s ease-out}
+.scenePanel{position:absolute;top:50%;left:50%;width:46%;height:64%;border-radius:1rem;transform-style:preserve-3d;background:#bebbe8;box-shadow:0 18px 38px #17214799;transition:transform .6s cubic-bezier(.22,.7,.18,1),opacity .35s;will-change:transform}
+.scenePanel:has(:focus-visible){outline:3px solid #27e8c7;outline-offset:3px}
+.panelEdge{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,#e2e5ff,#6657aa 48%,#bfc9ec);transform:translateZ(-8px);pointer-events:none}
+.scenePanel[data-offset="0"]{width:57%;height:80%;z-index:5;transform:translate(-50%,-50%) translateZ(75px) rotateY(-4deg) rotateX(2deg);padding:4px;background:linear-gradient(130deg,#e8ecff,#7d75ae 38%,#c1d5ed)}
+.scenePanel[data-offset="-1"]{z-index:3;transform:translate(-126%,-60%) translateZ(-38px) rotateY(29deg) rotateZ(-9deg) scale(.91)}
+.scenePanel[data-offset="1"]{z-index:3;transform:translate(26%,-45%) translateZ(-42px) rotateY(-28deg) rotateZ(9deg) scale(.91)}
+.scenePanel[data-offset="-2"]{z-index:1;opacity:.8;transform:translate(-151%,-69%) translateZ(-120px) rotateY(36deg) rotateZ(-14deg) scale(.78)}
+.scenePanel[data-offset="2"]{z-index:1;opacity:.8;transform:translate(51%,-32%) translateZ(-125px) rotateY(-35deg) rotateZ(13deg) scale(.78)}
+.scenePanel .sideButton{border-radius:inherit;overflow:hidden;border:2px solid #c6c4e9}
+.mainPanel{height:100%;display:flex;flex-direction:column;overflow:hidden;border-radius:.8rem;background:#f8fafc;color:#24234e}
+.panelChrome,.panelBottom{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.55rem .75rem;font-size:clamp(.5rem,.68vw,.72rem);font-weight:700;min-height:2rem}
+.panelChrome{letter-spacing:.12em;color:#635b95}
+.panelBottom span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panelBottom svg{flex:none;color:#5945aa}
+.panelArtwork{position:relative;display:block;flex:1;min-height:0;overflow:hidden;background:#e8e7f4}
+.panelArtwork .artwork{background:#e8e7f4}
+.scenePhone{position:absolute;z-index:6;left:12%;bottom:1%;width:19%;height:61%;border-radius:1.15rem;padding:5px;background:linear-gradient(125deg,#e3e8ff,#766eae 32%,#2b2d58 65%,#b5d0e8);box-shadow:0 17px 30px #1721479e;transform:translateZ(135px) rotateY(13deg) rotateZ(-10deg);pointer-events:none}
+.phoneContent{position:absolute;inset:8px;border-radius:.8rem;overflow:hidden;background:#e5e6f5}
+.phoneContent .artwork{background:#e5e6f5}
+.phoneCamera{position:absolute;top:10px;left:37%;width:26%;height:5px;border-radius:10px;z-index:2;background:#252749}
+.phoneHome{position:absolute;bottom:11px;left:35%;width:30%;height:3px;border-radius:10px;background:#e5e7eb;z-index:2}
+.stage[data-count="1"] .scenePanel[data-offset="0"]{width:73%;height:84%}
+.stage[data-count="2"] .scenePanel[data-offset="0"]{transform:translate(-59%,-50%) translateZ(75px) rotateY(-4deg)}
+.stageCaption{margin:0 .65rem;max-width:none;min-height:62px;padding:.55rem .7rem;border-top:1px solid #ffffff28;gap:.5rem;flex-wrap:nowrap}
+.captionText{gap:.15rem;flex:1;min-width:0;text-align:start;justify-items:start;width:auto}
+.captionText h2{font-size:clamp(.92rem,1.15vw,1.2rem);overflow-wrap:anywhere;line-height:1.4}
+.captionText .eyebrow,.captionText .smallText{font-size:.68rem}
+.detailLink{font-size:.76rem}
+.controls{gap:.35rem}
+.controls button{width:42px;height:42px;background:#ffffff12}
+.sceneDots{display:flex;justify-content:center;align-items:center;gap:3px;margin:.15rem 0 0}
+.sceneDots button{width:25px;height:28px;position:relative}
+.sceneDots button::after{content:"";position:absolute;top:50%;left:50%;width:6px;height:6px;border-radius:10px;background:#dce1f59e;transform:translate(-50%,-50%)}
+.sceneDots button[aria-pressed=true]::after{width:20px;background:#27e8c7}
+.heroRibbon{display:flex;align-items:center;justify-content:center;gap:clamp(.55rem,2.4vw,2.6rem);flex-wrap:wrap;border-top:1px solid #ffffff26;max-width:100rem;margin:.7rem auto 0;padding:1rem .25rem .2rem;color:#f1f3ff;font-size:clamp(.58rem,.85vw,.75rem);font-weight:600;letter-spacing:.13em}
+.coverflow[data-paused=true] .sceneRig{transform:none;transition:none}
+.coverflow[data-paused=true] .scenePanel{transition:none}
+@media(min-width:1000px) and (max-height:780px){.heroInner{min-height:0}.stage{height:clamp(310px,49vh,460px)}.hero{padding-top:calc(var(--nav-height) + 1rem)}.heroCopy{gap:.65rem}}
+@media(max-width:1000px){.heroInner{grid-template-columns:1fr;min-height:0;gap:1.5rem}.heroCopy{max-width:40rem;margin:auto;justify-items:center;text-align:center;gap:.65rem}.heroCopy h1{font-size:clamp(1.85rem,5vw,3rem)}.ctas{justify-content:center}.coverflow{max-width:47rem;margin:auto}.stage{height:clamp(290px,55vw,480px)}.heroRibbon{margin-top:.9rem}}
+@media(max-width:600px){.hero{padding:calc(var(--nav-height) + 2.15rem) .8rem .9rem}.heroInner{gap:1.15rem}.heroCopy h1{font-size:clamp(1.65rem,7vw,2.25rem);line-height:1.35}.heroCopy .description{font-size:.85rem;line-height:1.7}.heroCopy .slogan{font-size:.58rem}.heroCopy .eyebrow{font-size:.62rem}.ctas a{min-height:44px;padding-inline:1rem;font-size:.82rem}.stage{height:clamp(235px,69vw,365px);margin:.2rem 0 .35rem}.sceneTop{font-size:.49rem;padding:0 .15rem}.scenePanel[data-offset="0"]{width:64%;height:79%;transform:translate(-50%,-50%) translateZ(30px) rotateY(-3deg)}.scenePanel[data-offset="-1"]{transform:translate(-112%,-57%) translateZ(-36px) rotateY(20deg) rotateZ(-8deg) scale(.9)}.scenePanel[data-offset="1"]{transform:translate(12%,-45%) translateZ(-36px) rotateY(-20deg) rotateZ(8deg) scale(.9)}.scenePanel[data-offset="-2"],.scenePanel[data-offset="2"]{display:none}.scenePhone{left:4%;width:21%;height:58%;bottom:1%;transform:translateZ(60px) rotateY(8deg) rotateZ(-8deg);border-radius:.75rem}.phoneContent{inset:5px;border-radius:.52rem}.phoneCamera{top:7px;height:3px}.phoneHome{bottom:7px;height:2px}.panelChrome,.panelBottom{min-height:1.4rem;padding:.25rem .4rem;font-size:.48rem}.stageCaption{margin:0;padding:.5rem .1rem;min-height:0;flex-wrap:wrap;justify-content:space-between;text-align:start}.controls button{width:38px;height:38px}.sceneDots{margin:0}.sceneDots button{width:22px}.heroRibbon{gap:.45rem;font-size:.52rem;letter-spacing:.04em}.heroRibbon i{width:4px;height:4px}}
+@media(prefers-reduced-motion:reduce){.sceneRig,.scenePanel{transition:none!important}.sceneRig{transform:none!important}}
+
+.heroCopy h1{white-space:pre-line}
+
+/* Keep peripheral objects inside their visual column, and Arabic shaping intact. */
+.heroCopy h1{letter-spacing:normal}
+.stage{overflow:clip}
+.scenePanel[data-offset="-2"]{transform:translate(-134%,-69%) translateZ(-120px) rotateY(36deg) rotateZ(-14deg) scale(.78)}
+.scenePanel[data-offset="2"]{transform:translate(38%,-32%) translateZ(-125px) rotateY(-35deg) rotateZ(13deg) scale(.78)}
+.panelArtwork:focus-visible{outline:3px solid #27e8c7;outline-offset:-4px}
+@media(max-width:600px){.hero{padding-top:calc(var(--nav-height) + 3rem)}.heroCopy .slogan{letter-spacing:.07em}.sceneDots{flex-wrap:wrap}.sceneDots button{width:22px;height:32px}}
