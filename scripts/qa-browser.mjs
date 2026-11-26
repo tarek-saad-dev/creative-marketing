@@ -28,6 +28,8 @@ try {
         const hero=await page.locator("#hero").boundingBox();
         assert.ok(hero && hero.height>=height-2,"Desktop hero must fill viewport");
       }
+      const privatePreview=await page.request.get(new URL("/preview/project/qa-private",base.origin).toString(),{maxRedirects:0});
+      assert.ok([302,303,307,308].includes(privatePreview.status()),"Private preview must require login");
       const stage=page.locator("#hero [data-hero-stage]");
       async function assertSceneBounds(){
         const stageBounds=await stage.boundingBox();

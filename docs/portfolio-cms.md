@@ -24,3 +24,6 @@ Hero projects automatically resolve a book, social, brand, screen or plain frame
 
 ## Brand management and private hero preview
 /admin/brand allows ADMIN+ to upload official logo assets via signed Cloudinary image upload or HTTPS URLs, set header width and optional text, and preview header/footer before saving. Public header/footer read the same stored brand settings on all marketing pages; empty/broken logos fall back to text. /preview/project/[id] is an EDITOR+ private noindex preview of saved project artwork in the actual Hero component, isolated from public publication. Existing draft case-study preview now checks active admin session and uses noindex. No official logo was supplied or uploaded by this code change. Loading logo remains fallback. Verify uploads and private preview on staging.
+
+## Hero editorial typography
+Replaces tiny showcase labels with a two-level editorial title, portfolio index and clearly differentiated selected work/concept label. The stage remains below typography; the title has a compact responsive treatment and desktop stage height reserves the new title space. Private preview detail links stay within the preview. Visual acceptance pending.

@@ -288,3 +288,24 @@
 .hero .scenePanel[data-mockup="plain"] .artwork{border:0}
 .hero .scenePanel[data-mockup="plain"] .mainPanel,.hero .scenePanel[data-mockup="plain"] .sideButton{overflow:visible}
 @media(max-width:600px){.hero .scenePanel[data-mockup]{padding:3px}.hero .scenePanel[data-mockup="book"]{padding:3px 5px 5px}.hero .scenePanel[data-mockup="plain"]{padding:0}}
+
+/* Editorial typography: deliberately outside the artwork frame. */
+.hero .sceneTop{align-items:end;padding:0 .35rem .45rem;gap:clamp(.6rem,2vw,2rem);border-bottom:1px solid #ffffff30}
+.hero .sceneIdentity,.hero .sceneEdition{display:grid;min-width:0;gap:.25rem}
+.hero .sceneEdition{text-align:right;justify-items:end}
+.hero .sceneIndex,.hero .editionIndex{display:block;font:600 clamp(.55rem,.75vw,.68rem)/1.3 Arial,Helvetica,sans-serif;letter-spacing:.18em;color:#e3e8fa}
+.hero .sceneIndex b{color:#27e8c7;font-weight:700}
+.hero .sceneTitle{display:block;font:800 clamp(1rem,2.1vw,2rem)/1.12 Arial,Helvetica,sans-serif;letter-spacing:-.045em;color:#f8fafc}
+.hero .sceneTitle strong{font-weight:800;color:#74f2e3}
+.hero .editionTitle{display:block;font:700 clamp(.7rem,1.25vw,1.13rem)/1.2 Arial,Helvetica,sans-serif;letter-spacing:.045em;color:#f8fafc}
+.hero .sceneWord{font-family:Arial,Helvetica,sans-serif;font-weight:800;letter-spacing:-.075em;color:#f8fafc18;line-height:1;z-index:0}
+.hero .heroRibbon{font-family:Arial,Helvetica,sans-serif;font-weight:700;letter-spacing:.14em;color:#e7eafa}
+@media(min-width:1001px){.hero .stage{height:clamp(290px,calc(100svh - var(--nav-height) - 16rem),660px)}}
+@media(max-width:600px){
+  .hero .sceneTop{padding:0 .1rem .3rem;gap:.4rem}
+  .hero .sceneTitle{font-size:clamp(.86rem,3.6vw,1.25rem)}
+  .hero .editionTitle{font-size:clamp(.58rem,2.45vw,.8rem)}
+  .hero .sceneIndex,.hero .editionIndex{font-size:.48rem;letter-spacing:.1em}
+  .hero .sceneIdentity,.hero .sceneEdition{gap:.15rem}
+  .hero .heroRibbon{letter-spacing:.055em}
+}

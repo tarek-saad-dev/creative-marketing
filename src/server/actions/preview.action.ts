@@ -22,5 +22,5 @@ export async function enablePreviewAction(path: string): Promise<void> {
 export async function disablePreviewAction(path: string): Promise<void> {
   const draft = await draftMode();
   draft.disable();
-  redirect(path && path.startsWith("/") ? path : "/");
+  redirect(safePreviewPath(path));
 }
