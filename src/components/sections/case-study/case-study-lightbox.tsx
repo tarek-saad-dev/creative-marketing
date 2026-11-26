@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import Image from "next/image";
+import { ResilientImage, ResilientVideo } from "@/components/ui/resilient-media";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
-import { canUseNextImage } from "@/lib/media/public-media";
+import { videoPoster } from "@/lib/media/public-media";
 import { IconButton } from "@/components/ui/icon-button";
 
 export type GalleryLightboxItem = {
@@ -68,34 +68,9 @@ export function CaseStudyLightbox({
 
           <div className="relative flex min-h-0 flex-1 items-center justify-center bg-[#202b62]/70 p-2 sm:p-4">
             {item?.type === "VIDEO" ? (
-              <video
-                key={item.id}
-                controls
-                playsInline
-                preload="metadata"
-                poster={item.thumbnailUrl ?? undefined}
-                className="max-h-[min(70dvh,calc(100dvh-8rem))] w-full rounded-lg"
-                aria-label={item.altText ?? "فيديو المشروع"}
-              >
-                <source src={item.url} />
-              </video>
-            ) : item && canUseNextImage(item.url) ? (
-              <div className="relative h-[min(70dvh,calc(100dvh-8rem))] w-full">
-                <Image
-                  src={item.url}
-                  alt={item.altText ?? "صورة من المشروع"}
-                  fill
-                  className="object-contain"
-                  sizes="100vw"
-                />
-              </div>
+              <ResilientVideo src={item.url} poster={videoPoster(item.url,item.thumbnailUrl)} label={item.altText || "فيديو المشروع"} className="max-h-[min(70dvh,calc(100dvh-8rem))] w-full rounded-lg object-contain" />
             ) : item ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={item.url}
-                alt={item.altText ?? "صورة من المشروع"}
-                className="max-h-[min(70dvh,calc(100dvh-8rem))] w-auto max-w-full object-contain"
-              />
+              <div className="relative h-[min(70dvh,calc(100dvh-8rem))] w-full"><ResilientImage src={item.url} alt={item.altText || "صورة من المشروع"} /></div>
             ) : null}
 
             {items.length > 1 ? (

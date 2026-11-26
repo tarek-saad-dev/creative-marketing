@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isImageCandidate } from "@/lib/media/public-media";
 import { ContentStatus } from "@/generated/prisma";
 import {
   projectInputSchema,
@@ -16,6 +17,7 @@ import {
   listProjectsForAdmin,
   restoreProject,
   setProjectStatus,
+  setProjectCoverFromMedia,
   softDeleteProject,
   updateProject,
   updateProjectMediaMeta,
@@ -81,7 +83,11 @@ export async function createProjectAdmin(rawInput: unknown) {
 export async function updateProjectAdmin(id: string, rawInput: unknown) {
   const input = projectInputSchema.parse(rawInput);
   await assertSlugAvailable(input.slug, id);
+  const previous = await findProjectByIdForAdmin(id);
+  if (!previous || previous.deletedAt) throw new Error("المشروع غير موجود");
+  if (previous.status === ContentStatus.PUBLISHED && (!input.industry?.trim() || !isImageCandidate(input.coverImageUrl) || !input.coverImageAlt?.trim())) throw new Error("أكمل المجال والغلاف ووصفه قبل تعديل مشروع منشور، أو أعده لمسودة");
   const project = await updateProject(id, toWriteInput(input));
+  if (previous.slug !== project.slug) revalidateProject(previous.slug);
   revalidateProject(project.slug);
   return project;
 }
@@ -89,14 +95,14 @@ export async function updateProjectAdmin(id: string, rawInput: unknown) {
 /** Mirrors `publishedProjectWhere()` completeness rules so publish can never produce a broken public page. */
 export async function publishProjectAdmin(id: string) {
   const project = await findProjectByIdForAdmin(id);
-  if (!project) throw new Error("المشروع غير موجود");
+  if (!project || project.deletedAt) throw new Error("المشروع غير موجود");
 
   const missing: string[] = [];
   if (!project.title.trim()) missing.push("العنوان");
   if (!project.slug.trim()) missing.push("الرابط");
   if (!project.industry?.trim()) missing.push("المجال");
   if (!project.summary.trim()) missing.push("الملخص");
-  if (!project.coverImageUrl?.trim()) missing.push("صورة الغلاف");
+  if (!isImageCandidate(project.coverImageUrl)) missing.push("صورة الغلاف");
   if (!project.coverImageAlt?.trim()) missing.push("النص البديل لصورة الغلاف");
 
   if (missing.length > 0) {
@@ -134,6 +140,9 @@ export async function restoreProjectAdmin(id: string) {
 
 export async function addProjectMediaAdmin(rawInput: unknown) {
   const input = projectMediaInputSchema.parse(rawInput);
+  const owner = await findProjectByIdForAdmin(input.projectId);
+  if (!owner || owner.deletedAt) throw new Error("المشروع غير موجود");
+  if (input.type === "IMAGE" && !isImageCandidate(input.url)) throw new Error("الملف المحدد ليس رابط صورة");
   const media = await createProjectMedia({
     projectId: input.projectId,
     type: input.type,
@@ -158,11 +167,24 @@ export async function addProjectMediaAdmin(rawInput: unknown) {
 
 export async function updateProjectMediaAdmin(id: string, rawInput: unknown) {
   const input = projectMediaMetaSchema.parse(rawInput);
-  return updateProjectMediaMeta(id, {
+  const updated = await updateProjectMediaMeta(id, {
     altText: toEmptyNull(input.altText),
     caption: toEmptyNull(input.caption),
     displayOrder: input.displayOrder,
   });
+  const project = await findProjectByIdForAdmin(updated.projectId);
+  revalidateProject(project?.slug);
+  return updated;
+}
+
+export async function chooseProjectCoverAdmin(projectId: string, mediaId: string) {
+  const project = await findProjectByIdForAdmin(projectId);
+  if (!project || project.deletedAt) throw new Error("المشروع غير موجود");
+  const media = project.media.find(item => item.id === mediaId);
+  if (!media || media.type !== "IMAGE" || !isImageCandidate(media.url)) throw new Error("اختر صورة من وسائط المشروع");
+  const updated = await setProjectCoverFromMedia(projectId, media.url, media.altText?.trim() || project.title);
+  revalidateProject(updated.slug);
+  return updated;
 }
 
 /** Deletes the DB row only — never calls Cloudinary destroy automatically. */

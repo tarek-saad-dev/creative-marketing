@@ -8,7 +8,8 @@ export function isUsableMediaUrl(
   if (!url) return false;
   const trimmed = url.trim();
   if (!trimmed) return false;
-  if (trimmed.startsWith("/")) return true;
+  if (trimmed !== url || /[\\\u0000-\u001f]/.test(trimmed)) return false;
+  if (trimmed.startsWith("/")) return !trimmed.startsWith("//");
   try {
     const parsed = new URL(trimmed);
     return parsed.protocol === "http:" || parsed.protocol === "https:";
@@ -30,6 +31,7 @@ export function isLocalPublicPath(url: string): boolean {
 const NEXT_IMAGE_ALLOWED_HOSTS = ["res.cloudinary.com"];
 
 export function canUseNextImage(url: string): boolean {
+  if (!isUsableMediaUrl(url)) return false;
   if (isLocalPublicPath(url)) return true;
   try {
     const parsed = new URL(url);
@@ -76,4 +78,27 @@ export function resolvePreviewSrc(options: {
     src: coverImageUrl,
     poster: coverImageUrl,
   };
+}
+
+/** Only accept image candidates, never video/PDF links as posters. */
+export function isImageCandidate(url: string | null | undefined): url is string {
+  if (!isUsableMediaUrl(url)) return false;
+  const path = url.split(/[?#]/)[0];
+  return !/\.(mp4|webm|mov|avi|mkv|m4v|pdf|m3u8)$/i.test(path) &&
+    (!/\/video\/upload\//i.test(path) || /\.(jpg|jpeg|png|webp)$/i.test(path));
+}
+
+/** Cloudinary's video delivery endpoint can serve a still image via .jpg. */
+export function videoPoster(url: string, thumbnail?: string | null, cover?: string | null): string | null {
+  if (thumbnail !== url && isImageCandidate(thumbnail)) return thumbnail;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" && parsed.hostname === "res.cloudinary.com" &&
+        /\/video\/upload\//.test(parsed.pathname) && /\.(mp4|webm|mov|m4v)$/i.test(parsed.pathname)) {
+      // A public video asset; request its default still frame.
+      parsed.pathname = parsed.pathname.replace(/\.(mp4|webm|mov|m4v)$/i, ".jpg");
+      return parsed.toString();
+    }
+  } catch { /* not a Cloudinary URL */ }
+  return cover !== url && isImageCandidate(cover) ? cover : null;
 }

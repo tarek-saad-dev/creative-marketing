@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ResilientImage } from "@/components/ui/resilient-media";
+import { isImageCandidate } from "@/lib/media/public-media";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/server/auth/require-admin";
@@ -37,7 +40,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
     { label: "الرابط", ok: Boolean(project.slug.trim()) },
     { label: "المجال", ok: Boolean(project.industry?.trim()) },
     { label: "الملخص", ok: Boolean(project.summary.trim()) },
-    { label: "صورة الغلاف", ok: Boolean(project.coverImageUrl?.trim()) },
+    { label: "صورة الغلاف", ok: isImageCandidate(project.coverImageUrl) },
     { label: "النص البديل للغلاف", ok: Boolean(project.coverImageAlt?.trim()) },
   ];
   const readyToPublish = publishChecklist.every(item => item.ok);
@@ -94,9 +97,11 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
         </ul>
       </div>
 
+      <div className="mb-4 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-[160px_1fr]"><div className="relative aspect-square overflow-hidden rounded-lg bg-muted"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt || project.title} sizes="160px" /></div><div className="space-y-2"><h2 className="font-bold">معاينة الغلاف في الموقع</h2><p className="text-sm text-foreground-muted">أضف الوسائط ثم اختر صورة كغلاف. المشاريع المنشورة تظهر تلقائيًا في المعارض حسب الترتيب والتمييز.</p>{project.status===ContentStatus.PUBLISHED && <Link href={"/work/"+project.slug} target="_blank" className="text-sm text-primary underline">فتح صفحة المشروع المنشورة</Link>}</div></div>
       <div className="space-y-6">
         <div className="admin-card p-4">
           <ProjectForm
+            key={project.coverImageUrl || "no-cover"}
             project={project}
             services={services
               .filter(
@@ -114,6 +119,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
             projectId={project.id}
             projectSlug={project.slug}
             media={project.media}
+            coverImageUrl={project.coverImageUrl}
             cloudinaryConfigured={isCloudinaryConfigured()}
           />
         </section>

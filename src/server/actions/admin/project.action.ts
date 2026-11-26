@@ -4,6 +4,7 @@ import { AdminRole } from "@/generated/prisma";
 import { withAdminMutation } from "@/server/auth/admin-mutation";
 import {
   addProjectMediaAdmin,
+  chooseProjectCoverAdmin,
   archiveProjectAdmin,
   createProjectAdmin,
   publishProjectAdmin,
@@ -156,4 +157,11 @@ export async function removeProjectMediaAction(id: string) {
     },
     () => removeProjectMediaAdmin(id)
   );
+}
+
+export async function chooseProjectCoverAction(projectId: string, mediaId: string) {
+  return withAdminMutation({
+    minimumRole: AdminRole.EDITOR,
+    audit: result => ({action:"project.cover.select",entityType:"Project",entityId:result.id,metadata:{mediaId}})
+  },()=>chooseProjectCoverAdmin(projectId,mediaId));
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { ResilientImage, ResilientVideo } from "@/components/ui/resilient-media";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpLeft, Pause, Play, Film } from "lucide-react";
 import { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 import { usePrefersReducedMotion } from "@/components/motion/reduced-motion";
-import { canUseNextImage, isUsableMediaUrl } from "@/lib/media/public-media";
+import { videoPoster, isUsableMediaUrl } from "@/lib/media/public-media";
 import { BrandButton } from "@/components/ui/brand-button";
 import { splitTitleWithHighlight, type HeroCopy } from "@/components/sections/hero/hero-copy";
 import type { WorkWallProject } from "@/server/services/project.service";
@@ -40,12 +40,7 @@ export function Artwork({ item, priority = false }: { item: ShowcaseItem; priori
     const project = item.project;
     return (
       <div className={styles.artwork}>
-        {canUseNextImage(project.coverImageUrl) ? (
-          <Image src={project.coverImageUrl} alt={project.coverImageAlt} fill sizes="(max-width: 640px) 80vw, (max-width: 1024px) 55vw, 480px" priority={priority} className={styles.image} />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={project.coverImageUrl} alt={project.coverImageAlt} loading={priority ? "eager" : "lazy"} className={styles.image} />
-        )}
+        <ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt} sizes="(max-width:640px) 80vw, 480px" priority={priority} className={styles.image} />
         {project.primaryMediaType === "VIDEO" && <span className={styles.film}><Film size={16} aria-hidden="true" /> VIDEO</span>}
       </div>
     );
@@ -212,7 +207,7 @@ export function PortfolioRail({ projects, showreelOnly = false }: { projects: Wo
             <p className={styles.description}>{reel.summary}</p>
             <Link href={"/work/" + reel.slug} className={styles.detailLink}>تفاصيل المشروع <ArrowUpLeft size={17} /></Link>
           </div>
-          <video controls playsInline preload="none" src={reel.primaryMediaUrl} poster={reel.primaryThumbnailUrl && reel.primaryThumbnailUrl !== reel.primaryMediaUrl ? reel.primaryThumbnailUrl : reel.coverImageUrl} aria-label={reel.title} />
+          <ResilientVideo src={reel.primaryMediaUrl} poster={videoPoster(reel.primaryMediaUrl,reel.primaryThumbnailUrl,reel.coverImageUrl)} label={reel.title} className="w-full aspect-video object-contain rounded-2xl" />
         </div>
       </section>
     );
@@ -259,7 +254,7 @@ export function PortfolioRail({ projects, showreelOnly = false }: { projects: Wo
             <p className={styles.description}>{reel.summary}</p>
             <Link href={"/work/" + reel.slug} className={styles.detailLink}>تفاصيل المشروع <ArrowUpLeft size={17} /></Link>
           </div>
-          <video controls playsInline preload="none" src={reel.primaryMediaUrl} poster={reel.primaryThumbnailUrl || reel.coverImageUrl} aria-label={reel.title} />
+          <ResilientVideo src={reel.primaryMediaUrl} poster={videoPoster(reel.primaryMediaUrl,reel.primaryThumbnailUrl,reel.coverImageUrl)} label={reel.title} className="w-full aspect-video object-contain rounded-2xl" />
         </div>
       )}
     </section>

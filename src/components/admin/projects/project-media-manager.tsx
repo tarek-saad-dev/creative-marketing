@@ -4,10 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   addProjectMediaAction,
+  chooseProjectCoverAction,
   removeProjectMediaAction,
   updateProjectMediaAction,
 } from "@/server/actions/admin/project.action";
 import { getCloudinaryUploadSignatureAction } from "@/server/actions/admin/cloudinary.action";
+import { videoPoster } from "@/lib/media/public-media";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import type { AdminProjectDetail } from "@/server/repositories/admin/project.admin.repository";
 
 type MediaRow = AdminProjectDetail["media"][number];
@@ -17,11 +20,13 @@ export function ProjectMediaManager({
   projectSlug,
   media,
   cloudinaryConfigured,
+  coverImageUrl,
 }: {
   projectId: string;
   projectSlug: string;
   media: MediaRow[];
   cloudinaryConfigured: boolean;
+  coverImageUrl: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -51,8 +56,8 @@ export function ProjectMediaManager({
         url,
         altText,
         caption,
-        displayOrder: sorted.length,
-        thumbnailUrl: "",
+        displayOrder: Math.max(-1, ...sorted.map(item=>item.displayOrder)) + 1,
+        thumbnailUrl: type === "VIDEO" ? (videoPoster(url, String(formData.get("thumbnailUrl") ?? "").trim()) || "") : "",
         cloudinaryPublicId: "",
         resourceType: type === "VIDEO" ? "video" : "image",
       });
@@ -67,6 +72,7 @@ export function ProjectMediaManager({
   async function uploadFile(file: File, type: "IMAGE" | "VIDEO") {
     setError(null);
     setUploadProgress("جاري التوقيع…");
+    try {
     const sig = await getCloudinaryUploadSignatureAction({
       folderKey: "projects",
       projectSlug,
@@ -109,10 +115,10 @@ export function ProjectMediaManager({
         projectId,
         type,
         url: raw.secure_url,
-        thumbnailUrl: raw.eager?.[0]?.secure_url ?? raw.secure_url,
+        thumbnailUrl: type === "VIDEO" ? (videoPoster(raw.secure_url,raw.eager?.[0]?.secure_url) || "") : raw.secure_url,
         altText: "",
         caption: "",
-        displayOrder: sorted.length,
+        displayOrder: Math.max(-1, ...sorted.map(item=>item.displayOrder)) + 1,
         cloudinaryPublicId: raw.public_id,
         resourceType: raw.resource_type,
         format: raw.format ?? "",
@@ -127,6 +133,7 @@ export function ProjectMediaManager({
       }
       refresh();
     });
+    } catch { setError("تعذر رفع الملف. راجع الاتصال وحاول مرة أخرى."); } finally { setUploadProgress(null); }
   }
 
   async function move(mediaId: string, direction: -1 | 1) {
@@ -162,7 +169,7 @@ export function ProjectMediaManager({
               type="file"
               accept="image/*"
               className="sr-only"
-              disabled={pending}
+              disabled={pending || Boolean(uploadProgress)}
               onChange={event => {
                 const file = event.target.files?.[0];
                 if (file) void uploadFile(file, "IMAGE");
@@ -176,7 +183,7 @@ export function ProjectMediaManager({
               type="file"
               accept="video/*"
               className="sr-only"
-              disabled={pending}
+              disabled={pending || Boolean(uploadProgress)}
               onChange={event => {
                 const file = event.target.files?.[0];
                 if (file) void uploadFile(file, "VIDEO");
@@ -221,6 +228,7 @@ export function ProjectMediaManager({
           أضف رابط الصورة
           <input name="url" className="admin-input mt-1" dir="ltr" required />
         </label>
+        <label className="text-sm sm:col-span-2">رابط صورة معاينة الفيديو (اختياري)<input name="thumbnailUrl" className="admin-input mt-1" dir="ltr" /></label>
         <label className="text-sm">
           نص بديل
           <input name="altText" className="admin-input mt-1" />
@@ -231,7 +239,7 @@ export function ProjectMediaManager({
         </label>
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || Boolean(uploadProgress)}
           className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground sm:col-span-2 sm:justify-self-start"
         >
           إضافة من رابط
@@ -253,12 +261,7 @@ export function ProjectMediaManager({
               key={item.id}
               className="flex flex-wrap items-start gap-3 rounded-lg border border-border p-3"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.thumbnailUrl || item.url}
-                alt={item.altText || ""}
-                className="h-16 w-16 rounded object-cover"
-              />
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-muted"><ResilientImage src={item.type === "VIDEO" ? videoPoster(item.url,item.thumbnailUrl) : item.url} alt={item.altText || "معاينة الوسيط"} sizes="96px" /></div>
               <div className="min-w-0 flex-1 space-y-2 text-sm">
                 <p>
                   {item.type} · ترتيب {item.displayOrder}
@@ -302,6 +305,7 @@ export function ProjectMediaManager({
                 </form>
               </div>
               <div className="flex flex-col gap-1">
+                {item.type === "IMAGE" && <button type="button" className="min-h-9 rounded border border-border px-2 text-xs" disabled={pending || Boolean(uploadProgress) || coverImageUrl === item.url} onClick={()=>{setError(null);startTransition(async()=>{const result=await chooseProjectCoverAction(projectId,item.id);if(!result.ok)setError(result.error);else refresh();});}}>{coverImageUrl===item.url?"الغلاف الحالي":"استخدم كغلاف"}</button>}
                 <button
                   type="button"
                   className="h-8 rounded border border-border px-2 text-xs"
@@ -321,7 +325,7 @@ export function ProjectMediaManager({
                 <button
                   type="button"
                   className="h-8 rounded border border-destructive/40 px-2 text-xs text-destructive"
-                  disabled={pending}
+                  disabled={pending || Boolean(uploadProgress)}
                   onClick={() => {
                     if (
                       window.confirm(

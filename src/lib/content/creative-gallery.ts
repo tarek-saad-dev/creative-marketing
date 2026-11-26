@@ -1,4 +1,4 @@
-import { isUsableMediaUrl } from "@/lib/media/public-media";
+import { isUsableMediaUrl, isImageCandidate } from "@/lib/media/public-media";
 
 export type CreativeMedia = {
   id: string;
@@ -40,9 +40,9 @@ export function buildCreativeGallery(projects: CreativeGalleryProject[]) {
     const seen = new Set<string>();
     const entries: GalleryEntry[] = [];
     for (const media of project.media) {
-      if (!usable(media.url)) continue;
+      if (!usable(media.url) || (media.type === "IMAGE" && !isImageCandidate(media.url))) continue;
       const tag = comparisonTag(media.caption);
-      if (tag && media.type === "IMAGE") {
+      if (tag && media.type === "IMAGE" && isImageCandidate(media.url)) {
         const pair = pairs.get(tag.key) ?? {};
         if (pair[tag.side]) pair.invalid = true;
         pair[tag.side] = media;
@@ -52,7 +52,7 @@ export function buildCreativeGallery(projects: CreativeGalleryProject[]) {
       seen.add(media.url);
       entries.push({ ...media, caption: publicMediaCaption(media.caption), projectTitle: project.title, slug: project.slug, cover: project.coverImageUrl });
     }
-    if (usable(project.coverImageUrl) && !seen.has(project.coverImageUrl)) {
+    if (isImageCandidate(project.coverImageUrl) && !seen.has(project.coverImageUrl)) {
       entries.unshift({ id: "cover-" + project.id, type: "IMAGE", url: project.coverImageUrl, altText: project.coverImageAlt, caption: null, thumbnailUrl: null, width: null, height: null, projectTitle: project.title, slug: project.slug, cover: project.coverImageUrl });
     }
     for (const [key, pair] of pairs) {

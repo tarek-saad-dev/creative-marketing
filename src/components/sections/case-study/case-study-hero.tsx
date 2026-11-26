@@ -1,8 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import { Container } from "@/components/ui/container";
 import { BrandButton } from "@/components/ui/brand-button";
-import { canUseNextImage } from "@/lib/media/public-media";
 import type { ProjectDetail } from "@/server/services/project.service";
 
 type CaseStudyHeroProps = {
@@ -63,23 +62,7 @@ export function CaseStudyHero({ project }: CaseStudyHeroProps) {
         </div>
 
         <div className="relative aspect-[16/10] mx-auto max-w-6xl overflow-hidden bg-[#1a245a]/50 rounded-2xl border border-border/40 shadow-floating">
-          {canUseNextImage(project.coverImageUrl) ? (
-            <Image
-              src={project.coverImageUrl}
-              alt={project.coverImageAlt}
-              fill
-              priority
-              className="object-contain"
-              sizes="(max-width:1024px) 100vw, 960px"
-            />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={project.coverImageUrl}
-              alt={project.coverImageAlt}
-              className="h-full w-full object-contain"
-            />
-          )}
+          <ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt} sizes="(max-width:1024px) 100vw, 960px" priority />
         </div>
 
         <BrandButton

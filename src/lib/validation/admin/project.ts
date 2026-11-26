@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isImageCandidate, isUsableMediaUrl } from "@/lib/media/public-media";
 
 export const projectInputSchema = z.object({
   title: z.string().trim().min(2, "العنوان مطلوب").max(160),
@@ -18,7 +19,7 @@ export const projectInputSchema = z.object({
   solution: z.string().trim().max(4000).optional().or(z.literal("")),
   duration: z.string().trim().max(80).optional().or(z.literal("")),
   resultText: z.string().trim().max(200).optional().or(z.literal("")),
-  coverImageUrl: z.string().trim().max(1000).optional().or(z.literal("")),
+  coverImageUrl: z.string().trim().max(1000).refine(value => !value || isImageCandidate(value), "أدخل رابط صورة صالحًا").optional(),
   coverImageAlt: z.string().trim().max(240).optional().or(z.literal("")),
   featured: z.boolean().default(false),
   displayOrder: z.coerce.number().int().min(0).default(0),
@@ -30,8 +31,8 @@ export type ProjectFormInput = z.infer<typeof projectInputSchema>;
 export const projectMediaInputSchema = z.object({
   projectId: z.string().min(1),
   type: z.enum(["IMAGE", "VIDEO"]),
-  url: z.string().trim().url("رابط الملف غير صالح"),
-  thumbnailUrl: z.string().trim().url().optional().or(z.literal("")),
+  url: z.string().trim().refine(isUsableMediaUrl, "رابط الملف غير صالح"),
+  thumbnailUrl: z.string().trim().refine(value => !value || isImageCandidate(value), "رابط المعاينة يجب أن يكون صورة").optional(),
   altText: z.string().trim().max(240).optional().or(z.literal("")),
   caption: z.string().trim().max(400).optional().or(z.literal("")),
   width: z.number().int().positive().optional().nullable(),

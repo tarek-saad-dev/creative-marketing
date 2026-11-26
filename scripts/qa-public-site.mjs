@@ -23,3 +23,7 @@ for (const path of ["/industries/salons","/industries/teachers","/services/teach
   for(const id of ["hero","niche-services","contact"]) assert.ok(body.includes('id="'+id+'"'),path+" missing "+id);
 }
 console.log("Niche routes passed.");
+
+const work = await fetch(new URL("/work",base),{signal:AbortSignal.timeout(30000)});
+assert.equal(work.status,200,"Complete work index must respond");
+console.log("Portfolio index passed.");
