@@ -155,3 +155,11 @@
 @media(prefers-reduced-motion:reduce){.sceneRig,.scenePanel{transition:none!important}.sceneRig{transform:none!important}}
 
 .heroCopy h1{white-space:pre-line}
+
+/* Keep peripheral objects inside their visual column, and Arabic shaping intact. */
+.heroCopy h1{letter-spacing:normal}
+.stage{overflow:clip}
+.scenePanel[data-offset="-2"]{transform:translate(-134%,-69%) translateZ(-120px) rotateY(36deg) rotateZ(-14deg) scale(.78)}
+.scenePanel[data-offset="2"]{transform:translate(38%,-32%) translateZ(-125px) rotateY(-35deg) rotateZ(13deg) scale(.78)}
+.panelArtwork:focus-visible{outline:3px solid #27e8c7;outline-offset:-4px}
+@media(max-width:600px){.hero{padding-top:calc(var(--nav-height) + 3rem)}.heroCopy .slogan{letter-spacing:.07em}.sceneDots{flex-wrap:wrap}.sceneDots button{width:22px;height:32px}}

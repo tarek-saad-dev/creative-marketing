@@ -134,3 +134,7 @@
   .mesh > span { animation: none; }
   .motionToggle { display: none; }
 }
+
+/* Keep the global accessibility control compact and outside the art. */
+@media(min-width:1001px){.motionToggle{top:calc(var(--nav-height) + .3rem);min-height:32px;inset-inline-end:clamp(1rem,3.5vw,4rem)}}
+@media(max-width:600px){.motionToggle{top:calc(var(--nav-height) + .3rem);min-height:32px;font-size:.62rem}}

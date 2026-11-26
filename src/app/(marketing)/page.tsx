@@ -78,7 +78,7 @@ export default async function MarketingHomePage() {
         <PortfolioHero
           copy={copy}
           projects={heroProjects}
-          gallery={creativeGallery}
+          gallery={creativeGallery.filter(project=>heroProjects.some(hero=>hero.id===project.id))}
           showArtwork={portfolio.hero.enabled && (heroProjects.length > 0 || (!showcaseProjects.length && !portfolio.hero.ids.length))}
           slogan={data.brand.slogan}
         />
