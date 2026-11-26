@@ -11,29 +11,8 @@ type CaseStudyHeroProps = {
 
 export function CaseStudyHero({ project }: CaseStudyHeroProps) {
   return (
-    <header className="relative overflow-hidden border-b border-border/30">
-      <div className="absolute inset-0" aria-hidden="true">
-        {canUseNextImage(project.coverImageUrl) ? (
-          <Image
-            src={project.coverImageUrl}
-            alt=""
-            fill
-            priority
-            className="object-cover opacity-40"
-            sizes="100vw"
-          />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={project.coverImageUrl}
-            alt=""
-            className="h-full w-full object-cover opacity-40"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
-      </div>
-
-      <Container className="relative space-y-6 py-16 sm:py-20 lg:py-24">
+    <header className="relative overflow-hidden border-b border-border/30 bg-gradient-to-br from-[#39247f] via-[#282067] to-[#18526e]">
+      <Container className="relative space-y-6 pb-12 pt-[calc(var(--nav-height)+2rem)] sm:pb-16 sm:pt-[calc(var(--nav-height)+3rem)]">
         <Link
           href="/#work"
           className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -83,14 +62,14 @@ export function CaseStudyHero({ project }: CaseStudyHeroProps) {
           ) : null}
         </div>
 
-        <div className="relative aspect-[16/10] max-w-5xl overflow-hidden rounded-2xl border border-border/40 shadow-floating">
+        <div className="relative aspect-[16/10] mx-auto max-w-6xl overflow-hidden bg-[#1a245a]/50 rounded-2xl border border-border/40 shadow-floating">
           {canUseNextImage(project.coverImageUrl) ? (
             <Image
               src={project.coverImageUrl}
               alt={project.coverImageAlt}
               fill
               priority
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width:1024px) 100vw, 960px"
             />
           ) : (
@@ -98,7 +77,7 @@ export function CaseStudyHero({ project }: CaseStudyHeroProps) {
             <img
               src={project.coverImageUrl}
               alt={project.coverImageAlt}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
           )}
         </div>

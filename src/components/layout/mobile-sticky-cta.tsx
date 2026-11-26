@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export function MobileStickyCta() {
   const [visible, setVisible] = useState(false);
   const reduced = usePrefersReducedMotion();
-  const { open, isOpen } = useLeadFunnel();
+  const { open, isOpen, hasWhatsApp } = useLeadFunnel();
 
   useEffect(() => {
     const update = () => {
@@ -26,8 +26,10 @@ export function MobileStickyCta() {
 
       const pastHero =
         window.scrollY > 120 && heroBottom < window.innerHeight * 0.4;
+      const contact = document.getElementById("contact");
+      const nearContact = contact ? contact.getBoundingClientRect().top < window.innerHeight * 0.7 : false;
       const nearFooter = footerTop < window.innerHeight - 24;
-      setVisible(pastHero && !nearFooter && !isOpen);
+      setVisible(pastHero && !nearFooter && !nearContact && !isOpen);
     };
 
     update();
@@ -57,7 +59,7 @@ export function MobileStickyCta() {
         onClick={() => open({ source: "mobile_sticky_cta" })}
         className="flex min-h-12 w-full items-center justify-center rounded-pill bg-[image:var(--gradient-cta)] px-5 text-sm font-bold text-primary-foreground shadow-floating focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        ابدأ مشروعك على واتساب
+        {hasWhatsApp ? "ابدأ مشروعك على واتساب" : "ابدأ مشروعك"}
       </button>
     </div>
   );

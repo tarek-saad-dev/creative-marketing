@@ -43,7 +43,7 @@ function ComparePanel({ pair }: { pair: Comparison }) {
   );
 }
 
-export function CreativeGallery({ projects }: { projects: CreativeGalleryProject[] }) {
+export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { projects: CreativeGalleryProject[]; sectionId?: string }) {
   const { entries, comparisons } = useMemo(() => buildCreativeGallery(projects), [projects]);
   const [filter, setFilter] = useState<"all" | "IMAGE" | "VIDEO">("all");
   const [limit, setLimit] = useState(9);
@@ -56,10 +56,10 @@ export function CreativeGallery({ projects }: { projects: CreativeGalleryProject
   const hasVideos = entries.some(entry => entry.type === "VIDEO");
 
   return (
-    <section id="creative-gallery" className={styles.section} aria-labelledby="creative-gallery-heading">
+    <section id={sectionId} className={styles.section} aria-labelledby="creative-gallery-heading">
       <header className={styles.header}>
         <div><p className={styles.kicker}>CM / CREATIVE FEED</p><h2 id="creative-gallery-heading">كل فريم.<br /><span>ليه حكاية.</span></h2></div>
-        <p className={styles.description}>{entries.length ? "تصفّح التصميمات والفيديوهات من المشاريع المنشورة، وافتح أي عمل بالحجم الكبير." : "دراسات تصميم توضيحية من الاستوديو. ليست أعمال عملاء."}</p>
+        <p className={styles.description}>{entries.length ? "تصفّح تفاصيل الحملات والتصميمات والفيديوهات، وافتح أي عمل بالحجم الكبير." : "دراسات تصميم توضيحية من الاستوديو. ليست أعمال عملاء."}</p>
       </header>
       {hasImages && hasVideos && <div className={styles.filters} aria-label="فلترة المعرض">
         {([{ value: "all", label: "الكل" }, { value: "IMAGE", label: "تصميمات" }, { value: "VIDEO", label: "فيديوهات" }] as const).map(option => <button type="button" key={option.value} aria-pressed={filter === option.value} onClick={() => { setFilter(option.value); setLimit(9); setOpenIndex(null); }}>{option.label}</button>)}

@@ -18,7 +18,7 @@ export function CaseStudyView({ project, related }: CaseStudyViewProps) {
     <>
       <CaseStudyHero project={project} />
 
-      <Container id="case-body" className="space-y-12 py-14 sm:py-16">
+      <Container id="case-body" className="scroll-mt-nav space-y-12 py-14 sm:py-16">
         {project.challenge ? (
           <section
             aria-labelledby="challenge-heading"
@@ -85,8 +85,7 @@ export function CaseStudyView({ project, related }: CaseStudyViewProps) {
             جاهز تبني حضور مشابه لمشروعك؟
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-foreground-muted">
-            نموذج التواصل الكامل سيُضاف لاحقًا. يمكنك العودة لقسم التواصل على
-            الصفحة الرئيسية.
+            احكِ لنا عن مشروعك وخلّينا نختار معاك أنسب بداية للهوية والمحتوى.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <BrandButton href="/#contact">ابدأ مشروعك</BrandButton>
