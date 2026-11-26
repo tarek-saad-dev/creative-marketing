@@ -96,7 +96,7 @@ export function LeadDialog({
       isCustomPackage: isCustom,
       budgetRange: "",
       message: "",
-      preferredContactMethod: "whatsapp",
+      preferredContactMethod: hasWhatsApp ? "whatsapp" : "phone",
       website: "",
     },
   });
@@ -191,10 +191,8 @@ export function LeadDialog({
       url: result.whatsappUrl,
     });
 
-    if (result.whatsappUrl) {
-      window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
-      await recordWhatsAppOpenedAction({ sessionId, via: "auto" });
-    }
+    // Keep WhatsApp behind an explicit click after the lead is saved.
+    // Async submissions can lose browser user activation and block a popup.
   }
 
   async function copyMessage() {
@@ -216,7 +214,7 @@ export function LeadDialog({
     <Dialog open onClose={onClose} className="relative z-toast">
       <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
       <div className="fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4">
-        <DialogPanel className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border/40 bg-background shadow-floating sm:rounded-2xl">
+        <DialogPanel className="flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border/40 bg-background shadow-floating sm:rounded-2xl">
           <div className="flex items-center justify-between border-b border-border/30 px-4 py-3">
             <DialogTitle
               id={titleId}
@@ -264,7 +262,7 @@ export function LeadDialog({
                 <p className="text-sm leading-7 text-foreground-muted">
                   {hasWhatsApp
                     ? "يمكنك فتح واتساب الآن أو نسخ الرسالة إن لم يفتح المتصفح النافذة."
-                    : "رقم واتساب غير مُعد حاليًا. انسخ الرسالة وتواصل عبر القناة المتاحة لاحقًا — طلبك محفوظ."}
+                    : "طلبك محفوظ، وفريقنا يقدر يتواصل معاك على الرقم اللي سجلته."}
                 </p>
                 <pre className="max-h-48 overflow-auto rounded-xl border border-border/40 bg-surface-glass p-3 text-xs leading-6 text-foreground whitespace-pre-wrap">
                   {success.message}
@@ -290,7 +288,14 @@ export function LeadDialog({
             ) : (
               <form
                 className="space-y-4"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={event => {
+                  if (stepIndex < STEPS.length - 1) {
+                    event.preventDefault();
+                    void goNext();
+                    return;
+                  }
+                  void handleSubmit(onSubmit)(event);
+                }}
                 noValidate
               >
                 <input
@@ -447,7 +452,7 @@ export function LeadDialog({
                         className="min-h-11 w-full rounded-xl border border-border/70 bg-surface-glass px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         {...register("preferredContactMethod")}
                       >
-                        <option value="whatsapp">واتساب</option>
+                        {hasWhatsApp && <option value="whatsapp">واتساب</option>}
                         <option value="phone">اتصال</option>
                       </select>
                     </Field>

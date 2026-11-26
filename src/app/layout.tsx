@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Creative Marketing",
     description: "WE THINK. WE CREATE. YOU GROW.",
-    locale: "ar_SA",
+    locale: "ar_EG",
     type: "website",
     siteName: "Creative Marketing",
     url: siteUrl,

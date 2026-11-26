@@ -28,7 +28,7 @@ export const packageInputSchema = z.object({
     .regex(/^$|^\d+(\.\d{1,2})?$/, "السعر يجب أن يكون رقمًا صحيحًا")
     .optional()
     .or(z.literal("")),
-  currency: z.string().trim().min(1).max(10).default("SAR"),
+  currency: z.string().trim().min(1).max(10).default("EGP"),
   billingPeriod: z.string().trim().max(80).optional().or(z.literal("")),
   startTimeText: z.string().trim().max(120).optional().or(z.literal("")),
   revisionCount: z.coerce.number().int().min(0).optional().nullable(),

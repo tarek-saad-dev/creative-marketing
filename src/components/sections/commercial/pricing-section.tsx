@@ -38,7 +38,7 @@ export function PricingSection({
               packages.length > 0
                 ? hasActiveOffer
                   ? "مستويات واضحة مع أسعار عرض سارية الآن على الباكدجات المؤهلة."
-                  : "ثلاث مستويات واضحة، من تأسيس الاتجاه إلى الإدارة والتطوير المستمر."
+                  : "مستويات واضحة، من تأسيس الاتجاه إلى الإدارة والتطوير المستمر."
                 : undefined
             }
           />
@@ -85,7 +85,7 @@ export function PricingSection({
                 تحتاج عرضًا مخصصًا؟
               </p>
               <p className="body-text-muted mt-2">
-                صف نطاق مشروعك وسنقترح مسار عمل بدون سعر مفبرك.
+                احكِ لنا تفاصيل مشروعك ونقترح عليك عرضًا مناسبًا لاحتياجاتك.
               </p>
               <LeadOpenButton
                 source="custom_package"

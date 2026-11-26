@@ -23,7 +23,7 @@ export function PackageCard({ pkg }: PackageCardProps) {
     >
       {pkg.isFeatured ? (
         <p className="absolute -top-3 start-6 rounded-full bg-brand-aqua px-3 py-1 text-xs font-bold text-brand-navy">
-          الأكثر طلبًا
+          الباقة المميزة
         </p>
       ) : null}
 
@@ -96,14 +96,12 @@ export function PackageCard({ pkg }: PackageCardProps) {
         ))}
       </ul>
 
-      <p className="body-text-muted mt-4">
-        لا توجد مصاريف مخفية.
-      </p>
+      
 
       <LeadOpenButton
         source="package_card"
         packageId={pkg.id}
-        className="mt-auto pt-6"
+        className="mt-6"
         variant={pkg.isFeatured ? "primary" : "secondary"}
       >
         اختر {pkg.name}

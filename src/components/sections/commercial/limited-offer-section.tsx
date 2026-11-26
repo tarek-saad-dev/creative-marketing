@@ -5,13 +5,14 @@ import { BrandButton } from "@/components/ui/brand-button";
 import { OfferCountdown } from "@/components/sections/commercial/offer-countdown";
 import { OfferPriceBlock } from "@/components/ui/price-display";
 import { LeadOpenButton } from "@/components/lead/lead-open-button";
-import type { PublicOfferView } from "@/server/services/commercial-landing.service";
+import type { PublicOfferView, PublicPackageCard } from "@/server/services/commercial-landing.service";
 
 type LimitedOfferSectionProps = {
   offer: PublicOfferView | null;
+  packages: PublicPackageCard[];
 };
 
-export function LimitedOfferSection({ offer }: LimitedOfferSectionProps) {
+export function LimitedOfferSection({ offer, packages }: LimitedOfferSectionProps) {
   if (!offer) return null;
 
   if (offer.computedStatus === "upcoming") {
@@ -78,6 +79,7 @@ export function LimitedOfferSection({ offer }: LimitedOfferSectionProps) {
   if (offer.computedStatus !== "active") return null;
 
   const primary = offer.packages[0] ?? null;
+  const currency = packages.find(pkg => pkg.id === primary?.packageId)?.currency;
 
   return (
     <CinematicSection
@@ -126,14 +128,14 @@ export function LimitedOfferSection({ offer }: LimitedOfferSectionProps) {
           </LeadOpenButton>
         </div>
 
-        {primary ? (
+        {primary && currency ? (
           <div className="card-glow relative rounded-2xl card-glass p-6">
             <p className="body-text-muted">{primary.packageName}</p>
             <div className="mt-3">
               <OfferPriceBlock
                 originalPrice={primary.originalPrice}
                 offerPrice={primary.offerPrice}
-                currency="SAR"
+                currency={currency}
                 savingAmount={primary.savingAmount}
                 variant="onDark"
               />

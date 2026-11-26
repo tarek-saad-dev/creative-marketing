@@ -26,7 +26,7 @@ export function CommercialSection({ data }: CommercialSectionProps) {
 
   return (
     <>
-      <LimitedOfferSection offer={data.offer} />
+      <LimitedOfferSection offer={data.offer} packages={data.packages} />
       <PricingSection
         packages={data.packages}
         featuredTestimonial={pricingProof}

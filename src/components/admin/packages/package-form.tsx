@@ -252,7 +252,7 @@ export function PackageForm({
     description: pkg?.description ?? "",
     idealFor: pkg?.idealFor ?? "",
     originalPrice: pkg?.originalPrice ? pkg.originalPrice.toString() : "",
-    currency: pkg?.currency ?? "SAR",
+    currency: pkg?.currency ?? "EGP",
     billingPeriod: pkg?.billingPeriod ?? "",
     startTimeText: pkg?.startTimeText ?? "",
     revisionCount: pkg?.revisionCount ?? null,
