@@ -57,12 +57,15 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <ContentStatusBadge status={project.status} />
-            <PreviewButton path={`/work/${project.slug}`} />
+            <PreviewButton path={`/work/${project.slug}`} label="معاينة التفاصيل" />
+            <Link href={"/preview/project/"+project.id} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center rounded-md border border-border px-3 text-xs font-semibold">معاينة الـ Hero</Link>
             {project.status !== ContentStatus.PUBLISHED ? (
               <RowActionButton
                 id={project.id}
                 action={publishProjectAction}
                 label="نشر"
+                confirmMessage="نشر المشروع للجمهور وإضافته إلى المعارض؟"
+                disabled={!readyToPublish}
                 variant="primary"
               />
             ) : (

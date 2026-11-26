@@ -1,3 +1,4 @@
+import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import Link from "next/link";
 import { ArrowUpLeft, Check, ArrowLeft } from "lucide-react";
 import { getLandingPageData } from "@/server/services/landing-page.service";
@@ -19,7 +20,7 @@ export async function NicheLanding({ niche }: { niche: Niche }) {
   const {contactLinks,socialLinks} = buildContactAndSocialLinks(data.settings);
   return (
     <LeadFunnelProvider packages={data.packages.map(({id,name,slug})=>({id,name,slug}))} services={data.services.map(({id,nameAr,slug})=>({id,nameAr,slug}))} hasWhatsApp={data.contactReadiness.hasWhatsApp}>
-      <MarketingHeader brandName={data.brand.name} contactHref="#contact" />
+      <MarketingHeader assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} contactHref="#contact" />
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-toast focus:bg-primary focus:p-3 focus:text-primary-foreground">تخطي إلى المحتوى</a>
       <AuroraMarketingMain>
         <section id="hero" className="mx-auto grid max-w-7xl items-center gap-8 px-5 pb-12 pt-[calc(var(--nav-height)+4rem)] lg:grid-cols-2 lg:pb-20">
@@ -47,7 +48,7 @@ export async function NicheLanding({ niche }: { niche: Niche }) {
         <section id="contact" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><div className="rounded-3xl border border-white/20 bg-gradient-to-br from-[#433487] to-[#205672] px-6 py-12 text-center"><h2 className="font-headline text-3xl font-bold leading-relaxed text-white">جاهز نشتغل على فكرتك؟</h2><p className="mx-auto my-5 max-w-xl leading-8 text-white">احكِ لنا التفاصيل، ونتفق معاك على نطاق العمل والمخرجات والتكلفة المناسبة.</p><LeadOpenButton source={niche.source+":contact"} isCustom size="lg">ابدأ طلبك الآن</LeadOpenButton></div></section>
         <section className="mx-auto max-w-7xl px-5 pb-12"><h2 className="mb-4 text-lg font-bold text-white">استكشف حلولنا الأخرى</h2><div className="flex flex-wrap gap-3">{niches.filter(item=>item.slug!==niche.slug).map(item=><Link key={item.slug} href={item.path} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-4 text-sm text-white hover:bg-white/10">{item.label}<ArrowUpLeft size={17} aria-hidden="true" /></Link>)}</div></section>
       </AuroraMarketingMain>
-      <MarketingFooter brandName={data.brand.name} slogan={data.brand.slogan} contactLinks={contactLinks} socialLinks={socialLinks} />
+      <MarketingFooter assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} slogan={data.brand.slogan} contactLinks={contactLinks} socialLinks={socialLinks} />
       <MobileStickyCta source={niche.source+":mobile"} isCustom />
     </LeadFunnelProvider>
   );

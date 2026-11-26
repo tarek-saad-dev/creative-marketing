@@ -12,6 +12,7 @@ export function RowActionButton({
   confirmMessage,
   variant = "default",
   className,
+  disabled = false,
 }: {
   id: string;
   action: (id: string) => Promise<AdminMutationResult<unknown>>;
@@ -19,11 +20,13 @@ export function RowActionButton({
   confirmMessage?: string;
   variant?: "default" | "primary" | "danger";
   className?: string;
+  disabled?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
+    if (disabled || isPending) return;
     if (confirmMessage && !window.confirm(confirmMessage)) return;
     startTransition(async () => {
       const result = await action(id);
@@ -44,7 +47,7 @@ export function RowActionButton({
   return (
     <button
       type="button"
-      disabled={isPending}
+      disabled={isPending || disabled}
       onClick={handleClick}
       className={cn(
         "inline-flex h-8 items-center rounded-md px-2 text-xs font-semibold disabled:opacity-50",

@@ -1,3 +1,4 @@
+import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import Link from "next/link";
 import { PORTFOLIO_SETTING_KEY, readPortfolioSettings, selectPortfolioProjects } from "@/lib/content/portfolio-settings";
 import { getLandingPageData } from "@/server/services/landing-page.service";
@@ -73,7 +74,7 @@ export default async function MarketingHomePage() {
         تخطي إلى المحتوى
       </a>
 
-      <MarketingHeader brandName={data.brand.name} />
+      <MarketingHeader assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} />
 
       <AuroraMarketingMain>
         <PortfolioHero
@@ -110,7 +111,7 @@ export default async function MarketingHomePage() {
         />
       </AuroraMarketingMain>
 
-      <MarketingFooter
+      <MarketingFooter assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])}
         brandName={data.brand.name}
         slogan={data.brand.slogan}
         contactLinks={contactLinks}

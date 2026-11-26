@@ -1,3 +1,4 @@
+import { BRAND_ASSETS_KEY } from "@/lib/content/brand-assets";
 import { PORTFOLIO_SETTING_KEY } from "@/lib/content/portfolio-settings";
 import type { Metadata } from "next";
 import { requireRole } from "@/server/auth/require-admin";
@@ -32,7 +33,7 @@ export default async function AdminSettingsPage() {
   ]);
 
   const structuredKeySet = new Set<string>(
-    [...Object.values(STRUCTURED_SETTING_KEYS), PORTFOLIO_SETTING_KEY]
+    [...Object.values(STRUCTURED_SETTING_KEYS), PORTFOLIO_SETTING_KEY, BRAND_ASSETS_KEY]
   );
   const extraSettings = settings.filter(s => !structuredKeySet.has(s.key));
   const isOwner = user.role === AdminRole.OWNER;

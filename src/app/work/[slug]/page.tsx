@@ -1,4 +1,6 @@
+import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import type { Metadata } from "next";
+import { getCurrentAdmin } from "@/server/auth/require-admin";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import {
@@ -46,7 +48,8 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const draft = await draftMode();
-  const project = draft.isEnabled
+  const preview = draft.isEnabled && Boolean(await getCurrentAdmin());
+  const project = preview
     ? ((await getPublishedProjectBySlug(slug)) ??
       (await getProjectBySlugForPreview(slug)))
     : await getPublishedProjectBySlug(slug);
@@ -72,6 +75,7 @@ export async function generateMetadata({
 
   return {
     title: project.title,
+    robots: preview ? {index:false,follow:false} : undefined,
     description: project.summary,
     alternates: {
       canonical: `/work/${project.slug}`,
@@ -97,7 +101,8 @@ export async function generateMetadata({
 export default async function WorkProjectPage({ params }: PageProps) {
   const { slug } = await params;
   const draft = await draftMode();
-  const project = draft.isEnabled
+  const preview = draft.isEnabled && Boolean(await getCurrentAdmin());
+  const project = preview
     ? ((await getPublishedProjectBySlug(slug)) ??
       (await getProjectBySlugForPreview(slug)))
     : await getPublishedProjectBySlug(slug);
@@ -120,18 +125,18 @@ export default async function WorkProjectPage({ params }: PageProps) {
 
   return (
     <>
-      {draft.isEnabled ? <DraftPreviewBanner path={`/work/${slug}`} /> : null}
+      {preview ? <DraftPreviewBanner path={`/work/${slug}`} /> : null}
       <a
         href="#case-main"
         className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
       >
         تخطي إلى المحتوى
       </a>
-      <MarketingHeader brandName={brandName} />
+      <MarketingHeader assets={readBrandAssets(settings[BRAND_ASSETS_KEY])} brandName={brandName} />
       <main id="case-main">
         <CaseStudyView project={project} related={related} />
       </main>
-      <MarketingFooter
+      <MarketingFooter assets={readBrandAssets(settings[BRAND_ASSETS_KEY])}
         brandName={brandName}
         slogan={slogan}
         contactLinks={contactLinks}
