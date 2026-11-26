@@ -249,3 +249,15 @@
   .hero .scenePhone .conceptBadge{font-size:clamp(.22rem,2.5cqi,.38rem)}
 }
 @media(prefers-reduced-motion:reduce){.hero .sceneRig{transform:none!important}}
+
+/* Reserve a bounded phone footprint, including on very tall/narrow stages.
+   Two-panel layouts can have either neighbour on the left or right. */
+.hero .stage .scenePhone{max-width:16%;height:auto;aspect-ratio:9/17;width:min(16%,14vh);max-height:29%}
+.hero .stage:not(:has(.scenePanel[data-offset="-2"])) .scenePhone{top:77%;height:auto;max-height:30%}
+.hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:58%;width:57%}
+.hero .stage[data-count="2"] .scenePanel[data-offset="0"]{left:50%;width:46%}
+.hero .stage[data-count="1"] .scenePhone{left:14%;top:74%}
+@media(max-width:600px){
+  .hero .stage .scenePhone{width:15%;max-height:32%}
+  .hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:58%;width:57%}
+}

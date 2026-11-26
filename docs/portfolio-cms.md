@@ -15,3 +15,6 @@ The hero fetches up to 16 media records for each of up to 12 curated published p
 
 ## Full viewport / no crop hero
 Desktop hero minimum height is the whole viewport (fixed navigation included). All projected panels and phone are placed in separate safe zones, with no stage/hero overflow clipping; artwork uses contain and inset frames. The global motion toggle and hero autoplay toggle are removed. The gradient retains a short four-second decorative entrance and honors reduced motion; gallery navigation remains manual, video player controls remain available. Browser QA checks the desktop hero height, projected object bounds, contain fit and absent hero motion controls. Actual browser acceptance is still required.
+
+## Hero geometry regression
+A pre-merge Chromium fixture loads the actual hero CSS, with synthetic empty frames and combinations of 1–5 panels, optional phone, seven screen/stage sizes and three mouse tilt positions (294 cases). It checks projected bounds and central-panel overlap without touching production content. The public browser workflow remains a separate post-deployment check. A local isolated reproduction of the final positioning rules passed all 294 cases; the full stylesheet fixture runs in CI.
