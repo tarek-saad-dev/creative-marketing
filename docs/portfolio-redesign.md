@@ -20,3 +20,6 @@ This is a public marketing UI redesign; database schema, admin and lead funnel a
 
 ## Aurora background
 A shared viewport-sized CSS mesh behind the public home page, with three independently animated radial layers, subtle grain, and distinct translucent section washes. No new dependency or WebGL canvas. Pause control and OS reduced-motion are supported. The hero and gallery no longer cover the mesh with opaque backgrounds. Admin styles are unaffected. Browser visual and performance checks are still required, including mobile Safari and reduced-motion.
+
+## Scroll motion and device studio
+Uses the installed Framer Motion library for bounded, scroll-linked transform values. A native CSS loop displays up to eight published covers with pause controls, pauses off-screen, and is omitted for fewer than three items. A device mockup with selectable projects, layered covers and scroll parallax follows services. Global decorative motion pause and OS reduced-motion disable the new animated effects. All content is CMS-backed, with clearly labeled concept fallback only when no projects exist. No new dependencies or database changes. Verify mobile/desktop visuals, keyboard focus, pause controls, screen reader labels, and actual portfolio media before declaring production QA complete.
