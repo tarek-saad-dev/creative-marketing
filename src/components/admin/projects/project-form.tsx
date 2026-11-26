@@ -12,6 +12,7 @@ import {
 } from "@/server/actions/admin/project.action";
 import { AdminEntityForm } from "@/components/admin/admin-entity-form";
 import { Field } from "@/components/admin/field";
+import { isImageCandidate } from "@/lib/media/public-media";
 import { slugify } from "@/lib/utils";
 import type { AdminProjectDetail } from "@/server/repositories/admin/project.admin.repository";
 
@@ -38,7 +39,7 @@ function PublishChecklist({
     { label: "الاسم", ok: Boolean(values.title?.trim()) },
     { label: "المجال", ok: Boolean(values.industry?.trim()) },
     { label: "الوصف", ok: Boolean(values.summary?.trim()) },
-    { label: "صورة الغلاف", ok: Boolean(values.coverImageUrl?.trim()) },
+    { label: "صورة الغلاف", ok: isImageCandidate(values.coverImageUrl) },
     { label: "وصف الصورة", ok: Boolean(values.coverImageAlt?.trim()) },
   ];
   const ready = items.every(i => i.ok);

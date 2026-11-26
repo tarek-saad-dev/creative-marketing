@@ -140,6 +140,9 @@ export async function restoreProjectAdmin(id: string) {
 
 export async function addProjectMediaAdmin(rawInput: unknown) {
   const input = projectMediaInputSchema.parse(rawInput);
+  const owner = await findProjectByIdForAdmin(input.projectId);
+  if (!owner || owner.deletedAt) throw new Error("المشروع غير موجود");
+  if (input.type === "IMAGE" && !isImageCandidate(input.url)) throw new Error("الملف المحدد ليس رابط صورة");
   const media = await createProjectMedia({
     projectId: input.projectId,
     type: input.type,

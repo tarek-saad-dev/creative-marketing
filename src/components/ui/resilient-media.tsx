@@ -3,14 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ImageOff, Film } from "lucide-react";
-import { canUseNextImage, isUsableMediaUrl } from "@/lib/media/public-media";
+import { canUseNextImage, isImageCandidate, isUsableMediaUrl } from "@/lib/media/public-media";
 
 export function ResilientImage({ src, alt, sizes = "100vw", priority = false, className = "", fit = "contain" }: {
   src: string | null | undefined; alt: string; sizes?: string; priority?: boolean; className?: string; fit?: "contain" | "cover";
 }) {
   const [failed, setFailed] = useState<string | null>(null);
   const [rawFallback, setRawFallback] = useState<string | null>(null);
-  if (!isUsableMediaUrl(src) || failed === src) return (
+  if (!isImageCandidate(src) || failed === src) return (
     <span role="img" aria-label={alt + " — الصورة غير متاحة"} className="absolute inset-0 grid place-content-center justify-items-center gap-2 bg-[#303874] p-3 text-center text-xs text-white"><ImageOff size={25} aria-hidden="true" /><span>الصورة غير متاحة حاليًا</span></span>
   );
   const style = {objectFit: fit} as const;

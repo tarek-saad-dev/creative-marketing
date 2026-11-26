@@ -40,7 +40,7 @@ export function buildCreativeGallery(projects: CreativeGalleryProject[]) {
     const seen = new Set<string>();
     const entries: GalleryEntry[] = [];
     for (const media of project.media) {
-      if (!usable(media.url)) continue;
+      if (!usable(media.url) || (media.type === "IMAGE" && !isImageCandidate(media.url))) continue;
       const tag = comparisonTag(media.caption);
       if (tag && media.type === "IMAGE" && isImageCandidate(media.url)) {
         const pair = pairs.get(tag.key) ?? {};

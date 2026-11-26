@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { canUseNextImage } from "@/lib/media/public-media";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import type { RelatedProjectCard } from "@/server/services/project.service";
 
 type RelatedProjectsProps = {
@@ -26,23 +25,7 @@ export function RelatedProjects({ projects }: RelatedProjectsProps) {
               className="group block overflow-hidden rounded-2xl border border-border/40 bg-surface-glass shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="relative aspect-[4/3]">
-                {canUseNextImage(project.coverImageUrl) ? (
-                  <Image
-                    src={project.coverImageUrl}
-                    alt={project.coverImageAlt}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
-                    sizes="(max-width:768px) 100vw, 33vw"
-                  />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={project.coverImageUrl}
-                    alt={project.coverImageAlt}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                )}
+                <ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt} sizes="(max-width:768px) 100vw, 33vw" />
               </div>
               <div className="space-y-1 p-4">
                 {project.industry ? (

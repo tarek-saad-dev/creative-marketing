@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef, useState, type PointerEvent } from "react";
-import Image from "next/image";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import Link from "next/link";
 import { ArrowUpLeft, ArrowLeft, Lightbulb, PenTool, Layers3, TrendingUp } from "lucide-react";
 import { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 import { LeadOpenButton } from "@/components/lead/lead-open-button";
-import { canUseNextImage } from "@/lib/media/public-media";
 import type { ServiceCategoryEcosystem } from "@/server/services/project.service";
 import styles from "./interactive-services.module.css";
 
@@ -48,12 +47,7 @@ function ServiceVisual({ group }: { group: ServiceCategoryEcosystem }) {
         <div className={styles.backCardTwo} aria-hidden="true" />
         {group.projectPreview ? (
           <Link href={"/work/" + group.projectPreview.slug} className={styles.frontCard} aria-label={"عرض مشروع " + group.projectPreview.title}>
-            {canUseNextImage(group.projectPreview.coverImageUrl) ? (
-              <Image src={group.projectPreview.coverImageUrl} alt={group.projectPreview.coverImageAlt} fill sizes="(max-width: 800px) 75vw, 520px" className={styles.cover} />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={group.projectPreview.coverImageUrl} alt={group.projectPreview.coverImageAlt} loading="lazy" className={styles.cover} />
-            )}
+            <ResilientImage src={group.projectPreview.coverImageUrl} alt={group.projectPreview.coverImageAlt} sizes="(max-width:800px) 75vw, 520px" className={styles.cover} />
             <span className={styles.projectLabel}>{group.projectPreview.title} <ArrowUpLeft size={17} aria-hidden="true" /></span>
           </Link>
         ) : (
