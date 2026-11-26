@@ -12,3 +12,6 @@ Desktop split composition prioritizes a CSS perspective scene (up to five select
 
 ## Project-level hero
 The hero fetches up to 16 media records for each of up to 12 curated published projects independently of the main gallery's 16-project cap. Up to nine distinct media entries per project, cover first, can be selected in the hero; video plays only in the explicit full-screen viewer. Empty side positions can display additional images from the active project. Phone favors a portrait image. On mobile, art precedes supporting text and CTAs. Browser script includes desktop, laptop, mobile and narrow mobile first-viewport checks and captures hero screenshots. No client assets or DB records added.
+
+## Full viewport / no crop hero
+Desktop hero minimum height is the whole viewport (fixed navigation included). All projected panels and phone are placed in separate safe zones, with no stage/hero overflow clipping; artwork uses contain and inset frames. The global motion toggle and hero autoplay toggle are removed. The gradient retains a short four-second decorative entrance and honors reduced motion; gallery navigation remains manual, video player controls remain available. Browser QA checks the desktop hero height, projected object bounds, contain fit and absent hero motion controls. Actual browser acceptance is still required.

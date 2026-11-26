@@ -75,23 +75,6 @@
   animation-play-state: paused;
 }
 
-.motionToggle {
-  position: absolute;
-  top: calc(var(--nav-height) + .65rem);
-  inset-inline-end: max(1.25rem, calc((100% - 84rem) / 2));
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  min-height: 44px;
-  padding-inline: .65rem;
-  border-radius: 999px;
-  color: #f8fafc;
-  font-size: .68rem;
-  background: #1a245a60;
-  border: 1px solid #ffffff30;
-}
-.motionToggle:hover { background: #1a245aa0; }
 
 /* Let the shared mesh flow through the editorial sections, with a different
    local lighting direction rather than an opaque violet panel on each one. */
@@ -132,9 +115,12 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .mesh > span { animation: none; }
-  .motionToggle { display: none; }
 }
 
-/* Keep the global accessibility control compact and outside the art. */
-@media(min-width:1001px){.motionToggle{top:calc(var(--nav-height) + .3rem);min-height:32px;inset-inline-end:clamp(1rem,3.5vw,4rem)}}
-@media(max-width:600px){.motionToggle{top:calc(var(--nav-height) + .3rem);min-height:32px;font-size:.62rem}}
+
+/* Preserve the gradient, but finish decorative entrance within five seconds.
+   Continuous automatic motion is not necessary without a global pause control. */
+.violet{animation:violet-drift 4s ease-out 1 both}
+.cyan{animation:cyan-drift 4s ease-out 1 both}
+.mint{animation:mint-drift 4s ease-out 1 both}
+@media(prefers-reduced-motion:reduce){.mesh > span{animation:none}}
