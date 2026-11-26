@@ -30,10 +30,19 @@ test("feed interleaves projects, rejects unsafe URLs and deduplicates each proje
   assert.deepEqual(result.entries.map(item => item.id), ["cover-a","cover-b","1","2"]);
 });
 test("navigation anchors are canonical homepage links", () => {
-  assert.deepEqual(marketingNavItems.map(item => item.href), ["/#work","/#services","/#packages","/#process"]);
+  assert.deepEqual(marketingNavItems.map(item => item.href), ["/#work","/#services","/#industries","/#packages","/#process"]);
 });
 test("public social links allow HTTPS only", () => {
   const result = buildContactAndSocialLinks({"brand.instagram":"https://example.com/studio","brand.facebook":"javascript:alert(1)","brand.behance":"http://example.com"});
   assert.equal(result.socialLinks.length, 1);
   assert.equal(result.socialLinks[0].label, "Instagram");
+});
+
+import { niches, matchesNiche, nicheForSource } from "../src/lib/content/niches";
+test("niche lead context and industry matching remain explicit", () => {
+  assert.equal(nicheForSource("niche_teachers_books:hero")?.slug,"teachers-books");
+  assert.equal(nicheForSource("niche_teachers:mobile")?.slug,"teachers");
+  assert.equal(nicheForSource("niche_unknown"),undefined);
+  assert.equal(matchesNiche(niches[0],{industry:"Barber shop",services:[]}),true);
+  assert.equal(matchesNiche(niches[0],{industry:"Hotel",services:[]}),false);
 });

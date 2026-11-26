@@ -7,7 +7,7 @@ assert.ok(["http:", "https:"].includes(base.protocol));
 const response = await fetch(new URL("/",base), { signal: AbortSignal.timeout(30000) });
 assert.equal(response.status,200,"Homepage must return HTTP 200");
 const html = await response.text();
-for (const id of ["main-content","hero","work","services","packages","process","contact"]) {
+for (const id of ["main-content","hero","work","services","industries","packages","process","contact"]) {
   assert.ok(html.includes('id="' + id + '"'),"Missing public section: " + id);
 }
 assert.ok(/<html[^>]*dir="rtl"/.test(html),"RTL document expected");
@@ -15,3 +15,11 @@ const missing = await fetch(new URL("/work/qa-nonexistent-project-98c8e2",base),
 const missingHtml = await missing.text();
 assert.ok(missing.status === 404 || (missing.status === 200 && /name="robots"[^>]*content="noindex"/i.test(missingHtml)), "Missing project should return 404 or streamed noindex");
 console.log("HTTP smoke checks passed.");
+
+for (const path of ["/industries/salons","/industries/teachers","/services/teachers-books"]) {
+  const result=await fetch(new URL(path,base),{signal:AbortSignal.timeout(30000)});
+  assert.equal(result.status,200,path+" must respond");
+  const body=await result.text();
+  for(const id of ["hero","niche-services","contact"]) assert.ok(body.includes('id="'+id+'"'),path+" missing "+id);
+}
+console.log("Niche routes passed.");

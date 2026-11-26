@@ -1,0 +1,5 @@
+# Niche launch
+
+Routes: /industries/salons, /industries/teachers, /services/teachers-books. Homepage industry cards, canonical metadata, sitemap and local CTA anchors are wired. Portfolio excerpts are limited to real published projects matched to industry or explicit book-related services. Visual posters are labeled concept art. Lead sources use niche_salons, niche_teachers, niche_teachers_books with :hero/:contact/:mobile suffixes; source and existing UTM fields reach the CRM, with editable industry and message defaults. Niche session tokens are scoped by sector. New submissions after a submitted session start fresh.
+
+No packages, prices, client media, logo or ad accounts were modified. Landing copy is proposed commercial copy and requires owner verification of deliverables and actual execution capacity. No Meta Pixel or GA4 enabled without IDs and consent policy. No production lead test was sent. Review Vercel, real phone layout, SEO site URL, conversion events and staging lead capture before promoting paid campaigns.

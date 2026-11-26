@@ -20,7 +20,7 @@ try {
       const response=await page.goto(base.origin,{waitUntil:"domcontentloaded",timeout:45000});
       assert.equal(response?.status(),200);
       await page.locator("#hero").waitFor();
-      for(const id of ["work","services","packages","process","contact"]) assert.equal(await page.locator("#"+id).count(),1,"Missing/duplicate section: "+id);
+      for(const id of ["work","services","industries","packages","process","contact"]) assert.equal(await page.locator("#"+id).count(),1,"Missing/duplicate section: "+id);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
       assert.equal(overflow,false,"Horizontal document overflow");
       await page.screenshot({path:"qa-artifacts/"+name+".png",fullPage:true,animations:"disabled"});
