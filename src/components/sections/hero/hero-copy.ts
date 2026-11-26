@@ -26,13 +26,13 @@ export function buildHeroCopy(input: {
     ? seededBadge || "عرض الإطلاق متاح لفترة محدودة"
     : "Creative strategy · Content · Design · Growth";
 
-  const title =
-    asString(settings["landing.hero.title"]) ||
-    "نحوّل مشروعك من مجرد صفحة إلى براند يبان، يتفهم، ويتباع.";
+  const storedTitle = asString(settings["landing.hero.title"]).trim();
+  const oldTitle = "نحوّل مشروعك من مجرد صفحة إلى براند يبان، يتفهم، ويتباع.";
+  const title = !storedTitle || storedTitle === oldTitle ? "إبداع يلفت النظر.\nوبراند يكبر." : storedTitle;
 
-  const description =
-    asString(settings["landing.hero.description"]) ||
-    "استراتيجية، محتوى، تصميم وإدارة سوشيال ميديا تساعد مشروعك يظهر باحتراف ويكسب ثقة العميل من أول نظرة.";
+  const storedDescription = asString(settings["landing.hero.description"]).trim();
+  const oldDescription = "استراتيجية، محتوى، تصميم وإدارة سوشيال ميديا تساعد مشروعك يظهر باحتراف ويكسب ثقة العميل من أول نظرة.";
+  const description = !storedDescription || storedDescription === oldDescription ? "تصميم، محتوى وهوية بصرية تخلي مشروعك يظهر بقوة." : storedDescription;
 
   const primaryCta = asString(settings["landing.hero.primaryCta"], "شوف شغلنا");
   const secondaryCta = asString(
@@ -50,7 +50,7 @@ export function buildHeroCopy(input: {
       "بدون مكالمات طويلة · أسعار واضحة · بداية سريعة"
     : microcopySetting || "بداية واضحة · تنفيذ منظم · تواصل مباشر";
 
-  const highlightPhrase = title.includes("براند يبان")
+  const highlightPhrase = title.includes("وبراند يكبر.") ? "وبراند يكبر." : title.includes("براند يبان")
     ? "براند يبان"
     : title.includes("يتفهم، ويتباع")
       ? "يتفهم، ويتباع"

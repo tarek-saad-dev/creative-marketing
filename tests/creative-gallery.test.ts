@@ -102,3 +102,19 @@ test("drag ordering moves to target index and never mutates input",()=>{
   assert.deepEqual(planMediaDrop(source,"a","unknown"),[]);
   assert.equal(source[0].id,"a");
 });
+
+import { heroScenePositions } from "../src/lib/content/hero-scene";
+import { buildHeroCopy } from "../src/components/sections/hero/hero-copy";
+test("hero scene shows at most five unique projects across empty, small and large selections",()=>{
+  for(let n=0;n<=20;n++)for(let index=0;index<Math.max(n,1);index++){
+    const slots=heroScenePositions(n,index);
+    assert.equal(slots.length,Math.min(n,5));
+    assert.equal(new Set(slots.map(s=>s.index)).size,slots.length);
+    if(n)assert.equal(slots.find(s=>s.offset===0)?.index,index);
+  }
+});
+test("hero copy shortens legacy default but preserves customized text",()=>{
+  const base={hasActiveOffer:false,hasPublishedPrices:false};
+  assert.equal(buildHeroCopy({...base,settings:{}}).title,"إبداع يلفت النظر.\nوبراند يكبر.");
+  assert.equal(buildHeroCopy({...base,settings:{"landing.hero.title":"عنوان مخصص"}}).title,"عنوان مخصص");
+});
