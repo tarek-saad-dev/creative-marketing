@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { BrandAssets } from "@/lib/content/brand-assets";
 import { BrandLogo } from "@/components/brand/logo";
 import { Container } from "@/components/ui/container";
 import { marketingNavItems } from "@/components/layout/nav-config";
@@ -11,6 +12,7 @@ type ContactLink = {
 
 type MarketingFooterProps = {
   brandName: string;
+  assets?: BrandAssets;
   slogan: string;
   contactLinks: ContactLink[];
   socialLinks: ContactLink[];
@@ -18,6 +20,7 @@ type MarketingFooterProps = {
 
 export function MarketingFooter({
   brandName,
+  assets,
   slogan,
   contactLinks,
   socialLinks,
@@ -32,7 +35,7 @@ export function MarketingFooter({
       />
       <Container className="section-space grid gap-10 md:grid-cols-[1.2fr_1fr_1fr]">
         <div className="space-y-3">
-          <BrandLogo />
+          <BrandLogo brandName={brandName} assets={assets} placement="footer" />
           <p className="font-heading-en text-xs tracking-[0.14em] text-foreground-muted uppercase">
             {slogan}
           </p>

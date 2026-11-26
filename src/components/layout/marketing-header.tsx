@@ -11,6 +11,7 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import { Menu, X } from "lucide-react";
+import type { BrandAssets } from "@/lib/content/brand-assets";
 import { BrandLogo } from "@/components/brand/logo";
 import { BrandButton } from "@/components/ui/brand-button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -23,10 +24,11 @@ import { cn } from "@/lib/utils";
 
 type MarketingHeaderProps = {
   brandName: string;
+  assets?: BrandAssets;
   contactHref?: string;
 };
 
-export function MarketingHeader({ brandName, contactHref = marketingPrimaryCta.href }: MarketingHeaderProps) {
+export function MarketingHeader({ brandName, assets, contactHref = marketingPrimaryCta.href }: MarketingHeaderProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState("");
@@ -83,7 +85,7 @@ export function MarketingHeader({ brandName, contactHref = marketingPrimaryCta.h
         )}
       >
         <Container className="flex h-nav items-center justify-between gap-4">
-          <BrandLogo />
+          <BrandLogo brandName={brandName} assets={assets} priority />
 
           <nav
             className="hidden items-center gap-2 lg:flex"
@@ -147,7 +149,7 @@ export function MarketingHeader({ brandName, contactHref = marketingPrimaryCta.h
               <DialogPanel className="flex h-full w-full max-w-sm flex-col overflow-y-auto bg-gradient-to-br from-[#39247f] to-[#1a245a] px-5 py-6 shadow-floating">
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="sr-only">قائمة التنقل</DialogTitle>
-                  <BrandLogo />
+                  <BrandLogo brandName={brandName} assets={assets} priority />
                   <IconButton
                     label="إغلاق قائمة التنقل"
                     onClick={() => setMobileOpen(false)}

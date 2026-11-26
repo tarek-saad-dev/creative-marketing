@@ -10,11 +10,13 @@ import { requireAdmin } from "@/server/auth/require-admin";
  * the normal public rendering path. Gated by `requireAdmin()` — draft mode
  * can only ever be turned on by an authenticated admin.
  */
+function safePreviewPath(path:string){return path.startsWith("/")&&!path.startsWith("//")&&!/[\\\\\u0000-\u001f]/.test(path)?path:"/";}
+
 export async function enablePreviewAction(path: string): Promise<void> {
   await requireAdmin();
   const draft = await draftMode();
   draft.enable();
-  redirect(path && path.startsWith("/") ? path : "/");
+  redirect(safePreviewPath(path));
 }
 
 export async function disablePreviewAction(path: string): Promise<void> {

@@ -158,3 +158,6 @@ test("older portfolio settings gain mockup defaults without losing selections",(
   assert.deepEqual(readPortfolioSettings(old).mockups,{});
   assert.deepEqual(readPortfolioSettings({...old,mockups:{kept:"book"}}).mockups,{kept:"book"});
 });
+
+import { readBrandAssets, brandAssetsSchema, defaultBrandAssets } from "../src/lib/content/brand-assets";
+test("brand assets reject unsafe URLs and preserve safe fallback",()=>{const initial=defaultBrandAssets();assert.deepEqual(readBrandAssets(null),initial);assert.equal(brandAssetsSchema.safeParse({...initial,headerLogo:"javascript:alert(1)"}).success,false);assert.equal(brandAssetsSchema.safeParse({...initial,headerLogo:"//example.com/logo.png"}).success,false);assert.equal(brandAssetsSchema.safeParse({...initial,headerLogo:"https://example.com/logo.png"}).success,true);assert.equal(brandAssetsSchema.safeParse({...initial,headerLogo:"/brand/logo.svg"}).success,true);});

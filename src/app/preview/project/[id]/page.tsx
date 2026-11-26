@@ -1,0 +1,30 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import {notFound} from "next/navigation";
+import {AdminRole} from "@/generated/prisma";
+import {requireRole} from "@/server/auth/require-admin";
+import {getAdminProjectById} from "@/server/services/admin/project.admin.service";
+import {getProjectBySlugForPreview,type WorkWallProject} from "@/server/services/project.service";
+import {getAllSiteSettings} from "@/server/repositories/site-settings.repository";
+import {buildHeroCopy} from "@/components/sections/hero/hero-copy";
+import {PORTFOLIO_SETTING_KEY,readPortfolioSettings} from "@/lib/content/portfolio-settings";
+import {BRAND_ASSETS_KEY,readBrandAssets} from "@/lib/content/brand-assets";
+import {AuroraMarketingMain} from "@/components/layout/aurora-marketing-main";
+import {PortfolioHero} from "@/components/sections/work/immersive-showcase";
+import {BrandLogo} from "@/components/brand/logo";
+export const dynamic="force-dynamic";
+export const metadata:Metadata={title:"معاينة خاصة للمشروع",robots:{index:false,follow:false}};
+export default async function PreviewProject({params}:{params:Promise<{id:string}>}){
+  await requireRole(AdminRole.EDITOR);
+  const {id}=await params;
+  const [admin,settings]=await Promise.all([getAdminProjectById(id),getAllSiteSettings()]);
+  if(!admin)notFound();
+  const project=await getProjectBySlugForPreview(admin.slug);
+  if(!project)return <main className="mx-auto max-w-xl space-y-4 p-8"><h1 className="text-xl font-bold">أضف الغلاف والنص البديل أولًا</h1><p>المعاينة تتطلب صورة غلاف محفوظة ووصفًا لها.</p><Link href={"/admin/projects/"+id} className="text-primary underline">العودة لتعديل المشروع</Link></main>;
+  const primary=project.media[0];
+  const card:WorkWallProject={id:project.id,slug:project.slug,title:project.title,clientName:project.clientName,industry:project.industry,summary:project.summary,coverImageUrl:project.coverImageUrl,coverImageAlt:project.coverImageAlt,resultText:project.resultText,duration:project.duration,displayOrder:project.displayOrder,primaryMediaType:primary?.type??null,primaryMediaUrl:primary?.url,primaryThumbnailUrl:primary?.thumbnailUrl,services:project.services};
+  const name=typeof settings["brand.name"]==="string"?settings["brand.name"]:"Creative Marketing";
+  const slogan=typeof settings["brand.slogan"]==="string"?settings["brand.slogan"]:"WE THINK. WE CREATE. YOU GROW.";
+  const copy=buildHeroCopy({settings,hasActiveOffer:false,hasPublishedPrices:false});
+  return <><header className="fixed inset-x-0 top-0 z-header flex h-nav items-center justify-between gap-3 bg-[#24205f]/95 px-4"><BrandLogo brandName={name} assets={readBrandAssets(settings[BRAND_ASSETS_KEY])} priority/><Link href={"/admin/projects/"+id} className="rounded-full border border-white/30 px-3 py-2 text-xs text-white">معاينة خاصة · العودة للإدارة</Link></header><AuroraMarketingMain><PortfolioHero copy={copy} projects={[card]} gallery={[project]} slogan={slogan} mockups={readPortfolioSettings(settings[PORTFOLIO_SETTING_KEY]).mockups}/><section id="work" className="mx-auto max-w-xl space-y-3 px-5 py-10 text-white"><h2 className="text-lg font-bold">معاينة المشروع المحفوظ فقط</h2><p>لا يظهر هذا المشروع للزوار قبل النشر. هذا المشهد يعرض المشروع منفردًا؛ ترتيب المشاريع المجاورة في الصفحة الرئيسية يعتمد على إعدادات المعرض.</p><Link href={"/admin/projects/"+id} className="text-brand-aqua underline">تعديل المشروع أو نشره</Link></section><div id="packages"/></AuroraMarketingMain></>;
+}

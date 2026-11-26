@@ -1,3 +1,4 @@
+import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedShowcaseProjects } from "@/server/services/project.service";
@@ -15,5 +16,5 @@ export default async function WorkIndex(){
   const brandName=typeof settings["brand.name"]==="string"?settings["brand.name"]:"Creative Marketing";
   const slogan=typeof settings["brand.slogan"]==="string"?settings["brand.slogan"]:"WE THINK. WE CREATE. YOU GROW.";
   const {contactLinks,socialLinks}=buildContactAndSocialLinks(settings);
-  return <><MarketingHeader brandName={brandName}/><AuroraMarketingMain><section className="mx-auto max-w-7xl px-5 pb-16 pt-[calc(var(--nav-height)+4rem)]"><Link href="/" className="text-sm text-brand-aqua">الصفحة الرئيسية</Link><p className="mt-6 text-xs font-bold tracking-widest text-brand-aqua">THE PORTFOLIO</p><h1 className="my-4 font-headline text-[clamp(2rem,5vw,4rem)] font-bold text-white">كل أعمالنا.</h1><PortfolioBrowser projects={projects}/></section></AuroraMarketingMain><MarketingFooter brandName={brandName} slogan={slogan} contactLinks={contactLinks} socialLinks={socialLinks}/></>;
+  return <><MarketingHeader assets={readBrandAssets(settings[BRAND_ASSETS_KEY])} brandName={brandName}/><AuroraMarketingMain><section className="mx-auto max-w-7xl px-5 pb-16 pt-[calc(var(--nav-height)+4rem)]"><Link href="/" className="text-sm text-brand-aqua">الصفحة الرئيسية</Link><p className="mt-6 text-xs font-bold tracking-widest text-brand-aqua">THE PORTFOLIO</p><h1 className="my-4 font-headline text-[clamp(2rem,5vw,4rem)] font-bold text-white">كل أعمالنا.</h1><PortfolioBrowser projects={projects}/></section></AuroraMarketingMain><MarketingFooter assets={readBrandAssets(settings[BRAND_ASSETS_KEY])} brandName={brandName} slogan={slogan} contactLinks={contactLinks} socialLinks={socialLinks}/></>;
 }
