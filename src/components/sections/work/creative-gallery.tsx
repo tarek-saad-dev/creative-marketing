@@ -37,7 +37,7 @@ function ComparePanel({ pair }: { pair: Comparison }) {
   );
 }
 
-export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { projects: CreativeGalleryProject[]; sectionId?: string }) {
+export function CreativeGallery({ projects, sectionId = "creative-gallery", showComparisons = true }: { projects: CreativeGalleryProject[]; sectionId?: string; showComparisons?: boolean }) {
   const { entries, comparisons } = useMemo(() => buildCreativeGallery(projects), [projects]);
   const [filter, setFilter] = useState<"all" | "IMAGE" | "VIDEO">("all");
   const [limit, setLimit] = useState(9);
@@ -75,7 +75,7 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { 
       </div>
       {projects.length > 0 && <Link href="/work" className={styles.more}>كل المشاريع المنشورة <ArrowUpLeft size={17} /></Link>}
       {filtered.length > limit && <button type="button" className={styles.more} onClick={() => setLimit(value => value + 9)}><Images size={18} aria-hidden="true" /> عرض المزيد من الأعمال</button>}
-      {pair && <div className={styles.compareSection}>
+      {showComparisons && pair && <div className={styles.compareSection}>
         <p className={styles.kicker}>BEFORE / AFTER</p>
         <h2 className={styles.compareHeading}>الفرق واضح.</h2>
         <ComparePanel key={pair.id} pair={pair} />

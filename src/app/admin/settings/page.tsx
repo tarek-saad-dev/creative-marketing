@@ -1,3 +1,4 @@
+import { PORTFOLIO_SETTING_KEY } from "@/lib/content/portfolio-settings";
 import type { Metadata } from "next";
 import { requireRole } from "@/server/auth/require-admin";
 import { AdminRole } from "@/generated/prisma";
@@ -31,7 +32,7 @@ export default async function AdminSettingsPage() {
   ]);
 
   const structuredKeySet = new Set<string>(
-    Object.values(STRUCTURED_SETTING_KEYS)
+    [...Object.values(STRUCTURED_SETTING_KEYS), PORTFOLIO_SETTING_KEY]
   );
   const extraSettings = settings.filter(s => !structuredKeySet.has(s.key));
   const isOwner = user.role === AdminRole.OWNER;

@@ -3,3 +3,6 @@ Create a draft in /admin/projects, add title, industry and summary, save, upload
 
 ## Bulk media and layout
 Multi-select image/video files; uploads run sequentially and report individual failures. Successful files remain attached when another fails. Reordering is a single serializable transaction with stable tie-breaking. Project galleries display 12 initially, then load more; homepage media frames use actual dimensions where supplied, bounded from 9:16 to 16:9, with contain fit. Run npm run qa:unit for stress fixtures (40 projects, 840 entries), ratios, and ordering. Cloudinary upload, actual images and browser acceptance still need verification.
+
+## Portfolio Control Center
+/admin/portfolio (ADMIN+) saves a single validated SiteSetting with separate automatic/manual ordered lists for Hero, moving strip, selected works, phone showcase and primary-video showreel. Gallery and comparison visibility are configurable. Hidden Hero artwork leaves headline and CTAs intact. A fallback work anchor remains when both work sections are hidden. Only published projects are selectable and stale selections are skipped publicly. Preview shows real cover order before save; full public layout is viewed after save. Media drag/drop uses an atomic transaction; touch/keyboard use existing reorder buttons. No migration. Browser acceptance and actual uploads still need testing.

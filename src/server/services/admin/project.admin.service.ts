@@ -16,6 +16,7 @@ import {
   findProjectBySlugForAdmin,
   listProjectsForAdmin,
   moveProjectMedia,
+  dropProjectMedia,
   restoreProject,
   setProjectStatus,
   setProjectCoverFromMedia,
@@ -201,4 +202,8 @@ export async function moveProjectMediaAdmin(projectId:string,mediaId:string,dire
   const project=await moveProjectMedia(projectId,mediaId,direction);
   revalidateProject(project.slug);
   return project;
+}
+
+export async function dropProjectMediaAdmin(projectId:string,mediaId:string,targetId:string){
+  const project=await dropProjectMedia(projectId,mediaId,targetId);revalidateProject(project.slug);return project;
 }

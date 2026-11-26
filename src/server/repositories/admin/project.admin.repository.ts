@@ -1,5 +1,5 @@
 import "server-only";
-import { planMediaMove } from "@/lib/media/portfolio-layout";
+import { planMediaMove, planMediaDrop } from "@/lib/media/portfolio-layout";
 
 import { prisma } from "@/lib/db/prisma";
 import { ContentStatus, type Prisma } from "@/generated/prisma";
@@ -332,6 +332,17 @@ export async function moveProjectMedia(projectId: string, mediaId: string, direc
     if(!items.some(item=>item.id===mediaId))throw new Error("الوسيط غير موجود داخل المشروع");
     const updates=planMediaMove(items,mediaId,direction);
     for(const item of updates)await tx.projectMedia.update({where:{id:item.id},data:{displayOrder:item.displayOrder}});
+    return project;
+  },{isolationLevel:"Serializable",timeout:20000});
+}
+
+export async function dropProjectMedia(projectId:string,mediaId:string,targetId:string) {
+  return prisma.$transaction(async tx=>{
+    const project=await tx.project.findFirst({where:{id:projectId,deletedAt:null},select:{id:true,slug:true}});
+    if(!project)throw new Error("المشروع غير موجود");
+    const items=await tx.projectMedia.findMany({where:{projectId},select:{id:true,displayOrder:true}});
+    if(!items.some(item=>item.id===mediaId)||!items.some(item=>item.id===targetId))throw new Error("اختر وسائط من نفس المشروع");
+    for(const item of planMediaDrop(items,mediaId,targetId))await tx.projectMedia.update({where:{id:item.id},data:{displayOrder:item.displayOrder}});
     return project;
   },{isolationLevel:"Serializable",timeout:20000});
 }
