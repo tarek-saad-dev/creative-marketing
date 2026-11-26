@@ -1,15 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Pause, Play } from "lucide-react";
 import { usePrefersReducedMotion } from "@/components/motion/reduced-motion";
+import { ScrollProgress } from "@/components/motion/section-bridge";
 import styles from "./aurora-marketing-main.module.css";
 
-const MarketingMotionContext = createContext(false);
-
-export function useMarketingMotionPaused() {
-  return useContext(MarketingMotionContext);
-}
+import { MarketingMotionContext } from "@/components/motion/marketing-motion-context";
+export { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 
 export function AuroraMarketingMain({ children }: { children: ReactNode }) {
   const [paused, setPaused] = useState(false);
@@ -18,6 +16,7 @@ export function AuroraMarketingMain({ children }: { children: ReactNode }) {
   return (
     <MarketingMotionContext.Provider value={paused || reduced}>
     <main id="main-content" className={styles.shell} data-paused={paused}>
+      <ScrollProgress />
       <div className={styles.mesh} aria-hidden="true">
         <span className={styles.violet} />
         <span className={styles.cyan} />
