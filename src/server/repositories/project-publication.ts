@@ -54,7 +54,7 @@ export const projectCardSelect = {
   displayOrder: true,
   publishedAt: true,
   media: {
-    orderBy: { displayOrder: "asc" as const },
+    orderBy: [{ displayOrder: "asc" as const }, { id: "asc" as const }],
     take: 1,
     select: {
       type: true,
@@ -94,7 +94,7 @@ export const projectDetailSelect = {
   displayOrder: true,
   publishedAt: true,
   media: {
-    orderBy: { displayOrder: "asc" as const },
+    orderBy: [{ displayOrder: "asc" as const }, { id: "asc" as const }],
     select: {
       id: true,
       type: true,

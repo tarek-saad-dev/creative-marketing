@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import {
   addProjectMediaAction,
   chooseProjectCoverAction,
   removeProjectMediaAction,
   updateProjectMediaAction,
+  moveProjectMediaAction,
 } from "@/server/actions/admin/project.action";
 import { getCloudinaryUploadSignatureAction } from "@/server/actions/admin/cloudinary.action";
 import { videoPoster } from "@/lib/media/public-media";
@@ -32,14 +33,17 @@ export function ProjectMediaManager({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [uploadSummary,setUploadSummary]=useState<string | null>(null);
+  const uploadLock=useRef(false);
 
-  const sorted = [...media].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sorted = [...media].sort((a, b) => a.displayOrder - b.displayOrder || a.id.localeCompare(b.id));
 
   function refresh() {
     router.refresh();
   }
 
   async function attachFromUrl(formData: FormData) {
+    if (uploadLock.current) return;
     setError(null);
     const type = String(formData.get("type") ?? "IMAGE") as "IMAGE" | "VIDEO";
     const url = String(formData.get("url") ?? "").trim();
@@ -69,88 +73,66 @@ export function ProjectMediaManager({
     });
   }
 
-  async function uploadFile(file: File, type: "IMAGE" | "VIDEO") {
-    setError(null);
-    setUploadProgress("جاري التوقيع…");
-    try {
-    const sig = await getCloudinaryUploadSignatureAction({
-      folderKey: "projects",
-      projectSlug,
-    });
-    if (!sig.ok) {
-      setError(sig.error);
-      setUploadProgress(null);
-      return;
-    }
-
+  async function uploadFile(file: File, type: "IMAGE" | "VIDEO", displayOrder: number) {
+    const sig = await getCloudinaryUploadSignatureAction({ folderKey: "projects", projectSlug });
+    if (!sig.ok) throw new Error(sig.error);
     const body = new FormData();
     body.append("file", file);
     body.append("api_key", sig.data.apiKey);
     body.append("timestamp", String(sig.data.timestamp));
     body.append("signature", sig.data.signature);
     body.append("folder", sig.data.folder);
-
-    setUploadProgress("جاري الرفع…");
-    const endpoint = `https://api.cloudinary.com/v1_1/${sig.data.cloudName}/${type === "VIDEO" ? "video" : "image"}/upload`;
-    const response = await fetch(endpoint, { method: "POST", body });
-    setUploadProgress(null);
-    if (!response.ok) {
-      setError("فشل رفع الملف إلى Cloudinary");
-      return;
-    }
+    const response = await fetch("https://api.cloudinary.com/v1_1/" + sig.data.cloudName + "/" + (type === "VIDEO" ? "video" : "image") + "/upload", { method: "POST", body });
+    if (!response.ok) throw new Error("فشل رفع الملف إلى Cloudinary");
     const raw = (await response.json()) as {
-      public_id: string;
-      secure_url: string;
-      resource_type: string;
-      format?: string;
-      bytes?: number;
-      width?: number;
-      height?: number;
-      duration?: number;
-      eager?: Array<{ secure_url: string }>;
+      public_id: string; secure_url: string; resource_type: string; format?: string;
+      bytes?: number; width?: number; height?: number; duration?: number; eager?: Array<{secure_url:string}>;
     };
-
-    startTransition(async () => {
-      const result = await addProjectMediaAction({
-        projectId,
-        type,
-        url: raw.secure_url,
-        thumbnailUrl: type === "VIDEO" ? (videoPoster(raw.secure_url,raw.eager?.[0]?.secure_url) || "") : raw.secure_url,
-        altText: "",
-        caption: "",
-        displayOrder: Math.max(-1, ...sorted.map(item=>item.displayOrder)) + 1,
-        cloudinaryPublicId: raw.public_id,
-        resourceType: raw.resource_type,
-        format: raw.format ?? "",
-        bytes: raw.bytes ?? null,
-        width: raw.width ?? null,
-        height: raw.height ?? null,
-        duration: raw.duration ?? null,
-      });
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      refresh();
+    const result = await addProjectMediaAction({
+      projectId,type,url:raw.secure_url,
+      thumbnailUrl:type==="VIDEO" ? (videoPoster(raw.secure_url,raw.eager?.[0]?.secure_url)||"") : raw.secure_url,
+      altText:"",caption:"",displayOrder,cloudinaryPublicId:raw.public_id,
+      resourceType:raw.resource_type,format:raw.format??"",bytes:raw.bytes??null,
+      width:raw.width??null,height:raw.height??null,duration:raw.duration??null,
     });
-    } catch { setError("تعذر رفع الملف. راجع الاتصال وحاول مرة أخرى."); } finally { setUploadProgress(null); }
+    if (!result.ok) throw new Error("رُفع الملف ولكن تعذر ربطه بالمشروع: " + result.error);
+  }
+
+  async function uploadBatch(files: File[]) {
+    if (!files.length || uploadLock.current || pending) return;
+    uploadLock.current=true;
+    setError(null);setUploadSummary(null);
+    const failures:string[]=[];
+    let success=0;
+    let nextOrder=Math.max(-1,...sorted.map(item=>item.displayOrder))+1;
+    try {
+      for (const [index,file] of files.entries()) {
+        setUploadProgress("جاري رفع " + (index+1) + " من " + files.length + ": " + file.name);
+        try {
+          const type=file.type.startsWith("image/")?"IMAGE":file.type.startsWith("video/")?"VIDEO":null;
+          if(!type) throw new Error("صيغة غير مدعومة؛ اختر صورة أو فيديو");
+          await uploadFile(file,type,nextOrder);
+          nextOrder++;
+          success++;
+        } catch(error) {
+          failures.push(file.name+": "+(error instanceof Error?error.message:"تعذر الرفع"));
+        }
+      }
+      setUploadSummary("تم إضافة "+success+" من "+files.length+" ملفات إلى المشروع.");
+      if(failures.length)setError(failures.join("\n"));
+      refresh();
+    } finally {
+      uploadLock.current=false;
+      setUploadProgress(null);
+    }
   }
 
   async function move(mediaId: string, direction: -1 | 1) {
-    const index = sorted.findIndex(m => m.id === mediaId);
-    const swap = sorted[index + direction];
-    if (!swap) return;
+    if (uploadLock.current || pending) return;
+    setError(null);
     startTransition(async () => {
-      await updateProjectMediaAction(mediaId, {
-        altText: sorted[index]?.altText ?? "",
-        caption: sorted[index]?.caption ?? "",
-        displayOrder: swap.displayOrder,
-      });
-      await updateProjectMediaAction(swap.id, {
-        altText: swap.altText ?? "",
-        caption: swap.caption ?? "",
-        displayOrder: sorted[index]?.displayOrder ?? 0,
-      });
+      const result=await moveProjectMediaAction(projectId,mediaId,direction);
+      if(!result.ok)setError(result.error);
       refresh();
     });
   }
@@ -162,43 +144,15 @@ export function ProjectMediaManager({
       </p>
 
       {cloudinaryConfigured ? (
-        <div className="flex flex-wrap gap-3">
-          <label className="inline-flex h-9 cursor-pointer items-center rounded-md border border-border px-3 text-sm">
-            رفع صورة
-            <input
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              disabled={pending || Boolean(uploadProgress)}
-              onChange={event => {
-                const file = event.target.files?.[0];
-                if (file) void uploadFile(file, "IMAGE");
-                event.target.value = "";
-              }}
-            />
+        <div className="space-y-3 rounded-xl border border-dashed border-border p-4">
+          <p className="font-semibold">رفع مجموعة صور وفيديوهات</p>
+          <p className="text-xs text-foreground-muted">اختر أكثر من ملف. يتم الرفع بالترتيب، وتظهر نتيجة كل ملف في حالة الخطأ.</p>
+          <label className="inline-flex min-h-11 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+            اختيار الملفات
+            <input type="file" multiple accept="image/*,video/*" className="sr-only" disabled={pending || Boolean(uploadProgress)} onChange={event=>{const files=Array.from(event.target.files||[]);event.target.value="";void uploadBatch(files);}} />
           </label>
-          <label className="inline-flex h-9 cursor-pointer items-center rounded-md border border-border px-3 text-sm">
-            رفع فيديو
-            <input
-              type="file"
-              accept="video/*"
-              className="sr-only"
-              disabled={pending || Boolean(uploadProgress)}
-              onChange={event => {
-                const file = event.target.files?.[0];
-                if (file) void uploadFile(file, "VIDEO");
-                event.target.value = "";
-              }}
-            />
-          </label>
-          {uploadProgress ? (
-            <span
-              className="self-center text-sm text-foreground-muted"
-              aria-live="polite"
-            >
-              {uploadProgress}
-            </span>
-          ) : null}
+          {uploadProgress && <p className="break-all text-sm text-foreground-muted" role="status">{uploadProgress}</p>}
+          {uploadSummary && <p role="status" className="text-sm font-medium text-foreground">{uploadSummary}</p>}
         </div>
       ) : (
         <p className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-2 text-sm text-foreground-muted">
@@ -247,7 +201,7 @@ export function ProjectMediaManager({
       </form>
 
       {error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="whitespace-pre-line break-words text-sm text-destructive">
           {error}
         </p>
       ) : null}
@@ -264,7 +218,7 @@ export function ProjectMediaManager({
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-muted"><ResilientImage src={item.type === "VIDEO" ? videoPoster(item.url,item.thumbnailUrl) : item.url} alt={item.altText || "معاينة الوسيط"} sizes="96px" /></div>
               <div className="min-w-0 flex-1 space-y-2 text-sm">
                 <p>
-                  {item.type} · ترتيب {item.displayOrder}
+                  {item.type} · ترتيب {index + 1}{item.width && item.height ? " · " + item.width + " × " + item.height : ""}
                 </p>
                 <form
                   className="grid gap-2 sm:grid-cols-2"
@@ -298,6 +252,7 @@ export function ProjectMediaManager({
                   />
                   <button
                     type="submit"
+                    disabled={pending || Boolean(uploadProgress)}
                     className="h-9 rounded-md border border-border px-3 text-xs"
                   >
                     حفظ الوصف
@@ -309,7 +264,7 @@ export function ProjectMediaManager({
                 <button
                   type="button"
                   className="h-8 rounded border border-border px-2 text-xs"
-                  disabled={pending || index === 0}
+                  disabled={pending || Boolean(uploadProgress) || index === 0}
                   onClick={() => void move(item.id, -1)}
                 >
                   أعلى
@@ -317,7 +272,7 @@ export function ProjectMediaManager({
                 <button
                   type="button"
                   className="h-8 rounded border border-border px-2 text-xs"
-                  disabled={pending || index === sorted.length - 1}
+                  disabled={pending || Boolean(uploadProgress) || index === sorted.length - 1}
                   onClick={() => void move(item.id, 1)}
                 >
                   أسفل

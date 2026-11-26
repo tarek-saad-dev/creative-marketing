@@ -55,3 +55,31 @@ test("invalid media schemes and video posters are handled",()=>{
   assert.equal(videoPoster("https://example.com/movie.mp4","https://example.com/movie.mp4","/cover.jpg"),"/cover.jpg");
   assert.equal(videoPoster("https://res.cloudinary.com/demo/video/upload/v1/clip.mp4"),"https://res.cloudinary.com/demo/video/upload/v1/clip.jpg");
 });
+
+import { mediaAspectRatio, planMediaMove } from "../src/lib/media/portfolio-layout";
+test("empty, cover-only and large galleries remain stable",()=>{
+  assert.deepEqual(buildCreativeGallery([]),{entries:[],comparisons:[]});
+  assert.equal(buildCreativeGallery([project("single",[])]).entries.length,1);
+  const projects=Array.from({length:40},(_,i)=>project("p"+i,Array.from({length:20},(_,j)=>media(i+"-"+j,null,j%3===0?"VIDEO":"IMAGE"))));
+  const result=buildCreativeGallery(projects);
+  assert.equal(result.entries.length,840);
+  assert.equal(new Set(result.entries.map(entry=>entry.id)).size,840);
+  assert.deepEqual(result.entries.slice(0,40).map(entry=>entry.slug),projects.map(p=>p.slug));
+});
+test("common media ratios remain proportional and pathological sizes are bounded",()=>{
+  assert.equal(mediaAspectRatio(1080,1080),1);
+  assert.equal(mediaAspectRatio(1080,1350),4/5);
+  assert.equal(mediaAspectRatio(1080,1920),9/16);
+  assert.equal(mediaAspectRatio(1920,1080),16/9);
+  assert.equal(mediaAspectRatio(0,1920),1);
+  assert.equal(mediaAspectRatio(Infinity,1),1);
+  assert.equal(mediaAspectRatio(null,null,4/3),4/3);
+  assert.equal(mediaAspectRatio(10000,1),16/9);
+});
+test("reorder handles ties, gaps, bounds and does not mutate source",()=>{
+  const source=[{id:"b",displayOrder:4},{id:"a",displayOrder:4},{id:"c",displayOrder:9}];
+  assert.deepEqual(planMediaMove(source,"a",1),[{id:"b",displayOrder:0},{id:"a",displayOrder:1},{id:"c",displayOrder:2}]);
+  assert.deepEqual(planMediaMove(source,"a",-1),[]);
+  assert.deepEqual(planMediaMove(source,"missing",1),[]);
+  assert.equal(source[0].displayOrder,4);
+});
