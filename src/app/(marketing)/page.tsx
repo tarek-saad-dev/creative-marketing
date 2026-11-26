@@ -2,7 +2,8 @@ import { getLandingPageData } from "@/server/services/landing-page.service";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { MarketingFooter } from "@/components/layout/marketing-footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
-import { HeroSection } from "@/components/sections/hero/hero-section";
+import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersive-showcase";
+import { getPublishedShowcaseProjects } from "@/server/services/project.service";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
 import { ServicesSection } from "@/components/sections/services/services-section";
@@ -12,13 +13,15 @@ import {
   buildHeroCopy,
   buildContactAndSocialLinks,
 } from "@/components/sections/hero/hero-copy";
-import { heroHandAssetExists } from "@/components/sections/hero/hero-assets";
 import { FaqJsonLd } from "@/components/seo/faq-json-ld";
 
 export const dynamic = "force-dynamic";
 
 export default async function MarketingHomePage() {
-  const data = await getLandingPageData();
+  const [data, showcaseProjects] = await Promise.all([
+    getLandingPageData(),
+    getPublishedShowcaseProjects(),
+  ]);
   const hasActiveOffer = Boolean(data.activeOffer);
   const hasPublishedPrices = data.packages.length > 0;
   const copy = buildHeroCopy({
@@ -29,7 +32,6 @@ export default async function MarketingHomePage() {
   const { contactLinks, socialLinks } = buildContactAndSocialLinks(
     data.settings
   );
-  const showHandAsset = heroHandAssetExists();
 
   const funnelPackages = data.packages.map(pkg => ({
     id: pkg.id,
@@ -59,18 +61,19 @@ export default async function MarketingHomePage() {
       <MarketingHeader brandName={data.brand.name} />
 
       <main id="main-content">
-        <HeroSection
-          brandName={data.brand.name}
+        <PortfolioHero
           copy={copy}
-          showHandAsset={showHandAsset}
+          projects={showcaseProjects}
+          slogan={data.brand.slogan}
         />
         <TrustStrip
           serviceGroups={data.serviceGroups}
           trustMetrics={data.trustMetrics}
           clientLogos={data.clientLogos}
         />
-        <WorkSection projects={data.featuredProjects} />
+        <WorkSection projects={showcaseProjects} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
+        <PortfolioRail projects={showcaseProjects} />
         <CommercialSection
           data={{
             offer: data.offer,

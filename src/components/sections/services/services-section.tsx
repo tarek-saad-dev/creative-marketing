@@ -39,18 +39,16 @@ export function ServicesSection({ ecosystem }: ServicesSectionProps) {
         <Reveal delay={0.1}>
           <div className="card-glow rounded-2xl card-glass px-6 py-8 text-center sm:px-10">
             <p className="font-headline text-lg font-semibold text-foreground text-balance sm:text-xl">
-              المنظومة جاهزة — التسعير والباكدجات تُعرض عندما تكون الأسعار
-              حقيقية ومعتمدة.
+              خلّي كل جزء من التسويق يشتغل لصالح مشروعك.
             </p>
             <p className="body-text mx-auto mt-3 max-w-2xl">
-              لا أسعار تجريبية هنا. انتقل للأسفل عندما تصبح الباكدجات جاهزة
-              للنشر، أو ابدأ حديثًا عن مشروعك مباشرة.
+              اختار الخدمة المناسبة لهدفك، أو خلّينا نساعدك تبني خطة متكاملة.
             </p>
             <a
               href="#packages"
               className="mt-5 inline-flex min-h-11 items-center justify-center text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              الانتقال إلى قسم الباكدجات
+              اكتشف الباكدجات
             </a>
           </div>
         </Reveal>

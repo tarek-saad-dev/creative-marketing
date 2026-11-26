@@ -17,6 +17,15 @@ export async function findFeaturedPublishedProjects(now: Date = new Date()) {
   });
 }
 
+/** All publicly visible work, with featured projects leading the showcase. */
+export async function findPublishedShowcaseProjects(now: Date = new Date()) {
+  return prisma.project.findMany({
+    where: publishedProjectWhere(now),
+    orderBy: [{ featured: "desc" }, ...publishedProjectOrderBy],
+    select: projectCardSelect,
+  });
+}
+
 export async function findPublishedProjectBySlug(
   slug: string,
   now: Date = new Date()
