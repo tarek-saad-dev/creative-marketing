@@ -1,0 +1,136 @@
+.shell {
+  position: relative;
+  isolation: isolate;
+  background: #282067;
+  --aurora-violet: #8955ee;
+  --aurora-blue: #285ac1;
+  --aurora-cyan: #20b5d9;
+  --aurora-mint: #27e8c7;
+}
+
+/* One viewport-sized, non-interactive mesh. Gradients are painted once on
+   bounded layers; only transforms/opacity animate, not gradient stops/blur. */
+.mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 48% 12%, #50309a 0%, transparent 58%),
+    linear-gradient(125deg, #39247f 0%, #282067 38%, #203b78 72%, #18526e 100%);
+}
+.mesh > span {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+.violet {
+  width: 110vw;
+  height: 110vh;
+  top: -38%;
+  left: -30%;
+  background: radial-gradient(ellipse at center, #8955eeaa 0%, #6d28d959 34%, transparent 68%);
+  animation: violet-drift 24s ease-in-out infinite alternate;
+}
+.cyan {
+  width: 105vw;
+  height: 105vh;
+  top: 6%;
+  right: -45%;
+  background: radial-gradient(ellipse at center, #22d3ee9c 0%, #285ac17a 36%, transparent 70%);
+  animation: cyan-drift 29s ease-in-out infinite alternate;
+}
+.mint {
+  width: 90vw;
+  height: 85vh;
+  left: 0%;
+  bottom: -52%;
+  background: radial-gradient(ellipse at center, #27e8c785 0%, #167c9f4d 37%, transparent 70%);
+  animation: mint-drift 33s ease-in-out infinite alternate;
+}
+.veil {
+  inset: 0;
+  background: linear-gradient(180deg, #1a245a30 0%, #1a245a54 42%, #20195922 100%);
+}
+.grain {
+  inset: 0;
+  opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+@keyframes violet-drift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to { transform: translate3d(26vw,17vh,0) scale(1.12); }
+}
+@keyframes cyan-drift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to { transform: translate3d(-27vw,-14vh,0) scale(1.1); }
+}
+@keyframes mint-drift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to { transform: translate3d(22vw,-28vh,0) scale(1.18); }
+}
+.shell[data-paused="true"] .mesh > span {
+  animation-play-state: paused;
+}
+
+.motionToggle {
+  position: absolute;
+  top: calc(var(--nav-height) + .65rem);
+  inset-inline-end: max(1.25rem, calc((100% - 84rem) / 2));
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 44px;
+  padding-inline: .65rem;
+  border-radius: 999px;
+  color: #f8fafc;
+  font-size: .68rem;
+  background: #1a245a60;
+  border: 1px solid #ffffff30;
+}
+.motionToggle:hover { background: #1a245aa0; }
+
+/* Let the shared mesh flow through the editorial sections, with a different
+   local lighting direction rather than an opaque violet panel on each one. */
+.shell :global(.editorial-section)::before,
+.shell :global(.editorial-section + .editorial-section)::before {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 100% 45%, #2366a738, transparent 62%),
+    linear-gradient(180deg, transparent, #21195935 52%, transparent);
+}
+.shell :global(#work)::before {
+  background:
+    radial-gradient(ellipse at 5% 40%, #27e8c726, transparent 56%),
+    radial-gradient(ellipse at 95% 70%, #355cb66b, transparent 62%);
+}
+.shell :global(#services)::before {
+  background:
+    radial-gradient(ellipse at 70% 45%, #8955ee4d, transparent 65%),
+    radial-gradient(ellipse at 5% 80%, #22d3ee25, transparent 55%);
+}
+.shell :global(#packages)::before {
+  background:
+    radial-gradient(ellipse at 5% 45%, #406ad951, transparent 63%),
+    radial-gradient(ellipse at 90% 80%, #6d28d94d, transparent 55%);
+}
+.shell :global(#contact)::before {
+  background:
+    radial-gradient(ellipse at 50% 80%, #22d3ee36, transparent 65%),
+    linear-gradient(180deg, transparent, #1a245a75);
+}
+
+@media (max-width: 640px) {
+  /* Smaller travel on handheld devices; no large full-page canvas. */
+  .violet { width: 150vw; }
+  .cyan { width: 140vw; right: -55%; }
+  .mint { width: 125vw; }
+  .grain { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mesh > span { animation: none; }
+  .motionToggle { display: none; }
+}

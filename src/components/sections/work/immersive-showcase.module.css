@@ -2,15 +2,15 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: calc(var(--nav-height) + 3rem) 1.25rem 2.5rem;
-  background: radial-gradient(ellipse at 50% 70%, #5133a1 0, transparent 57%), linear-gradient(155deg, #24185f, #2c1f73 50%, #1a245a);
+  padding: calc(var(--nav-height) + 4.5rem) 1.25rem 2.5rem;
+  background: radial-gradient(ellipse at 50% 70%, #8955ee28 0, transparent 62%);
 }
 .heroGlow {
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(ellipse at 75% 52%, #27e8c719, transparent 45%), radial-gradient(ellipse at 15% 28%, #6d28d960, transparent 44%);
+  background: radial-gradient(ellipse at 78% 66%, #22d3ee30, transparent 50%), radial-gradient(ellipse at 8% 26%, #8955ee30, transparent 52%);
 }
 .heroInner { max-width: 86rem; margin: auto; }
 .heroCopy { max-width: 58rem; margin: auto; text-align: center; display: grid; justify-items: center; gap: 1rem; position: relative; z-index: 2; }
@@ -55,7 +55,7 @@
 .conceptWord { font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: clamp(1.6rem, 14cqi, 5.5rem); line-height: .91; letter-spacing: -.07em; white-space: pre-line; }
 .conceptSub { margin-top: .9em; font-size: clamp(.5rem,2.5cqi,.85rem); font-weight: 700; letter-spacing: .06em; }
 .conceptBadge { position: absolute; bottom: 5%; font-size: clamp(.43rem,2.2cqi,.72rem); font-weight: 700; padding: .3rem .45rem; border-radius: .3rem; background: #f8fafc; color: #111827; }
-.railSection { background: radial-gradient(ellipse at 90% 0%,#6d28d94a,transparent 60%),#2c1f73; padding: clamp(3rem,7vw,6rem) max(1.25rem,calc((100% - 80rem)/2)); overflow: hidden; }
+.railSection { background: radial-gradient(ellipse at 90% 25%,#22d3ee26,transparent 62%), radial-gradient(ellipse at 10% 65%,#8955ee38,transparent 60%); padding: clamp(3rem,7vw,6rem) max(1.25rem,calc((100% - 80rem)/2)); overflow: hidden; }
 .railHeader { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .railHeader h2 { font-size: clamp(2rem,4.4vw,3.6rem); line-height: 1.45; color: #f8fafc; font-weight: 800; margin: .4rem 0; }
 .rail { display: flex; gap: 1rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: #8274c0 transparent; padding: .5rem .25rem 1.25rem; }
@@ -73,7 +73,7 @@
 .reel h3 { font-size: clamp(1.6rem,3vw,2.5rem); color: #fff; font-weight: 700; margin: .5rem 0; }
 .reel video { width: 100%; aspect-ratio: 16/9; object-fit: contain; border-radius: 1rem; background: #1a245a; }
 @media (max-width: 640px) {
-  .hero { padding-top: calc(var(--nav-height) + 1.7rem); }
+  .hero { padding-top: calc(var(--nav-height) + 4.1rem); }
   .heroCopy { gap: .8rem; }
   .stage { height: 20rem; }
   .stageCard { width: 72%; height: 76%; border-radius: .85rem; }

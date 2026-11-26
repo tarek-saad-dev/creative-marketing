@@ -17,3 +17,6 @@ This is a public marketing UI redesign; database schema, admin and lead funnel a
 - Verify touch scrolling, arrows, focus, reduced-motion and optional slideshow.
 - Verify contact form, packages, navigation, and admin unchanged.
 - Upload approved real portfolio images/videos via CMS for the intended commercial experience.
+
+## Aurora background
+A shared viewport-sized CSS mesh behind the public home page, with three independently animated radial layers, subtle grain, and distinct translucent section washes. No new dependency or WebGL canvas. Pause control and OS reduced-motion are supported. The hero and gallery no longer cover the mesh with opaque backgrounds. Admin styles are unaffected. Browser visual and performance checks are still required, including mobile Safari and reduced-motion.

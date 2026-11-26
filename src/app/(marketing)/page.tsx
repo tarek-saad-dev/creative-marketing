@@ -1,4 +1,5 @@
 import { getLandingPageData } from "@/server/services/landing-page.service";
+import { AuroraMarketingMain } from "@/components/layout/aurora-marketing-main";
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { MarketingFooter } from "@/components/layout/marketing-footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
@@ -60,7 +61,7 @@ export default async function MarketingHomePage() {
 
       <MarketingHeader brandName={data.brand.name} />
 
-      <main id="main-content">
+      <AuroraMarketingMain>
         <PortfolioHero
           copy={copy}
           projects={showcaseProjects}
@@ -83,7 +84,7 @@ export default async function MarketingHomePage() {
             settings: data.settings,
           }}
         />
-      </main>
+      </AuroraMarketingMain>
 
       <MarketingFooter
         brandName={data.brand.name}
