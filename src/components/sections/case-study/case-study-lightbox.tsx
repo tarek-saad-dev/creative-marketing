@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Dialog, DialogPanel } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import Image from "next/image";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
 import { canUseNextImage } from "@/lib/media/public-media";
@@ -37,6 +37,7 @@ export function CaseStudyLightbox({
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLVideoElement || event.target instanceof HTMLInputElement) return;
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         onNavigate((openIndex! + 1) % items.length);
@@ -52,19 +53,20 @@ export function CaseStudyLightbox({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-toast">
-      <div className="fixed inset-0 bg-black/80" aria-hidden="true" />
+      <div className="fixed inset-0 bg-[#131b45]/90" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-3 sm:p-6">
-        <DialogPanel className="relative flex max-h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111827] shadow-floating">
+        <DialogPanel className="relative flex max-h-full w-full max-w-[94rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1a245a] shadow-floating">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-            <p className="truncate text-sm text-foreground">
+            <DialogTitle className="truncate text-sm text-foreground">
               {item?.caption || item?.altText || "معرض المشروع"}
-            </p>
+            </DialogTitle>
+            {isOpen && <span className="text-xs text-foreground-muted" dir="ltr">{openIndex! + 1} / {items.length}</span>}
             <IconButton label="إغلاق المعرض" onClick={onClose}>
               <X className="h-5 w-5" />
             </IconButton>
           </div>
 
-          <div className="relative flex min-h-[50vh] flex-1 items-center justify-center bg-black/40 p-2 sm:p-4">
+          <div className="relative flex min-h-[50vh] flex-1 items-center justify-center bg-[#202b62]/70 p-2 sm:p-4">
             {item?.type === "VIDEO" ? (
               <video
                 key={item.id}
@@ -102,7 +104,7 @@ export function CaseStudyLightbox({
                   type="button"
                   className="absolute start-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-foreground backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="العنصر السابق"
-                  onClick={() => onNavigate((openIndex! + 1) % items.length)}
+                  onClick={() => onNavigate((openIndex! - 1 + items.length) % items.length)}
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -111,7 +113,7 @@ export function CaseStudyLightbox({
                   className="absolute end-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-foreground backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="العنصر التالي"
                   onClick={() =>
-                    onNavigate((openIndex! - 1 + items.length) % items.length)
+                    onNavigate((openIndex! + 1) % items.length)
                   }
                 >
                   <ChevronLeft className="h-5 w-5" />
