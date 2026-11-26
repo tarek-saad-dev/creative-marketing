@@ -1,3 +1,4 @@
+import { niches } from "@/lib/content/niches";
 import type { MetadataRoute } from "next";
 import { getPublishedProjectSlugs } from "@/server/services/project.service";
 
@@ -25,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    ...niches.map(niche => ({ url: siteUrl + niche.path, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...slugs.map(slug => ({
       url: `${siteUrl}/work/${slug}`,
       lastModified: new Date(),

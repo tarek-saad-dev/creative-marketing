@@ -23,9 +23,10 @@ import { cn } from "@/lib/utils";
 
 type MarketingHeaderProps = {
   brandName: string;
+  contactHref?: string;
 };
 
-export function MarketingHeader({ brandName }: MarketingHeaderProps) {
+export function MarketingHeader({ brandName, contactHref = marketingPrimaryCta.href }: MarketingHeaderProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState("");
@@ -101,7 +102,7 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
           </nav>
 
           <div className="hidden lg:block">
-            <BrandButton href={marketingPrimaryCta.href} size="sm">
+            <BrandButton href={contactHref} size="sm">
               {marketingPrimaryCta.name}
             </BrandButton>
           </div>
@@ -174,7 +175,7 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
 
                 <div className="mt-auto pt-8">
                   <BrandButton
-                    href={marketingPrimaryCta.href}
+                    href={contactHref}
                     className="w-full"
                     onClick={() => setMobileOpen(false)}
                   >

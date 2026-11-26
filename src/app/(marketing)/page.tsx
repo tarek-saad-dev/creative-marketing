@@ -5,6 +5,7 @@ import { MarketingFooter } from "@/components/layout/marketing-footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersive-showcase";
 import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work/scroll-motion-showcase";
+import { NicheShowcase } from "@/components/sections/niches/niche-showcase";
 import { CreativeGallery } from "@/components/sections/work/creative-gallery";
 import { getPublishedCreativeGallery, getPublishedShowcaseProjects } from "@/server/services/project.service";
 import { SectionBridge } from "@/components/motion/section-bridge";
@@ -80,6 +81,7 @@ export default async function MarketingHomePage() {
         {showcaseProjects.length > 0 && <WorkSection projects={showcaseProjects.slice(0, 6)} />}
         <SectionBridge words={["THINK.", "CREATE.", "BUILD.", "GROW."]} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
+        <NicheShowcase />
         {showcaseProjects.length > 1 && <DeviceShowcase projects={showcaseProjects.slice(0, 6)} />}
         {showcaseProjects.some(project => project.primaryMediaType === "VIDEO") && <PortfolioRail projects={showcaseProjects} showreelOnly />}
         <CreativeGallery projects={creativeGallery} sectionId={showcaseProjects.length ? "creative-gallery" : "work"} />

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -51,17 +52,17 @@ const LeadFunnelContext = createContext<LeadFunnelContextValue | null>(null);
 
 const TOKEN_KEY = "cm_lead_session_token";
 
-function readToken(): string | null {
+function readToken(key: string): string | null {
   try {
-    return sessionStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(key);
   } catch {
     return null;
   }
 }
 
-function writeToken(token: string) {
+function writeToken(key: string, token: string) {
   try {
-    sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(key, token);
   } catch {
     /* ignore */
   }
@@ -92,6 +93,7 @@ export function LeadFunnelProvider({
   services,
   hasWhatsApp,
 }: LeadFunnelProviderProps) {
+  const openVersion = useRef(0);
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(
@@ -103,6 +105,8 @@ export function LeadFunnelProvider({
   const [stepIndex, setStepIndex] = useState(0);
 
   const open = useCallback(async (options: OpenOptions) => {
+    const version = ++openVersion.current;
+    setSessionId(null);
     setSource(options.source);
     setIsCustom(Boolean(options.isCustom));
     setSelectedPackageId(options.packageId ?? null);
@@ -111,17 +115,22 @@ export function LeadFunnelProvider({
     setIsOpen(true);
 
     const utm = readUtm();
-    const result = await openLeadSessionAction({
-      sessionToken: readToken() ?? undefined,
+    const nicheKey = options.source.startsWith("niche_") ? ":" + options.source.split(":")[0] : "";
+    const key = TOKEN_KEY + nicheKey;
+    const request = {
+      sessionToken: readToken(key) ?? undefined,
       source: options.source,
       referrer: document.referrer || undefined,
       landingUrl: window.location.href,
       cta: options.source,
       ...utm,
-    });
+    };
+    let result = await openLeadSessionAction(request);
+    if (result.ok && result.alreadySubmitted) result = await openLeadSessionAction({...request, sessionToken: undefined});
+    if (version !== openVersion.current) return;
 
     if (result.ok) {
-      writeToken(result.sessionToken);
+      writeToken(key, result.sessionToken);
       setSessionId(result.sessionId);
 
       if (options.isCustom) {
@@ -140,6 +149,7 @@ export function LeadFunnelProvider({
   }, []);
 
   const close = useCallback(async () => {
+    ++openVersion.current;
     if (sessionId && stepIndex > 0) {
       await recordLeadAbandonedAction({ sessionId, step: `step_${stepIndex}` });
     }

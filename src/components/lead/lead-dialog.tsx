@@ -5,6 +5,7 @@ import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { nicheForSource } from "@/lib/content/niches";
 import { X } from "lucide-react";
 import { submitLeadAction } from "@/server/actions/submit-lead.action";
 import {
@@ -83,19 +84,20 @@ export function LeadDialog({
     url: string | null;
   } | null>(null);
 
+  const niche = nicheForSource(source);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       phone: "",
       projectName: "",
-      industry: "",
+      industry: niche?.industry ?? "",
       projectStage: "",
       requestedServices: [],
       packageId: selectedPackageId,
       isCustomPackage: isCustom,
       budgetRange: "",
-      message: "",
+      message: niche?.requestHint ?? "",
       preferredContactMethod: hasWhatsApp ? "whatsapp" : "phone",
       website: "",
     },

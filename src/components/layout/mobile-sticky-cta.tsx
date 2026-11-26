@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 /**
  * Mobile sticky CTA opens the Lead Funnel (not WhatsApp directly).
  */
-export function MobileStickyCta() {
+export function MobileStickyCta({ source = "mobile_sticky_cta", isCustom = false }: {source?: string; isCustom?: boolean} = {}) {
   const [visible, setVisible] = useState(false);
   const reduced = usePrefersReducedMotion();
   const { open, isOpen, hasWhatsApp } = useLeadFunnel();
@@ -56,7 +56,7 @@ export function MobileStickyCta() {
       <button
         type="button"
         tabIndex={visible ? 0 : -1}
-        onClick={() => open({ source: "mobile_sticky_cta" })}
+        onClick={() => open({ source, isCustom })}
         className="flex min-h-12 w-full items-center justify-center rounded-pill bg-[image:var(--gradient-cta)] px-5 text-sm font-bold text-primary-foreground shadow-floating focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {hasWhatsApp ? "ابدأ مشروعك على واتساب" : "ابدأ مشروعك"}
