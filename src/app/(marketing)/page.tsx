@@ -5,7 +5,8 @@ import { MarketingFooter } from "@/components/layout/marketing-footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersive-showcase";
 import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work/scroll-motion-showcase";
-import { getPublishedShowcaseProjects } from "@/server/services/project.service";
+import { CreativeGallery } from "@/components/sections/work/creative-gallery";
+import { getPublishedCreativeGallery, getPublishedShowcaseProjects } from "@/server/services/project.service";
 import { SectionBridge } from "@/components/motion/section-bridge";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
@@ -21,9 +22,10 @@ import { FaqJsonLd } from "@/components/seo/faq-json-ld";
 export const dynamic = "force-dynamic";
 
 export default async function MarketingHomePage() {
-  const [data, showcaseProjects] = await Promise.all([
+  const [data, showcaseProjects, creativeGallery] = await Promise.all([
     getLandingPageData(),
     getPublishedShowcaseProjects(),
+    getPublishedCreativeGallery(),
   ]);
   const hasActiveOffer = Boolean(data.activeOffer);
   const hasPublishedPrices = data.packages.length > 0;
@@ -80,6 +82,7 @@ export default async function MarketingHomePage() {
         <ServicesSection ecosystem={data.serviceEcosystem} />
         <DeviceShowcase projects={showcaseProjects} />
         <PortfolioRail projects={showcaseProjects} />
+        <CreativeGallery projects={creativeGallery} />
         <SectionBridge words={["IDEAS.", "DESIGN.", "IMPACT."]} />
         <CommercialSection
           data={{

@@ -200,6 +200,12 @@ export function ProjectMediaManager({
         </p>
       )}
 
+      <p className="rounded-md border border-border bg-muted/40 p-3 text-sm">
+        لإضافة مقارنة قبل وبعد، اكتب في بداية تعليق صورتين من نفس المشروع
+        <code dir="ltr" className="mx-1 inline-block">[before:brand]</code>
+        و<code dir="ltr" className="mx-1 inline-block">[after:brand]</code>.
+        استخدم نفس المعرّف للزوج، ومعرّفًا مختلفًا لكل مقارنة. أضف بعدها التعليق العادي، ويُفضّل استخدام صورتين بنفس الأبعاد.
+      </p>
       <form
         className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-2"
         action={attachFromUrl}

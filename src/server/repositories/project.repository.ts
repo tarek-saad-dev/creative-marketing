@@ -170,3 +170,23 @@ export async function findPublishedProjectsForServicePreviews(
     },
   });
 }
+
+/** Bounded public gallery feed. Draft/future/deleted projects are excluded. */
+export async function findPublishedCreativeGallery(now: Date = new Date()) {
+  return prisma.project.findMany({
+    where: publishedProjectWhere(now),
+    orderBy: [{ featured: "desc" }, ...publishedProjectOrderBy],
+    take: 16,
+    select: {
+      id: true, slug: true, title: true, coverImageUrl: true, coverImageAlt: true,
+      media: {
+        orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
+        take: 16,
+        select: {
+          id: true, type: true, url: true, thumbnailUrl: true,
+          altText: true, caption: true, width: true, height: true,
+        },
+      },
+    },
+  });
+}

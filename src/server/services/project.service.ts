@@ -1,8 +1,10 @@
 import "server-only";
+import { publicMediaCaption } from "@/lib/content/creative-gallery";
 
 import type { ServiceCategory } from "@/generated/prisma";
 import {
   findFeaturedPublishedProjects,
+  findPublishedCreativeGallery,
   findPublishedShowcaseProjects,
   findPublishedProjectBySlug,
   findPublishedProjectSlugs,
@@ -177,7 +179,7 @@ function mapProjectDetail(
       url: item.url,
       thumbnailUrl: item.thumbnailUrl,
       altText: item.altText,
-      caption: item.caption,
+      caption: publicMediaCaption(item.caption),
       width: item.width,
       height: item.height,
       displayOrder: item.displayOrder,
@@ -289,4 +291,8 @@ export function buildServicesEcosystem(
       projectPreview,
     };
   }).filter(group => group.services.length > 0);
+}
+
+export async function getPublishedCreativeGallery() {
+  return findPublishedCreativeGallery();
 }
