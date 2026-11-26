@@ -37,6 +37,8 @@ try {
           const b=await object.boundingBox();
           assert.ok(b && b.x>=stageBounds.x-3 && b.y>=stageBounds.y-3 && b.x+b.width<=stageBounds.x+stageBounds.width+3 && b.y+b.height<=stageBounds.y+stageBounds.height+3,"Projected object must stay inside stage");
         }
+        const overlap=await stage.evaluate(node=>{const main=node.querySelector('[data-offset="0"]')?.getBoundingClientRect();if(!main)return false;return [...node.querySelectorAll("[data-hero-object]")].some(object=>{if(object.getAttribute("data-offset")==="0"||getComputedStyle(object).display==="none")return false;const b=object.getBoundingClientRect();return Math.min(b.right,main.right)-Math.max(b.left,main.left)>3&&Math.min(b.bottom,main.bottom)-Math.max(b.top,main.top)>3;});});
+        assert.equal(overlap,false,"Other hero objects must not cover central artwork");
         const badFit=await stage.locator("img").evaluateAll(images=>images.some(img=>getComputedStyle(img).objectFit!=="contain"));
         assert.equal(badFit,false,"Hero images must not crop");
       }
