@@ -6,6 +6,7 @@ import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersive-showcase";
 import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work/scroll-motion-showcase";
 import { getPublishedShowcaseProjects } from "@/server/services/project.service";
+import { SectionBridge } from "@/components/motion/section-bridge";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
 import { ServicesSection } from "@/components/sections/services/services-section";
@@ -75,9 +76,11 @@ export default async function MarketingHomePage() {
           clientLogos={data.clientLogos}
         />
         <WorkSection projects={showcaseProjects} />
+        <SectionBridge words={["THINK.", "CREATE.", "BUILD.", "GROW."]} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
         <DeviceShowcase projects={showcaseProjects} />
         <PortfolioRail projects={showcaseProjects} />
+        <SectionBridge words={["IDEAS.", "DESIGN.", "IMPACT."]} />
         <CommercialSection
           data={{
             offer: data.offer,

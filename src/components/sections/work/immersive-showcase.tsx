@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpLeft, Pause, Play, Film } from "lucide-react";
+import { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 import { usePrefersReducedMotion } from "@/components/motion/reduced-motion";
 import { canUseNextImage, isUsableMediaUrl } from "@/lib/media/public-media";
 import { BrandButton } from "@/components/ui/brand-button";
@@ -67,18 +68,19 @@ function Coverflow({ items }: { items: ShowcaseItem[] }) {
   const [playing, setPlaying] = useState(false);
   const [hovered, setHovered] = useState(false);
   const reduced = usePrefersReducedMotion();
+  const paused = useMarketingMotionPaused();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const length = items.length;
   const activeIndex = index % length;
   const active = items[activeIndex];
 
   useEffect(() => {
-    if (!playing || hovered || reduced || length < 2) return;
+    if (!playing || hovered || reduced || paused || length < 2) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) setIndex(current => (current + 1) % length);
     }, 4500);
     return () => window.clearInterval(timer);
-  }, [playing, hovered, reduced, length]);
+  }, [playing, hovered, reduced, paused, length]);
 
   function move(delta: number) {
     setPlaying(false);
@@ -138,7 +140,7 @@ function Coverflow({ items }: { items: ShowcaseItem[] }) {
         ))}
       </div>
       <div className={styles.stageCaption}>
-        <div aria-live={playing && !hovered && !reduced ? "off" : "polite"} className={styles.captionText}>
+        <div aria-live={playing && !hovered && !reduced && !paused ? "off" : "polite"} className={styles.captionText}>
           <span className={styles.eyebrow}>{active.label}</span>
           <h2>{active.title}</h2>
           {active.project ? (
@@ -150,7 +152,7 @@ function Coverflow({ items }: { items: ShowcaseItem[] }) {
             <button type="button" onClick={() => move(-1)} aria-label="السابق"><ArrowLeft size={21} /></button>
             <span className={styles.counter} aria-label={"التصميم " + (activeIndex + 1) + " من " + length}>{String(activeIndex + 1).padStart(2, "0")} / {String(length).padStart(2, "0")}</span>
             <button type="button" onClick={() => move(1)} aria-label="التالي"><ArrowRight size={21} /></button>
-            {!reduced && <button type="button" aria-label={playing ? "إيقاف العرض التلقائي" : "تشغيل العرض التلقائي"} onClick={() => setPlaying(value => !value)}>{playing ? <Pause size={17} /> : <Play size={17} />}</button>}
+            {!reduced && !paused && <button type="button" aria-label={playing ? "إيقاف العرض التلقائي" : "تشغيل العرض التلقائي"} onClick={() => setPlaying(value => !value)}>{playing ? <Pause size={17} /> : <Play size={17} />}</button>}
           </div>
         )}
       </div>
