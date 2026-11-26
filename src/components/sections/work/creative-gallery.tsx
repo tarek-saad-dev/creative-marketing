@@ -1,28 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import Link from "next/link";
 import { ArrowUpLeft, Maximize2, Play, Images } from "lucide-react";
 import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-lightbox";
 import { buildCreativeGallery, type CreativeGalleryProject, type Comparison, type GalleryEntry } from "@/lib/content/creative-gallery";
-import { canUseNextImage, isUsableMediaUrl } from "@/lib/media/public-media";
+import { videoPoster } from "@/lib/media/public-media";
 import { getItems, Artwork } from "./immersive-showcase";
 import styles from "./creative-gallery.module.css";
 
 function MediaImage({ url, alt, sizes }: { url: string; alt: string; sizes: string }) {
-  return canUseNextImage(url) ? (
-    <Image src={url} alt={alt} fill sizes={sizes} className={styles.image} />
-  ) : (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={url} alt={alt} loading="lazy" className={styles.image} />
-  );
+  return <ResilientImage src={url} alt={alt} sizes={sizes} className={styles.image} />;
 }
 function preview(entry: GalleryEntry) {
   if (entry.type === "IMAGE") return entry.url;
-  const thumb = entry.thumbnailUrl;
-  if (isUsableMediaUrl(thumb) && thumb !== entry.url && !thumb.startsWith("//") && !/\.(mp4|webm|mov)(\?|$)/i.test(thumb)) return thumb;
-  return isUsableMediaUrl(entry.cover) && entry.cover !== entry.url && !entry.cover.startsWith("//") ? entry.cover : null;
+  return videoPoster(entry.url,entry.thumbnailUrl,entry.cover);
 }
 function ComparePanel({ pair }: { pair: Comparison }) {
   const [position, setPosition] = useState(50);
@@ -78,6 +71,7 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery" }: { 
           );
         }) : getItems([]).map(item => <article key={item.id} className={styles.tile}><div className={styles.tileButton}><Artwork item={item} /></div><div className={styles.tileMeta}>{item.title}</div></article>)}
       </div>
+      {projects.length > 0 && <Link href="/work" className={styles.more}>كل المشاريع المنشورة <ArrowUpLeft size={17} /></Link>}
       {filtered.length > limit && <button type="button" className={styles.more} onClick={() => setLimit(value => value + 9)}><Images size={18} aria-hidden="true" /> عرض المزيد من الأعمال</button>}
       {pair && <div className={styles.compareSection}>
         <p className={styles.kicker}>BEFORE / AFTER</p>

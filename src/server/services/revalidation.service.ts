@@ -33,6 +33,9 @@ export function revalidateProject(slug?: string | null): void {
   if (slug) {
     revalidatePath(`/work/${slug}`);
   }
+  revalidatePath("/work");
+  revalidatePath("/industries/[slug]", "page");
+  revalidatePath("/services/teachers-books");
   revalidatePath("/sitemap.xml");
 }
 

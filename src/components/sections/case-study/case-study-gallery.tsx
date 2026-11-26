@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { ResilientImage } from "@/components/ui/resilient-media";
 import { cn } from "@/lib/utils";
-import { canUseNextImage, isUsableMediaUrl } from "@/lib/media/public-media";
+import { videoPoster, isUsableMediaUrl } from "@/lib/media/public-media";
 import {
   CaseStudyLightbox,
   type GalleryLightboxItem,
@@ -69,45 +69,10 @@ export function CaseStudyGallery({ items }: CaseStudyGalleryProps) {
                 >
                   {item.type === "VIDEO" ? (
                     <>
-                      {item.thumbnailUrl &&
-                      canUseNextImage(item.thumbnailUrl) ? (
-                        <Image
-                          src={item.thumbnailUrl}
-                          alt={item.altText ?? "معاينة فيديو"}
-                          fill
-                          className="object-contain"
-                          sizes="(max-width:768px) 100vw, 50vw"
-                        />
-                      ) : canUseNextImage(item.url) && item.type === "VIDEO" ? (
-                        <div className="absolute inset-0 bg-gradient-to-br from-brand-violet/40 to-background-deep" />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-brand-violet/40 to-background-deep" />
-                      )}
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="rounded-full border border-white/30 bg-black/40 px-4 py-2 text-sm text-foreground backdrop-blur-sm">
-                          تشغيل الفيديو
-                        </span>
-                      </span>
+                      <ResilientImage src={videoPoster(item.url,item.thumbnailUrl)} alt={item.altText || "معاينة فيديو"} sizes="50vw" />
+                      <span className="absolute inset-0 grid place-items-center"><span className="rounded-full bg-[#1a245a] px-4 py-2 text-sm text-white">تشغيل الفيديو</span></span>
                     </>
-                  ) : canUseNextImage(item.url) ? (
-                    <Image
-                      src={item.url}
-                      alt={item.altText ?? "صورة من المشروع"}
-                      fill
-                      className="object-contain transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
-                      sizes={
-                        index === 0 ? "100vw" : "(max-width:768px) 100vw, 50vw"
-                      }
-                    />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.url}
-                      alt={item.altText ?? "صورة من المشروع"}
-                      className="absolute inset-0 h-full w-full object-contain"
-                      loading="lazy"
-                    />
-                  )}
+                  ) : <ResilientImage src={item.url} alt={item.altText || "صورة من المشروع"} sizes="(max-width:768px) 100vw, 50vw" />}
                 </div>
               </button>
               {item.caption ? (

@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 1,
     },
+    { url: siteUrl + "/work", changeFrequency: "weekly", priority: 0.9 },
     ...niches.map(niche => ({ url: siteUrl + niche.path, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...slugs.map(slug => ({
       url: `${siteUrl}/work/${slug}`,

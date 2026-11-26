@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { CinematicSection } from "@/components/ui/cinematic-section";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -43,8 +44,7 @@ export function WorkSection({ projects }: WorkSectionProps) {
             <WorkEmptyState isDevelopment={isDevelopment} />
           )}
         </Reveal>
-
-
+        {hasProjects && <Link href="/work" className="inline-flex min-h-11 items-center rounded-full border border-white/25 px-5 text-sm font-bold text-brand-aqua">شوف كل المشاريع ←</Link>}
       </Container>
     </CinematicSection>
   );

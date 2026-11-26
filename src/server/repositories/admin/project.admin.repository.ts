@@ -317,3 +317,7 @@ export async function countProjectsByStatus() {
     orderBy: { status: "asc" },
   });
 }
+
+export async function setProjectCoverFromMedia(id: string, url: string, alt: string) {
+  return prisma.project.update({where:{id,deletedAt:null},data:{coverImageUrl:url,coverImageAlt:alt},select:{id:true,slug:true}});
+}

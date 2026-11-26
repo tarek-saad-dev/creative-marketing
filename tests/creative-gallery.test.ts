@@ -46,3 +46,12 @@ test("niche lead context and industry matching remain explicit", () => {
   assert.equal(matchesNiche(niches[0],{industry:"Barber shop",services:[]}),true);
   assert.equal(matchesNiche(niches[0],{industry:"Hotel",services:[]}),false);
 });
+
+import { isUsableMediaUrl, isImageCandidate, videoPoster } from "../src/lib/media/public-media";
+test("invalid media schemes and video posters are handled",()=>{
+  assert.equal(isUsableMediaUrl("//example.com/image.jpg"),false);
+  assert.equal(isUsableMediaUrl("javascript:alert(1)"),false);
+  assert.equal(isImageCandidate("https://example.com/movie.mp4"),false);
+  assert.equal(videoPoster("https://example.com/movie.mp4","https://example.com/movie.mp4","/cover.jpg"),"/cover.jpg");
+  assert.equal(videoPoster("https://res.cloudinary.com/demo/video/upload/v1/clip.mp4"),"https://res.cloudinary.com/demo/video/upload/v1/clip.jpg");
+});
