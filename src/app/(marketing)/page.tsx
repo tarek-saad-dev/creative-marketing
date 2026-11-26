@@ -71,18 +71,18 @@ export default async function MarketingHomePage() {
           projects={showcaseProjects}
           slogan={data.brand.slogan}
         />
-        <MovingPortfolioStrip projects={showcaseProjects} />
+        {showcaseProjects.length >= 3 && <MovingPortfolioStrip projects={showcaseProjects.slice(0, 8)} />}
         <TrustStrip
           serviceGroups={data.serviceGroups}
           trustMetrics={data.trustMetrics}
           clientLogos={data.clientLogos}
         />
-        <WorkSection projects={showcaseProjects} />
+        {showcaseProjects.length > 0 && <WorkSection projects={showcaseProjects.slice(0, 6)} />}
         <SectionBridge words={["THINK.", "CREATE.", "BUILD.", "GROW."]} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
-        <DeviceShowcase projects={showcaseProjects} />
-        <PortfolioRail projects={showcaseProjects} />
-        <CreativeGallery projects={creativeGallery} />
+        {showcaseProjects.length > 1 && <DeviceShowcase projects={showcaseProjects.slice(0, 6)} />}
+        {showcaseProjects.some(project => project.primaryMediaType === "VIDEO") && <PortfolioRail projects={showcaseProjects} showreelOnly />}
+        <CreativeGallery projects={creativeGallery} sectionId={showcaseProjects.length ? "creative-gallery" : "work"} />
         <SectionBridge words={["IDEAS.", "DESIGN.", "IMPACT."]} />
         <CommercialSection
           data={{

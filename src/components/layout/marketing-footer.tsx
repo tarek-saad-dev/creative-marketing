@@ -25,7 +25,7 @@ export function MarketingFooter({
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative border-t border-border/30 bg-background-deep/60">
+    <footer className="relative border-t border-border/30 bg-gradient-to-br from-[#322367] via-[#242d68] to-[#16465c]">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border-strong/40 to-transparent"
         aria-hidden="true"
@@ -54,7 +54,7 @@ export function MarketingFooter({
               </Link>
             ))}
             <Link
-              href="#contact"
+              href="/#contact"
               className="text-sm text-foreground-muted transition-colors hover:text-primary"
             >
               تواصل
@@ -63,6 +63,7 @@ export function MarketingFooter({
         </div>
 
         <div className="space-y-6">
+          <Link href="/#contact" className="inline-flex min-h-11 items-center rounded-full bg-brand-aqua px-5 font-semibold text-brand-navy">ابدأ مشروعك</Link>
           {contactLinks.length > 0 ? (
             <div>
               <p className="mb-3 text-sm font-semibold text-foreground">
@@ -116,7 +117,7 @@ export function MarketingFooter({
             © {year} {brandName}. جميع الحقوق محفوظة.
           </p>
           <p className="font-heading-en tracking-wide">
-            WE THINK. WE CREATE. YOU GROW.
+            {slogan}
           </p>
         </Container>
       </div>

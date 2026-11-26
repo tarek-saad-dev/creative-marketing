@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Dialog,
   DialogPanel,
@@ -25,7 +26,9 @@ type MarketingHeaderProps = {
 };
 
 export function MarketingHeader({ brandName }: MarketingHeaderProps) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [activeAnchor, setActiveAnchor] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -34,6 +37,30 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+    const targets = marketingNavItems.map(item => document.getElementById(item.href.split("#")[1])).filter((node): node is HTMLElement => Boolean(node));
+    let frame = 0;
+    function update() {
+      frame = 0;
+      const marker = Math.min(window.innerHeight * 0.35, 220);
+      let current = "";
+      for (const target of targets) {
+        if (target.getBoundingClientRect().top <= marker) current = target.id;
+      }
+      setActiveAnchor(current);
+    }
+    function schedule() { if (!frame) frame = window.requestAnimationFrame(update); }
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -49,7 +76,7 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-header transition-[background-color,box-shadow,border-color,backdrop-filter,height] duration-base ease-standard",
-          scrolled
+          (scrolled || pathname !== "/")
             ? "border-b border-border/60 bg-background-elevated/90 shadow-soft backdrop-blur-md"
             : "border-b border-transparent bg-transparent"
         )}
@@ -58,14 +85,15 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
           <BrandLogo />
 
           <nav
-            className="hidden items-center gap-8 lg:flex"
+            className="hidden items-center gap-2 lg:flex"
             aria-label="التنقل الرئيسي"
           >
             {marketingNavItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-semibold text-foreground/90 transition-colors hover:text-primary"
+                aria-current={pathname === "/" && item.href === "/#" + activeAnchor ? "location" : undefined}
+                className="rounded-full px-3 py-2 text-sm font-semibold text-foreground/90 transition-colors hover:text-primary aria-[current=location]:bg-white/10 aria-[current=location]:text-primary"
               >
                 {item.name}
               </Link>
@@ -115,7 +143,7 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
               leaveFrom="translate-x-0 opacity-100"
               leaveTo="translate-x-8 opacity-0"
             >
-              <DialogPanel className="flex h-full w-full max-w-sm flex-col bg-background-elevated px-6 py-6 shadow-floating">
+              <DialogPanel className="flex h-full w-full max-w-sm flex-col overflow-y-auto bg-gradient-to-br from-[#39247f] to-[#1a245a] px-5 py-6 shadow-floating">
                 <div className="flex items-center justify-between gap-3">
                   <DialogTitle className="sr-only">قائمة التنقل</DialogTitle>
                   <BrandLogo />
@@ -135,7 +163,8 @@ export function MarketingHeader({ brandName }: MarketingHeaderProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-lg px-3 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                      aria-current={pathname === "/" && item.href === "/#" + activeAnchor ? "location" : undefined}
+                      className="rounded-lg px-3 py-3 text-base font-semibold text-foreground transition-colors hover:bg-muted aria-[current=location]:bg-white/10 aria-[current=location]:text-primary"
                       onClick={() => setMobileOpen(false)}
                     >
                       {item.name}

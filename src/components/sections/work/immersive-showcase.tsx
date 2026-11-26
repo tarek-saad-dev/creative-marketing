@@ -185,7 +185,7 @@ export function PortfolioHero({ copy, projects, slogan }: { copy: HeroCopy; proj
   );
 }
 
-export function PortfolioRail({ projects }: { projects: WorkWallProject[] }) {
+export function PortfolioRail({ projects, showreelOnly = false }: { projects: WorkWallProject[]; showreelOnly?: boolean }) {
   const items = getItems(projects);
   const [filter, setFilter] = useState<"all" | "image" | "video">("all");
   const rail = useRef<HTMLDivElement>(null);
@@ -199,6 +199,23 @@ export function PortfolioRail({ projects }: { projects: WorkWallProject[] }) {
   function scroll(delta: number) {
     const node = rail.current;
     if (node) node.scrollBy({ left: -delta * node.clientWidth * 0.8, behavior: reduced ? "instant" : "smooth" });
+  }
+
+  if (showreelOnly) {
+    if (!reel?.primaryMediaUrl) return null;
+    return (
+      <section className={styles.railSection} aria-labelledby="showreel-heading">
+        <div className={styles.reel} style={{ marginTop: 0, paddingTop: 0, borderTop: 0 }}>
+          <div>
+            <p className={styles.eyebrow}>MOTION / SHOWREEL</p>
+            <h3 id="showreel-heading">{reel.title}</h3>
+            <p className={styles.description}>{reel.summary}</p>
+            <Link href={"/work/" + reel.slug} className={styles.detailLink}>تفاصيل المشروع <ArrowUpLeft size={17} /></Link>
+          </div>
+          <video controls playsInline preload="none" src={reel.primaryMediaUrl} poster={reel.primaryThumbnailUrl && reel.primaryThumbnailUrl !== reel.primaryMediaUrl ? reel.primaryThumbnailUrl : reel.coverImageUrl} aria-label={reel.title} />
+        </div>
+      </section>
+    );
   }
 
   return (

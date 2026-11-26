@@ -55,7 +55,7 @@ export function CaseStudyLightbox({
     <Dialog open={isOpen} onClose={onClose} className="relative z-toast">
       <div className="fixed inset-0 bg-[#131b45]/90" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-3 sm:p-6">
-        <DialogPanel className="relative flex max-h-full w-full max-w-[94rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1a245a] shadow-floating">
+        <DialogPanel className="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[94rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1a245a] shadow-floating">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
             <DialogTitle className="truncate text-sm text-foreground">
               {item?.caption || item?.altText || "معرض المشروع"}
@@ -66,7 +66,7 @@ export function CaseStudyLightbox({
             </IconButton>
           </div>
 
-          <div className="relative flex min-h-[50vh] flex-1 items-center justify-center bg-[#202b62]/70 p-2 sm:p-4">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center bg-[#202b62]/70 p-2 sm:p-4">
             {item?.type === "VIDEO" ? (
               <video
                 key={item.id}
@@ -74,13 +74,13 @@ export function CaseStudyLightbox({
                 playsInline
                 preload="metadata"
                 poster={item.thumbnailUrl ?? undefined}
-                className="max-h-[70vh] w-full rounded-lg"
+                className="max-h-[min(70dvh,calc(100dvh-8rem))] w-full rounded-lg"
                 aria-label={item.altText ?? "فيديو المشروع"}
               >
                 <source src={item.url} />
               </video>
             ) : item && canUseNextImage(item.url) ? (
-              <div className="relative h-[70vh] w-full">
+              <div className="relative h-[min(70dvh,calc(100dvh-8rem))] w-full">
                 <Image
                   src={item.url}
                   alt={item.altText ?? "صورة من المشروع"}
@@ -94,7 +94,7 @@ export function CaseStudyLightbox({
               <img
                 src={item.url}
                 alt={item.altText ?? "صورة من المشروع"}
-                className="max-h-[70vh] w-auto max-w-full object-contain"
+                className="max-h-[min(70dvh,calc(100dvh-8rem))] w-auto max-w-full object-contain"
               />
             ) : null}
 

@@ -81,7 +81,7 @@ export async function generateMetadata({
       title: `${project.title} | Creative Marketing`,
       description: project.summary,
       url: canonical,
-      locale: "ar_SA",
+      locale: "ar_EG",
       siteName: "Creative Marketing",
       images: ogImages,
     },

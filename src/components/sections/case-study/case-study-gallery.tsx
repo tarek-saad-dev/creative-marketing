@@ -63,7 +63,7 @@ export function CaseStudyGallery({ items }: CaseStudyGalleryProps) {
               >
                 <div
                   className={cn(
-                    "relative w-full",
+                    "relative w-full bg-[#1a245a]/70",
                     index === 0 ? "aspect-[16/10]" : "aspect-[4/3]"
                   )}
                 >
@@ -75,7 +75,7 @@ export function CaseStudyGallery({ items }: CaseStudyGalleryProps) {
                           src={item.thumbnailUrl}
                           alt={item.altText ?? "معاينة فيديو"}
                           fill
-                          className="object-cover"
+                          className="object-contain"
                           sizes="(max-width:768px) 100vw, 50vw"
                         />
                       ) : canUseNextImage(item.url) && item.type === "VIDEO" ? (
@@ -94,7 +94,7 @@ export function CaseStudyGallery({ items }: CaseStudyGalleryProps) {
                       src={item.url}
                       alt={item.altText ?? "صورة من المشروع"}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transform-none"
                       sizes={
                         index === 0 ? "100vw" : "(max-width:768px) 100vw, 50vw"
                       }
@@ -104,7 +104,7 @@ export function CaseStudyGallery({ items }: CaseStudyGalleryProps) {
                     <img
                       src={item.url}
                       alt={item.altText ?? "صورة من المشروع"}
-                      className="absolute inset-0 h-full w-full object-cover"
+                      className="absolute inset-0 h-full w-full object-contain"
                       loading="lazy"
                     />
                   )}

@@ -1,115 +1,33 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { ProjectMediaPreview } from "@/components/sections/work/project-media-preview";
-import { resolvePreviewSrc } from "@/lib/media/public-media";
+import Image from "next/image";
+import { ArrowUpLeft, Play } from "lucide-react";
+import { canUseNextImage } from "@/lib/media/public-media";
 import type { WorkLayoutRole } from "@/components/sections/work/work-layout";
-import { workRoleClassName } from "@/components/sections/work/work-layout";
 import type { WorkWallProject } from "@/server/services/project.service";
 
-type ProjectCardProps = {
-  project: WorkWallProject;
-  role: WorkLayoutRole;
-  priority?: boolean;
-};
-
-export function ProjectCard({
-  project,
-  role,
-  priority = false,
-}: ProjectCardProps) {
-  const preview = resolvePreviewSrc({
-    coverImageUrl: project.coverImageUrl,
-    primaryMediaType: project.primaryMediaType,
-  });
-
-  const serviceLabels = project.services.slice(0, 3).map(s => s.nameAr);
-
+export function ProjectCard({ project, role }: { project: WorkWallProject; role: WorkLayoutRole; priority?: boolean }) {
+  const wide = role === "LEAD" || role === "WIDE";
   return (
-    <article
-      className={cn(
-        "group card-glow relative overflow-hidden rounded-2xl card-glass ring-editorial transition-all duration-500 ease-standard hover:border-white/20",
-        workRoleClassName(role)
-      )}
-    >
-      <Link
-        href={`/work/${project.slug}`}
-        className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-        aria-label={`اكتشف المشروع: ${project.title}`}
-      >
-        <span className="sr-only">اكتشف المشروع</span>
-      </Link>
-
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="h-full w-full scale-100 transition-transform duration-500 ease-standard group-hover:scale-[1.04] group-focus-within:scale-[1.04] motion-reduce:transform-none">
-          <ProjectMediaPreview
-            kind={preview.kind}
-            src={preview.src}
-            poster={preview.poster}
-            alt={project.coverImageAlt}
-            priority={priority}
-            sizes={
-              role === "LEAD"
-                ? "(max-width: 768px) 100vw, 66vw"
-                : role === "WIDE"
-                  ? "(max-width: 768px) 100vw, 66vw"
-                  : "(max-width: 768px) 100vw, 33vw"
-            }
-          />
+    <article className={"group min-w-0 overflow-hidden rounded-2xl border border-white/15 bg-[#202b62]/45 " + (wide ? "md:col-span-2" : "md:col-span-1")}>
+      <Link href={"/work/" + project.slug} className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+        <div className={"relative overflow-hidden bg-[#1a245a]/60 " + (wide ? "aspect-[4/3] md:aspect-[16/10]" : "aspect-[4/3]")}>
+          {canUseNextImage(project.coverImageUrl) ? (
+            <Image src={project.coverImageUrl} alt={project.coverImageAlt} fill sizes={wide ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"} className="object-contain" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={project.coverImageUrl} alt={project.coverImageAlt} className="absolute inset-0 h-full w-full object-contain" loading="lazy" />
+          )}
+          {project.primaryMediaType === "VIDEO" && <span className="absolute start-3 top-3 flex items-center gap-1 rounded-full bg-[#1a245a]/90 px-3 py-2 text-xs text-white"><Play size={15} aria-hidden="true" /> VIDEO</span>}
         </div>
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-[#1A245A]/95 via-[#1A245A]/45 to-transparent"
-          aria-hidden="true"
-        />
-      </div>
-
-      <div className="relative z-[1] flex h-full flex-col justify-end p-5 sm:p-6">
-        <div className="space-y-2">
-          {project.industry ? (
-            <p className="text-xs font-medium tracking-wide text-brand-aqua">
-              {project.industry}
-            </p>
-          ) : null}
-          <h3 className="font-headline text-xl font-semibold text-foreground text-balance sm:text-2xl">
-            {project.title}
-          </h3>
-          {project.clientName ? (
-            <p className="body-text-muted">
-              {project.clientName}
-            </p>
-          ) : null}
-
-          <div className="space-y-2 opacity-100 transition-opacity md:opacity-90 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
-            {serviceLabels.length > 0 ? (
-              <ul
-                className="flex flex-wrap gap-2"
-                aria-label="الخدمات المرتبطة"
-              >
-                {serviceLabels.map(label => (
-                  <li
-                    key={label}
-                    className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] text-foreground"
-                  >
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            {project.resultText ? (
-              <p className="body-text-muted line-clamp-2">
-                {project.resultText}
-              </p>
-            ) : (
-              <p className="body-text-muted line-clamp-2">
-                {project.summary}
-              </p>
-            )}
-            <p className="pt-1 text-sm font-semibold text-primary">
-              اكتشف المشروع
-              <span aria-hidden="true"> ←</span>
-            </p>
+        <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
+          <div className="min-w-0 space-y-1.5">
+            {project.industry && <p className="text-xs font-semibold text-brand-aqua">{project.industry}</p>}
+            <h3 className="break-words font-headline text-lg font-bold text-foreground sm:text-xl">{project.title}</h3>
+            <p className="line-clamp-2 text-sm leading-7 text-foreground-muted">{project.summary}</p>
           </div>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/20 text-brand-aqua group-hover:bg-brand-aqua group-hover:text-brand-navy"><ArrowUpLeft size={22} aria-hidden="true" /></span>
         </div>
-      </div>
+      </Link>
     </article>
   );
 }
