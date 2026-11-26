@@ -4,6 +4,7 @@ import { MarketingHeader } from "@/components/layout/marketing-header";
 import { MarketingFooter } from "@/components/layout/marketing-footer";
 import { MobileStickyCta } from "@/components/layout/mobile-sticky-cta";
 import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersive-showcase";
+import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work/scroll-motion-showcase";
 import { getPublishedShowcaseProjects } from "@/server/services/project.service";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
@@ -67,6 +68,7 @@ export default async function MarketingHomePage() {
           projects={showcaseProjects}
           slogan={data.brand.slogan}
         />
+        <MovingPortfolioStrip projects={showcaseProjects} />
         <TrustStrip
           serviceGroups={data.serviceGroups}
           trustMetrics={data.trustMetrics}
@@ -74,6 +76,7 @@ export default async function MarketingHomePage() {
         />
         <WorkSection projects={showcaseProjects} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
+        <DeviceShowcase projects={showcaseProjects} />
         <PortfolioRail projects={showcaseProjects} />
         <CommercialSection
           data={{

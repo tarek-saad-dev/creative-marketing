@@ -21,9 +21,9 @@ const concepts: Concept[] = [
   { id: "concept-digital", title: "تصميم حملة رقمية", label: "Digital campaign", word: "GO\nFURTHER.", sub: "IDEAS IN MOTION", theme: "digital" },
 ];
 
-type Item = { id: string; title: string; label: string; project?: WorkWallProject; concept?: Concept };
+export type ShowcaseItem = { id: string; title: string; label: string; project?: WorkWallProject; concept?: Concept };
 
-function getItems(projects: WorkWallProject[]): Item[] {
+export function getItems(projects: WorkWallProject[]): ShowcaseItem[] {
   return projects.length
     ? projects.map(project => ({
         id: project.id,
@@ -34,7 +34,7 @@ function getItems(projects: WorkWallProject[]): Item[] {
     : concepts.map(concept => ({ id: concept.id, title: concept.title, label: concept.label, concept }));
 }
 
-function Artwork({ item, priority = false }: { item: Item; priority?: boolean }) {
+export function Artwork({ item, priority = false }: { item: ShowcaseItem; priority?: boolean }) {
   if (item.project) {
     const project = item.project;
     return (
@@ -62,7 +62,7 @@ function Artwork({ item, priority = false }: { item: Item; priority?: boolean })
   );
 }
 
-function Coverflow({ items }: { items: Item[] }) {
+function Coverflow({ items }: { items: ShowcaseItem[] }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [hovered, setHovered] = useState(false);
