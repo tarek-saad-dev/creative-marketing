@@ -187,3 +187,65 @@
   .hero[data-artwork=true] .stage{height:clamp(205px,63vw,345px)}
   .mediaPicker button{flex-basis:3rem;height:2.3rem}
 }
+
+/* Full-viewport composition: every projected object sits in an explicit safe zone.
+   Keep the central creative unobscured; no clipping at the stage or hero edges. */
+.hero{overflow:visible}
+.hero .stage{overflow:visible;perspective:1800px}
+.hero .scenePanel{width:22%;height:31%;top:50%;left:50%;opacity:1}
+.hero .scenePanel[data-offset="0"]{left:50%;top:50%;width:46%;height:80%;transform:translate(-50%,-50%) translateZ(25px) rotateY(-3deg) rotateX(1deg)}
+.hero .scenePanel[data-offset="-1"]{left:14%;top:25%;transform:translate(-50%,-50%) translateZ(-20px) rotateY(13deg) rotateZ(-3deg)}
+.hero .scenePanel[data-offset="1"]{left:86%;top:29%;height:36%;transform:translate(-50%,-50%) translateZ(-20px) rotateY(-13deg) rotateZ(3deg)}
+.hero .scenePanel[data-offset="-2"]{left:14%;top:55%;width:20%;height:25%;transform:translate(-50%,-50%) translateZ(-40px) rotateY(18deg) rotateZ(3deg)}
+.hero .scenePanel[data-offset="2"]{left:86%;top:72%;width:22%;height:33%;transform:translate(-50%,-50%) translateZ(-40px) rotateY(-18deg) rotateZ(-3deg)}
+.hero .scenePhone{left:14%;top:83%;bottom:auto;width:auto;height:27%;aspect-ratio:9/17;transform:translate(-50%,-50%) translateZ(35px) rotateY(8deg) rotateZ(-4deg)}
+.hero .stage[data-count="1"] .scenePanel[data-offset="0"]{width:68%;height:86%;left:50%}
+.hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:55%;width:62%}
+.hero .stage[data-count="2"] .scenePanel[data-offset="0"]{width:50%;left:48%;height:84%;transform:translate(-50%,-50%) translateZ(25px) rotateY(-3deg)}
+.hero .stage[data-count="2"] .scenePanel[data-offset="1"]{top:50%;height:55%}
+.hero .stage:not(:has(.scenePanel[data-offset="-2"])) .scenePanel[data-offset="-1"]{top:34%;height:48%}
+.hero .stage:not(:has(.scenePanel[data-offset="2"])) .scenePanel[data-offset="1"]{top:50%;height:54%}
+.hero .stage:not(:has(.scenePanel[data-offset="-2"])) .scenePhone{top:77%;height:35%}
+.hero .scenePanel .artwork,.hero .scenePhone .artwork{border:4px solid transparent}
+.hero .panelArtwork .artwork{border-width:6px}
+.hero .scenePanel .sideButton{overflow:hidden}
+.hero .scenePanel .concept{padding:8%;justify-content:center;gap:.15rem}
+.hero .scenePanel .conceptWord,.hero .scenePhone .conceptWord{font-size:clamp(.55rem,11cqi,4.6rem)}
+.hero .scenePanel .conceptTop,.hero .scenePhone .conceptTop{font-size:clamp(.29rem,2.5cqi,.72rem)}
+.hero .scenePanel .conceptSub,.hero .scenePhone .conceptSub{font-size:clamp(.29rem,2.6cqi,.7rem);margin-top:.6em}
+.hero .scenePanel .conceptBadge,.hero .scenePhone .conceptBadge{font-size:clamp(.25rem,2.5cqi,.65rem);padding:.16rem .22rem;max-width:90%;white-space:normal}
+.hero .phoneContent{inset:13% 6% 10%;border-radius:.3rem}
+.hero .phoneCamera{top:5%;height:3px}
+.hero .phoneHome{bottom:4%;height:2px}
+.hero .mediaPicker button{padding:3px}
+.hero .mediaPicker button img{box-sizing:border-box;padding:3px}
+.hero .heroRibbon{flex-shrink:0}
+@media(min-width:1001px){
+  .hero{box-sizing:border-box;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;padding:calc(var(--nav-height) + 1.25rem) clamp(1.25rem,3.5vw,4rem) 1rem}
+  .hero .heroInner{flex:1;min-height:0;width:100%;margin:0 auto;grid-template-columns:minmax(0,.78fr) minmax(0,1.62fr);align-items:center}
+  .hero .heroInner .coverflow{width:100%}
+  .hero .stage{height:clamp(290px,calc(100svh - var(--nav-height) - 14rem),690px)}
+  .hero .heroRibbon{width:100%;margin:.8rem auto 0}
+  .hero[data-artwork=false] .heroInner{grid-template-columns:1fr}
+}
+@media(max-width:1000px){.hero{padding-top:calc(var(--nav-height) + 1.5rem)}}
+@media(max-width:600px){
+  .hero{padding-top:calc(var(--nav-height) + 1rem)}
+  .hero .stage{perspective:1500px}
+  .hero .scenePanel[data-offset="0"]{width:50%;height:77%;top:50%}
+  .hero .scenePanel[data-offset="-1"],.hero .scenePanel[data-offset="1"]{width:20%;left:13%;transform:translate(-50%,-50%) translateZ(-12px) rotateY(10deg) rotateZ(-2deg)}
+  .hero .scenePanel[data-offset="1"]{left:87%;transform:translate(-50%,-50%) translateZ(-12px) rotateY(-10deg) rotateZ(2deg)}
+  .hero .scenePanel[data-offset="-2"],.hero .scenePanel[data-offset="2"]{display:none}
+  .hero .scenePanel[data-offset="-1"]{top:31%;height:40%}
+  .hero .scenePanel[data-offset="1"]{top:50%;height:52%}
+  .hero .scenePhone{left:13%;top:76%;height:33%;transform:translate(-50%,-50%) translateZ(15px) rotateY(5deg) rotateZ(-3deg)}
+  .hero .stage[data-count="1"] .scenePanel[data-offset="0"]{width:76%;height:82%}
+  .hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:58%;width:64%}
+  .hero .stage[data-count="2"] .scenePanel[data-offset="0"]{width:52%;height:79%}
+  .hero .scenePanel .artwork,.hero .scenePhone .artwork{border-width:2px}
+  .hero .panelArtwork .artwork{border-width:3px}
+  .hero .scenePanel .conceptShape,.hero .scenePhone .conceptShape{border-width:clamp(3px,4cqi,15px)}
+  .hero .scenePhone .conceptWord{font-size:clamp(.38rem,11cqi,1rem)}
+  .hero .scenePhone .conceptBadge{font-size:clamp(.22rem,2.5cqi,.38rem)}
+}
+@media(prefers-reduced-motion:reduce){.hero .sceneRig{transform:none!important}}

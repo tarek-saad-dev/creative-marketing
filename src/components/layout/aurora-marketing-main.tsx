@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Pause, Play } from "lucide-react";
+import type { ReactNode } from "react";
 import { usePrefersReducedMotion } from "@/components/motion/reduced-motion";
 import { ScrollProgress } from "@/components/motion/section-bridge";
 import styles from "./aurora-marketing-main.module.css";
@@ -10,12 +9,11 @@ import { MarketingMotionContext } from "@/components/motion/marketing-motion-con
 export { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 
 export function AuroraMarketingMain({ children }: { children: ReactNode }) {
-  const [paused, setPaused] = useState(false);
   const reduced = usePrefersReducedMotion();
 
   return (
-    <MarketingMotionContext.Provider value={paused || reduced}>
-    <main id="main-content" className={styles.shell} data-paused={paused}>
+    <MarketingMotionContext.Provider value={reduced}>
+    <main id="main-content" className={styles.shell} data-paused={reduced}>
       <ScrollProgress />
       <div className={styles.mesh} aria-hidden="true">
         <span className={styles.violet} />
@@ -24,18 +22,6 @@ export function AuroraMarketingMain({ children }: { children: ReactNode }) {
         <span className={styles.veil} />
         <span className={styles.grain} />
       </div>
-      {!reduced && (
-        <button
-          type="button"
-          className={styles.motionToggle}
-          aria-pressed={paused}
-          aria-label="إيقاف الحركة الزخرفية"
-          onClick={() => setPaused(value => !value)}
-        >
-          {paused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}
-          <span>{paused ? "تشغيل الحركة" : "إيقاف الحركة"}</span>
-        </button>
-      )}
       {children}
     </main>
     </MarketingMotionContext.Provider>

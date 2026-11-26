@@ -13,7 +13,7 @@ const browser = await chromium.launch({headless:true});
 const failures = [];
 try {
   for (const [name,width,height] of [["desktop",1440,900],["laptop",1366,768],["mobile",390,844],["small-mobile",320,700]]) {
-    const page = await browser.newPage({viewport:{width,height},reducedMotion:"reduce",isMobile:name!=="desktop",hasTouch:name!=="desktop"});
+    const page = await browser.newPage({viewport:{width,height},reducedMotion:"reduce",isMobile:width<600,hasTouch:width<600});
     const errors=[];
     page.on("pageerror",error=>errors.push(error.message));
     try {
@@ -23,14 +23,31 @@ try {
       for(const id of ["work","services","industries","packages","process","contact"]) assert.equal(await page.locator("#"+id).count(),1,"Missing/duplicate section: "+id);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
       assert.equal(overflow,false,"Horizontal document overflow");
+      assert.equal(await page.locator("button[aria-label='إيقاف الحركة الزخرفية'], #hero button[aria-label='تشغيل العرض التلقائي'], #hero button[aria-label='إيقاف العرض التلقائي']").count(),0,"Hero motion toggles should be removed");
+      if(width>=1001){
+        const hero=await page.locator("#hero").boundingBox();
+        assert.ok(hero && hero.height>=height-2,"Desktop hero must fill viewport");
+      }
       const stage=page.locator("#hero [data-hero-stage]");
+      async function assertSceneBounds(){
+        const stageBounds=await stage.boundingBox();
+        assert.ok(stageBounds);
+        for(const object of await stage.locator("[data-hero-object]").all()){
+          if(!await object.isVisible())continue;
+          const b=await object.boundingBox();
+          assert.ok(b && b.x>=stageBounds.x-3 && b.y>=stageBounds.y-3 && b.x+b.width<=stageBounds.x+stageBounds.width+3 && b.y+b.height<=stageBounds.y+stageBounds.height+3,"Projected object must stay inside stage");
+        }
+        const badFit=await stage.locator("img").evaluateAll(images=>images.some(img=>getComputedStyle(img).objectFit!=="contain"));
+        assert.equal(badFit,false,"Hero images must not crop");
+      }
       if(await stage.count()){
         const bounds=await stage.boundingBox();
         assert.ok(bounds,"Hero artwork should be visible");
         assert.ok(bounds.y < height*0.65,"Hero artwork starts too far below the fold");
         assert.ok(Math.min(bounds.y+bounds.height,height)-bounds.y >= Math.min(bounds.height*0.65,160),"Hero artwork is not sufficiently visible in first viewport");
+        await assertSceneBounds();
         const next=page.locator("#hero button[aria-label='التالي']");
-        if(await next.count())await next.click();
+        if(await next.count()){await next.click();await assertSceneBounds();}
         const picker=page.locator("#hero [data-hero-media-picker] button");
         if(await picker.count()>1){
           await picker.nth(1).click();
