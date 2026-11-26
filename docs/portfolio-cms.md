@@ -18,3 +18,6 @@ Desktop hero minimum height is the whole viewport (fixed navigation included). A
 
 ## Hero geometry regression
 A pre-merge Chromium fixture loads the actual hero CSS, with synthetic empty frames and combinations of 1–5 panels, optional phone, seven screen/stage sizes and three mouse tilt positions (294 cases). It checks projected bounds and central-panel overlap without touching production content. The public browser workflow remains a separate post-deployment check. A local isolated reproduction of the final positioning rules passed all 294 cases; the full stylesheet fixture runs in CI.
+
+## Adaptive mockup surfaces
+Hero projects automatically resolve a book, social, brand, screen or plain frame from explicit linked service labels; video media resolves to screen by default. Admin /admin/portfolio can override per published hero project, including frameless mode. Existing settings gain an empty override map without migration. These are CSS dimensional frames, not fabricated project artwork or rendered 3D models. All styles preserve contain media and the existing tested outer geometry. No content or pricing data changed. Browser and visual acceptance required.

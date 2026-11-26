@@ -80,6 +80,7 @@ export default async function MarketingHomePage() {
           copy={copy}
           projects={heroProjects}
           gallery={heroGallery}
+          mockups={portfolio.mockups}
           showArtwork={portfolio.hero.enabled && (heroProjects.length > 0 || (!showcaseProjects.length && !portfolio.hero.ids.length))}
           slogan={data.brand.slogan}
         />

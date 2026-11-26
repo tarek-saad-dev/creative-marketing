@@ -261,3 +261,30 @@
   .hero .stage .scenePhone{width:15%;max-height:32%}
   .hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:58%;width:57%}
 }
+
+/* Adaptive surfaces stay inside the tested object bounding boxes.
+   Decorative edges never overlap the artwork area. */
+.hero .scenePanel[data-mockup]{padding:5px;box-sizing:border-box}
+.hero .scenePanel[data-mockup] .panelEdge{transform:none;inset:0;z-index:-1}
+.hero .scenePanel[data-mockup] .sideButton{width:100%;height:100%;border:0}
+.hero .scenePanel[data-mockup="book"]{border-radius:4px 12px 12px 4px;background:linear-gradient(90deg,#51457f 0%,#9384b6 3%,#eee9fa 3.5%,#d8cfe5 100%);padding:5px 9px 8px 9px;box-shadow:0 17px 32px #17214785,inset -4px -4px 0 #aea3cd}
+.hero .scenePanel[data-mockup="book"] .mainPanel,.hero .scenePanel[data-mockup="book"] .sideButton{border-radius:2px 8px 8px 2px;background:#f7f3ec}
+.hero .scenePanel[data-mockup="book"] .panelArtwork{background:#f1e9dc}
+.hero .scenePanel[data-mockup="book"] .panelArtwork .artwork{background:#f1e9dc}
+.hero .scenePanel[data-mockup="book"] .panelChrome,.hero .scenePanel[data-mockup="book"] .panelBottom{color:#4d4168}
+.hero .scenePanel[data-mockup="social"]{border-radius:13px;background:linear-gradient(145deg,#f8fafc,#c5d6e6);box-shadow:0 16px 34px #17214780}
+.hero .scenePanel[data-mockup="social"] .mainPanel{border-radius:9px;background:#fff}
+.hero .scenePanel[data-mockup="social"] .panelArtwork,.hero .scenePanel[data-mockup="social"] .panelArtwork .artwork{background:#eef3fa}
+.hero .scenePanel[data-mockup="brand"]{border-radius:8px;background:linear-gradient(125deg,#d6d0ee,#9286b7 45%,#f7f5ff);padding:8px;box-shadow:0 16px 36px #17214780}
+.hero .scenePanel[data-mockup="brand"] .mainPanel,.hero .scenePanel[data-mockup="brand"] .sideButton{border-radius:3px;background:#eae7f3}
+.hero .scenePanel[data-mockup="brand"] .panelArtwork,.hero .scenePanel[data-mockup="brand"] .panelArtwork .artwork{background:#eae7f3}
+.hero .scenePanel[data-mockup="screen"]{border-radius:12px;background:linear-gradient(135deg,#bdc9e3,#464e79 45%,#9ba9cb);padding:6px;box-shadow:0 17px 35px #17214790}
+.hero .scenePanel[data-mockup="screen"] .mainPanel,.hero .scenePanel[data-mockup="screen"] .sideButton{border-radius:7px;background:#202958;color:#f8fafc}
+.hero .scenePanel[data-mockup="screen"] .panelChrome{color:#d5def5}
+.hero .scenePanel[data-mockup="screen"] .panelArtwork,.hero .scenePanel[data-mockup="screen"] .panelArtwork .artwork{background:#202958}
+.hero .scenePanel[data-mockup="plain"]{background:transparent;box-shadow:none;padding:0}
+.hero .scenePanel[data-mockup="plain"] .panelEdge,.hero .scenePanel[data-mockup="plain"] .panelChrome,.hero .scenePanel[data-mockup="plain"] .panelBottom{display:none}
+.hero .scenePanel[data-mockup="plain"] .mainPanel,.hero .scenePanel[data-mockup="plain"] .sideButton,.hero .scenePanel[data-mockup="plain"] .panelArtwork,.hero .scenePanel[data-mockup="plain"] .artwork{background:transparent;border-radius:0}
+.hero .scenePanel[data-mockup="plain"] .artwork{border:0}
+.hero .scenePanel[data-mockup="plain"] .mainPanel,.hero .scenePanel[data-mockup="plain"] .sideButton{overflow:visible}
+@media(max-width:600px){.hero .scenePanel[data-mockup]{padding:3px}.hero .scenePanel[data-mockup="book"]{padding:3px 5px 5px}.hero .scenePanel[data-mockup="plain"]{padding:0}}

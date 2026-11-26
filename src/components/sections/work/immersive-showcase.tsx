@@ -13,6 +13,7 @@ import type { WorkWallProject } from "@/server/services/project.service";
 import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-lightbox";
 import { buildHeroMedia, heroMediaPoster, heroExtraMedia, type HeroMedia, heroScenePositions } from "@/lib/content/hero-scene";
 import type { CreativeGalleryProject } from "@/lib/content/creative-gallery";
+import { resolveMockupStyle, mockupLabels, type MockupChoice } from "@/lib/content/mockup-style";
 import styles from "./immersive-showcase.module.css";
 
 type Concept = { id: string; title: string; label: string; word: string; sub: string; theme: string };
@@ -68,7 +69,7 @@ function SceneMedia({media,cover,priority=false}:{media:HeroMedia;cover?:string|
   </div>;
 }
 
-function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: CreativeGalleryProject[] }) {
+function Coverflow({ items, gallery, mockups }: { items: ShowcaseItem[]; gallery: CreativeGalleryProject[]; mockups:Record<string,MockupChoice> }) {
   const [index, setIndex] = useState(0);
   const [mediaChoice,setMediaChoice]=useState<{projectId:string;index:number}|null>(null);
   const [lightbox,setLightbox]=useState<number|null>(null);
@@ -82,6 +83,7 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
   const media=active?.project ? buildHeroMedia(active.project,gallery.find(p=>p.id===active.project?.id)?.media??[]) : [];
   const mediaIndex=mediaChoice && mediaChoice.projectId===active?.id ? Math.min(mediaChoice.index,Math.max(0,media.length-1)):0;
   const selectedMedia=media[mediaIndex];
+  const activeStyle=resolveMockupStyle(active?.project,(active?mockups[active.id]:undefined)??"auto",selectedMedia?.type,active?.concept?.theme);
   const {phone:extra,panels:extraPanels}=heroExtraMedia(media,mediaIndex);
   const projectPositions=heroScenePositions(length,activeIndex);
   const emptyOffsets=[-1,1,-2,2].filter(offset=>!projectPositions.some(pos=>pos.offset===offset));
@@ -117,18 +119,19 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
       <div ref={scene} className={styles.sceneRig}>
         {projectPositions.map(({index:itemIndex,offset})=>{
           const item=items[itemIndex];
-          return <div key={item.id} className={styles.scenePanel} data-hero-object data-offset={offset}>
+          const frame=offset===0?activeStyle:resolveMockupStyle(item.project,mockups[item.id]??"auto",undefined,item.concept?.theme);
+          return <div key={item.id} className={styles.scenePanel} data-hero-object data-offset={offset} data-mockup={frame}>
             <div className={styles.panelEdge} aria-hidden="true"/>
             {offset===0 ? (
               <div className={styles.mainPanel}>
-                <div className={styles.panelChrome} aria-hidden="true"><span>CM / STUDIO</span><span>● ● ●</span></div>
+                <div className={styles.panelChrome} aria-hidden="true"><span>{activeStyle==="book"?"EDITORIAL / BOOK":activeStyle==="social"?"SOCIAL / CREATIVE":activeStyle==="brand"?"VISUAL IDENTITY":activeStyle==="screen"?"MOTION / SCREEN":"CM / STUDIO"}</span><span>{activeStyle==="screen"?"● ● ●": "CM"}</span></div>
                 {selectedMedia?<button type="button" data-hero-open-media className={styles.panelArtwork} onClick={()=>openMedia(mediaIndex)} aria-label={selectedMedia.type==="VIDEO"?"تشغيل فيديو المشروع":"عرض التصميم بالحجم الكامل"}><SceneMedia media={selectedMedia} cover={item.project?.coverImageUrl} priority/><span className={styles.expandBadge}><Maximize2 size={18} aria-hidden="true"/></span></button>:item.project?<Link href={"/work/"+item.project.slug} className={styles.panelArtwork} aria-label={"فتح مشروع "+item.title}><Artwork item={item} priority/></Link>:<div className={styles.panelArtwork}><Artwork item={item} priority/></div>}
                 <div className={styles.panelBottom}><span dir="auto">{selectedMedia?.caption||item.title}</span><span>{media.length?String(mediaIndex+1)+"/"+media.length:"CM"}</span></div>
               </div>
             ) : <button className={styles.sideButton} type="button" onClick={()=>move(offset)} aria-label={"عرض "+item.title}><Artwork item={item}/></button>}
           </div>;
         })}
-        {mediaPanels.map(({item,offset})=><div key={"media-"+item.id} className={styles.scenePanel} data-hero-object data-offset={offset}><div className={styles.panelEdge} aria-hidden="true"/><button type="button" className={styles.sideButton} aria-label={"عرض "+(item.altText||"تصميم آخر")} onClick={()=>chooseMedia(media.findIndex(entry=>entry.id===item.id))}><SceneMedia media={item}/></button></div>)}
+        {mediaPanels.map(({item,offset})=><div key={"media-"+item.id} className={styles.scenePanel} data-hero-object data-offset={offset} data-mockup={resolveMockupStyle(active.project,mockups[active.id]??"auto",item.type)}><div className={styles.panelEdge} aria-hidden="true"/><button type="button" className={styles.sideButton} aria-label={"عرض "+(item.altText||"تصميم آخر")} onClick={()=>chooseMedia(media.findIndex(entry=>entry.id===item.id))}><SceneMedia media={item}/></button></div>)}
         {(extra||next)&&<div className={styles.scenePhone} data-hero-object aria-hidden="true">
           <div className={styles.phoneCamera}/><div className={styles.phoneContent}>{extra?<ResilientImage src={extra.url} alt="" sizes="200px"/>:next?<Artwork item={next}/>:null}</div><div className={styles.phoneHome}/>
         </div>}
@@ -136,7 +139,7 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
     </div>
     <div className={styles.stageCaption}>
       <div className={styles.captionText} aria-live="polite">
-        <span className={styles.eyebrow}>{active.label}</span><h2>{active.title}</h2>
+        <span className={styles.eyebrow}>{active.label} · {mockupLabels[activeStyle]}</span><h2>{active.title}</h2>
         {active.project?<Link href={"/work/"+active.project.slug} className={styles.detailLink}>استكشف المشروع <ArrowUpLeft size={15} aria-hidden="true"/></Link>:<span className={styles.smallText}>تصور بصري توضيحي، ليس مشروع عميل</span>}
       </div>
       {length>1&&<div className={styles.controls} dir="ltr">
@@ -151,7 +154,7 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
   </div>;
 }
 
-export function PortfolioHero({copy,projects,slogan,showArtwork=true,gallery=[]}:{copy:HeroCopy;projects:WorkWallProject[];slogan:string;showArtwork?:boolean;gallery?:CreativeGalleryProject[]}){
+export function PortfolioHero({copy,projects,slogan,showArtwork=true,gallery=[],mockups={}}:{copy:HeroCopy;projects:WorkWallProject[];slogan:string;showArtwork?:boolean;gallery?:CreativeGalleryProject[];mockups?:Record<string,MockupChoice>}){
   const parts=splitTitleWithHighlight(copy.title,copy.highlightPhrase);
   const items=getItems(projects).slice(0,12);
   return <section id="hero" aria-labelledby="hero-heading" className={styles.hero} data-artwork={showArtwork}>
@@ -164,7 +167,7 @@ export function PortfolioHero({copy,projects,slogan,showArtwork=true,gallery=[]}
         <p className={styles.description}>{copy.description}</p>
         <div className={styles.ctas}><BrandButton href="#work" size="lg">{copy.primaryCta}<ArrowDown size={17} aria-hidden="true"/></BrandButton><BrandButton href="#packages" size="lg" variant="secondary">{copy.secondaryCta}</BrandButton></div>
       </div>
-      {showArtwork&&<Coverflow items={items} gallery={gallery}/>}
+      {showArtwork&&<Coverflow items={items} gallery={gallery} mockups={mockups}/>}
     </div>
     <div className={styles.heroRibbon} dir="ltr" aria-label="مجالات التصميم"><span>BRANDING</span><i/><span>SOCIAL MEDIA</span><i/><span>CONTENT CREATION</span><i/><span>MOTION</span></div>
   </section>;

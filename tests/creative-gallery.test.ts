@@ -141,3 +141,20 @@ test("hero extra media never repeats the active image or phone",()=>{
   assert.ok(extra.panels.every(item=>item.id!==list[1].id&&item.id!==extra.phone?.id));
   assert.equal(buildHeroMedia(p,[]).length,1);
 });
+
+import { resolveMockupStyle } from "../src/lib/content/mockup-style";
+test("adaptive mockups use explicit service evidence and preserve manual overrides",()=>{
+  assert.equal(resolveMockupStyle({services:[{nameEn:"Teachers Books"}]}),"book");
+  assert.equal(resolveMockupStyle({services:[{nameAr:"هوية بصرية"}]}),"brand");
+  assert.equal(resolveMockupStyle({services:[{slug:"social-media"}]}),"social");
+  assert.equal(resolveMockupStyle({services:[]},"auto","VIDEO"),"screen");
+  assert.equal(resolveMockupStyle({services:[{nameEn:"Brand Identity"}]},"plain","VIDEO"),"plain");
+  assert.equal(resolveMockupStyle({services:[]}),"plain");
+  assert.equal(resolveMockupStyle(undefined,"auto",undefined,"book"),"book");
+});
+test("older portfolio settings gain mockup defaults without losing selections",()=>{
+  const settings=defaultPortfolioSettings();settings.hero.ids=["kept"];const {mockups,...old}=settings;
+  assert.deepEqual(readPortfolioSettings(old).hero.ids,["kept"]);
+  assert.deepEqual(readPortfolioSettings(old).mockups,{});
+  assert.deepEqual(readPortfolioSettings({...old,mockups:{kept:"book"}}).mockups,{kept:"book"});
+});

@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { mockupLabels, mockupStyles, resolveMockupStyle, type MockupChoice } from "@/lib/content/mockup-style";
 import { ResilientImage } from "@/components/ui/resilient-media";
 import { defaultPortfolioSettings, portfolioSections, selectPortfolioProjects, type PortfolioSettings, type PortfolioSlot } from "@/lib/content/portfolio-settings";
 import { savePortfolioSettingsAction } from "@/server/actions/admin/portfolio.action";
@@ -25,6 +26,9 @@ export function PortfolioControlForm({initial,projects}:{initial:PortfolioSettin
     if(target<0||target>=ids.length)return;
     [ids[index],ids[target]]=[ids[target],ids[index]];update(key,{ids});
   }
+  function changeMockup(id:string,choice:MockupChoice){
+    setValue(old=>{const mockups={...old.mockups};if(choice==="auto")delete mockups[id];else mockups[id]=choice;return {...old,mockups};});setNotice("");setError("");
+  }
   function save(){
     setNotice("");setError("");
     startTransition(async()=>{const result=await savePortfolioSettingsAction(value);if(!result.ok){setError(result.error);return;}setSaved(value);setNotice("تم حفظ إعدادات الاستعراض.");router.refresh();});
@@ -45,6 +49,14 @@ export function PortfolioControlForm({initial,projects}:{initial:PortfolioSettin
         </>}
       </section>;
     })}
+    <section className="admin-card space-y-4 p-4"><h2 className="font-semibold">Adaptive 3D Mockups</h2><p className="text-sm text-foreground-muted">اختيار شكل الفريم لكل مشروع يظهر في الـ Hero. تلقائي يعتمد على الخدمات المرتبطة بالمشروع. التصميم نفسه لا يتغير ولا يتم قصه.</p>
+      {selectPortfolioProjects(projects,value,"hero").map(project=><div key={project.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded bg-[#2c1f73]"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt} sizes="64px"/></div>
+        <div className="min-w-0 flex-1"><p className="font-semibold break-words">{project.title}</p><p className="text-xs text-foreground-muted">الاستعراض الحالي: {mockupLabels[resolveMockupStyle(project,value.mockups[project.id])]}</p></div>
+        <select className="admin-input max-w-full" aria-label={"شكل عرض "+project.title} value={value.mockups[project.id]??"auto"} disabled={pending} onChange={event=>changeMockup(project.id,event.target.value as MockupChoice)}>{mockupStyles.map(style=><option key={style} value={style}>{mockupLabels[style]}</option>)}</select>
+      </div>)}
+      {!selectPortfolioProjects(projects,value,"hero").length&&<p className="text-sm text-foreground-muted">انشر مشروعًا واختره في الـ Hero لتحديد شكل عرضه.</p>}
+    </section>
     <section className="admin-card space-y-3 p-4"><h2 className="font-semibold">Creative Gallery</h2><label className="flex min-h-10 items-center gap-2"><input type="checkbox" checked={value.gallery} disabled={pending} onChange={e=>setValue(old=>({...old,gallery:e.target.checked}))}/>إظهار معرض الصور والفيديو</label><label className="flex min-h-10 items-center gap-2"><input type="checkbox" checked={value.comparisons} disabled={pending} onChange={e=>setValue(old=>({...old,comparisons:e.target.checked}))}/>إظهار Before & After داخل المعرض (يتطلب إظهار المعرض)</label></section>
     {error&&<p role="alert" className="text-sm text-destructive">{error}</p>}{notice&&<p role="status" className="text-sm text-emerald-700">{notice}</p>}
     <div className="flex flex-wrap gap-3"><button type="button" disabled={pending||!dirty} onClick={save} className="min-h-11 rounded-md bg-primary px-5 font-semibold text-primary-foreground disabled:opacity-50">{pending?"جاري الحفظ…":"حفظ إعدادات الاستعراض"}</button><button type="button" disabled={pending} onClick={()=>setValue(defaultPortfolioSettings())} className="min-h-11 rounded-md border border-border px-4 text-sm">استعادة الإعدادات الافتراضية</button><Link href="/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm">فتح الموقع بعد الحفظ</Link></div>
