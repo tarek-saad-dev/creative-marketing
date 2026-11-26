@@ -190,3 +190,15 @@ export async function findPublishedCreativeGallery(now: Date = new Date()) {
     },
   });
 }
+
+/** Curated hero media must not depend on the homepage feed's top-16 limit. */
+export async function findPublishedHeroMedia(projectIds:string[],now:Date=new Date()){
+  if(!projectIds.length)return [];
+  return prisma.project.findMany({
+    where:{...publishedProjectWhere(now),id:{in:[...new Set(projectIds)].slice(0,12)}},
+    select:{
+      id:true,slug:true,title:true,coverImageUrl:true,coverImageAlt:true,
+      media:{orderBy:[{displayOrder:"asc"},{id:"asc"}],take:16,select:{id:true,type:true,url:true,thumbnailUrl:true,altText:true,caption:true,width:true,height:true}}
+    }
+  });
+}

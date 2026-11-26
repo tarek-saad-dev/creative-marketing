@@ -9,7 +9,7 @@ import { PortfolioHero, PortfolioRail } from "@/components/sections/work/immersi
 import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work/scroll-motion-showcase";
 import { NicheShowcase } from "@/components/sections/niches/niche-showcase";
 import { CreativeGallery } from "@/components/sections/work/creative-gallery";
-import { getPublishedCreativeGallery, getPublishedShowcaseProjects } from "@/server/services/project.service";
+import { getPublishedCreativeGallery, getPublishedShowcaseProjects, getPublishedHeroMedia } from "@/server/services/project.service";
 import { SectionBridge } from "@/components/motion/section-bridge";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
@@ -32,6 +32,7 @@ export default async function MarketingHomePage() {
   ]);
   const portfolio = readPortfolioSettings(data.settings[PORTFOLIO_SETTING_KEY]);
   const heroProjects = selectPortfolioProjects(showcaseProjects,portfolio,"hero");
+  const heroGallery = await getPublishedHeroMedia(heroProjects.map(project=>project.id));
   const streamProjects = selectPortfolioProjects(showcaseProjects,portfolio,"stream");
   const selectedProjects = selectPortfolioProjects(showcaseProjects,portfolio,"selected");
   const deviceProjects = selectPortfolioProjects(showcaseProjects,portfolio,"device");
@@ -78,7 +79,7 @@ export default async function MarketingHomePage() {
         <PortfolioHero
           copy={copy}
           projects={heroProjects}
-          gallery={creativeGallery.filter(project=>heroProjects.some(hero=>hero.id===project.id))}
+          gallery={heroGallery}
           showArtwork={portfolio.hero.enabled && (heroProjects.length > 0 || (!showcaseProjects.length && !portfolio.hero.ids.length))}
           slogan={data.brand.slogan}
         />

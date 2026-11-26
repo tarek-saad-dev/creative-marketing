@@ -163,3 +163,27 @@
 .scenePanel[data-offset="2"]{transform:translate(38%,-32%) translateZ(-125px) rotateY(-35deg) rotateZ(13deg) scale(.78)}
 .panelArtwork:focus-visible{outline:3px solid #27e8c7;outline-offset:-4px}
 @media(max-width:600px){.hero{padding-top:calc(var(--nav-height) + 3rem)}.heroCopy .slogan{letter-spacing:.07em}.sceneDots{flex-wrap:wrap}.sceneDots button{width:22px;height:32px}}
+
+/* Project-level media: keep the creative itself visible, no forced crop. */
+.panelArtwork{width:100%;text-align:initial;border:0;cursor:pointer}
+.expandBadge,.videoPlay{position:absolute;z-index:2;display:flex;align-items:center;justify-content:center;gap:.4rem;background:#1a245ae8;color:#fff}
+.expandBadge{bottom:.5rem;right:.5rem;padding:.55rem;border-radius:50%}
+.videoPlay{left:50%;top:50%;transform:translate(-50%,-50%);padding:.6rem .8rem;border-radius:999px;white-space:nowrap;font-size:.7rem}
+.mediaPicker{display:flex;gap:.4rem;overflow-x:auto;justify-content:safe center;padding:.2rem .7rem .45rem;scrollbar-width:thin}
+.mediaPicker button{position:relative;flex:0 0 3.8rem;height:2.8rem;border:1px solid #ffffff55;background:#272963;border-radius:.45rem;overflow:hidden}
+.mediaPicker button[aria-pressed=true]{border:2px solid #27e8c7}
+.mediaPicker button:focus-visible{outline:2px solid white;outline-offset:2px}
+.mediaPicker button span{position:absolute;bottom:2px;right:2px;padding:2px;background:#1a245a;color:white;border-radius:3px}
+@media(min-width:1001px) and (max-height:780px){.stage{height:clamp(290px,46vh,420px)}}
+@media(max-width:600px){
+  .hero[data-artwork=true] .heroInner{display:grid;grid-template-columns:1fr;gap:.5rem}
+  .hero[data-artwork=true] .heroCopy{display:contents}
+  .hero[data-artwork=true] .slogan{grid-row:1;text-align:center;margin:0}
+  .hero[data-artwork=true] .heroCopy .eyebrow{grid-row:2;text-align:center}
+  .hero[data-artwork=true] .heroCopy h1{grid-row:3;text-align:center;margin:0;font-size:clamp(1.5rem,6.4vw,2.1rem)}
+  .hero[data-artwork=true] .coverflow{grid-row:4}
+  .hero[data-artwork=true] .heroCopy .description{grid-row:5;text-align:center;margin:auto}
+  .hero[data-artwork=true] .ctas{grid-row:6;justify-content:center}
+  .hero[data-artwork=true] .stage{height:clamp(205px,63vw,345px)}
+  .mediaPicker button{flex-basis:3rem;height:2.3rem}
+}

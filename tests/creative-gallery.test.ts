@@ -118,3 +118,26 @@ test("hero copy shortens legacy default but preserves customized text",()=>{
   assert.equal(buildHeroCopy({...base,settings:{}}).title,"إبداع يلفت النظر.\nوبراند يكبر.");
   assert.equal(buildHeroCopy({...base,settings:{"landing.hero.title":"عنوان مخصص"}}).title,"عنوان مخصص");
 });
+
+import { buildHeroMedia, heroExtraMedia, heroMediaPoster } from "../src/lib/content/hero-scene";
+test("hero uses cover first, deduplicates uploads and keeps only usable bounded media",()=>{
+  const p=project("hero",[]);
+  const cover={...media("cover"),url:p.coverImageUrl!,width:1080,height:1350};
+  const portrait={...media("portrait"),width:1080,height:1920};
+  const video=media("clip",null,"VIDEO","/clip.mp4");
+  const items=buildHeroMedia(p,[portrait,cover,video,media("invalid",null,"IMAGE","/movie.mp4"),media("dup",null,"IMAGE",portrait.url),...Array.from({length:15},(_,i)=>media("h"+i))]);
+  assert.equal(items[0].id,"cover");
+  assert.equal(items.length,9);
+  assert.equal(new Set(items.map(x=>x.url)).size,9);
+  assert.equal(items.some(x=>x.id==="invalid"),false);
+  assert.equal(heroExtraMedia(items,0).phone?.id,"portrait");
+  assert.equal(heroMediaPoster(video,p.coverImageUrl),p.coverImageUrl);
+});
+test("hero extra media never repeats the active image or phone",()=>{
+  const p=project("one",[]);
+  const list=buildHeroMedia(p,[media("a"),media("b"),media("c")]);
+  const extra=heroExtraMedia(list,1);
+  assert.notEqual(extra.phone?.id,list[1].id);
+  assert.ok(extra.panels.every(item=>item.id!==list[1].id&&item.id!==extra.phone?.id));
+  assert.equal(buildHeroMedia(p,[]).length,1);
+});

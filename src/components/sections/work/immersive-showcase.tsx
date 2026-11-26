@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ResilientImage, ResilientVideo } from "@/components/ui/resilient-media";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ArrowUpLeft, Pause, Play, Film, ArrowDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpLeft, Pause, Play, Film, ArrowDown, Maximize2 } from "lucide-react";
 import { useMarketingMotionPaused } from "@/components/motion/marketing-motion-context";
 import { usePrefersReducedMotion } from "@/components/motion/reduced-motion";
-import { videoPoster, isUsableMediaUrl, isImageCandidate } from "@/lib/media/public-media";
+import { videoPoster, isUsableMediaUrl } from "@/lib/media/public-media";
 import { BrandButton } from "@/components/ui/brand-button";
 import { splitTitleWithHighlight, type HeroCopy } from "@/components/sections/hero/hero-copy";
 import type { WorkWallProject } from "@/server/services/project.service";
-import { heroScenePositions } from "@/lib/content/hero-scene";
+import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-lightbox";
+import { buildHeroMedia, heroMediaPoster, heroExtraMedia, type HeroMedia, heroScenePositions } from "@/lib/content/hero-scene";
 import type { CreativeGalleryProject } from "@/lib/content/creative-gallery";
 import styles from "./immersive-showcase.module.css";
 
@@ -60,10 +61,19 @@ export function Artwork({ item, priority = false }: { item: ShowcaseItem; priori
   );
 }
 
+function SceneMedia({media,cover,priority=false}:{media:HeroMedia;cover?:string|null;priority?:boolean}){
+  return <div className={styles.artwork}>
+    <ResilientImage src={heroMediaPoster(media,cover)} alt={media.altText||"تصميم من المشروع"} sizes="(max-width:600px) 75vw, 650px" priority={priority}/>
+    {media.type==="VIDEO"&&<span className={styles.videoPlay}><Play size={22} aria-hidden="true"/><span>شغّل الفيديو</span></span>}
+  </div>;
+}
+
 function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: CreativeGalleryProject[] }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [mediaChoice,setMediaChoice]=useState<{projectId:string;index:number}|null>(null);
+  const [lightbox,setLightbox]=useState<number|null>(null);
   const reduced = usePrefersReducedMotion();
   const paused = useMarketingMotionPaused();
   const touchStart = useRef<{ x:number; y:number } | null>(null);
@@ -71,18 +81,25 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
   const length=items.length;
   const activeIndex=length ? index%length : 0;
   const active=items[activeIndex];
-  const media=active?.project ? gallery.find(p=>p.id===active.project?.id)?.media : undefined;
-  const extra=media?.find(item=>item.type==="IMAGE"&&isImageCandidate(item.url)&&item.url!==active.project?.coverImageUrl);
+  const media=active?.project ? buildHeroMedia(active.project,gallery.find(p=>p.id===active.project?.id)?.media??[]) : [];
+  const mediaIndex=mediaChoice?.projectId===active?.id ? Math.min(mediaChoice.index,Math.max(0,media.length-1)):0;
+  const selectedMedia=media[mediaIndex];
+  const {phone:extra,panels:extraPanels}=heroExtraMedia(media,mediaIndex);
+  const projectPositions=heroScenePositions(length,activeIndex);
+  const emptyOffsets=[-1,1,-2,2].filter(offset=>!projectPositions.some(pos=>pos.offset===offset));
+  const mediaPanels=extraPanels.slice(0,emptyOffsets.length).map((item,i)=>({item,offset:emptyOffsets[i]}));
+  function chooseMedia(index:number){if(!active)return;setPlaying(false);setMediaChoice({projectId:active.id,index});}
+  function openMedia(index:number){setPlaying(false);setLightbox(index);}
   const next=length>1?items[(activeIndex+1)%length]:null;
 
   useEffect(()=>{
-    if(!playing||hovered||reduced||paused||length<2)return;
+    if(!playing||hovered||reduced||paused||lightbox!==null||length<2)return;
     const timer=window.setInterval(()=>{if(!document.hidden)setIndex(current=>(current+1)%length)},4800);
     return ()=>window.clearInterval(timer);
-  },[playing,hovered,reduced,paused,length]);
+  },[playing,hovered,reduced,paused,length,lightbox]);
   function move(delta:number){
     if(length<2)return;
-    setPlaying(false);setIndex(current=>((current+delta)%length+length)%length);
+    setPlaying(false);setMediaChoice(null);setLightbox(null);setIndex(current=>((current+delta)%length+length)%length);
   }
   function reset(){
     scene.current?.style.setProperty("--scene-x","0deg");
@@ -97,27 +114,28 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
   }
   if(!active)return null;
 
-  return <div className={styles.coverflow} role="region" aria-roledescription="معرض دوار" aria-label="استوديو عرض الأعمال ثلاثي الأبعاد" data-paused={paused||reduced} onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)} onFocusCapture={()=>setPlaying(false)} onKeyDown={event=>{if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();move(event.key==="ArrowRight"?1:-1);}}}>
+  return <div className={styles.coverflow} role="region" aria-roledescription="معرض دوار" aria-label="استوديو عرض الأعمال ثلاثي الأبعاد" data-paused={paused||reduced} onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)} onFocusCapture={()=>setPlaying(false)} onKeyDown={event=>{if(lightbox!==null || (event.target instanceof HTMLElement&&event.target.closest("[data-hero-media-picker]")))return;if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();move(event.key==="ArrowRight"?1:-1);}}}>
     <div className={styles.sceneTop} dir="ltr"><span><i/> CM / CREATIVE SHOWCASE</span><span>{active.project?"SELECTED WORK":"DESIGN CONCEPTS"}</span></div>
-    <div className={styles.stage} dir="ltr" data-count={Math.min(length,5)} onPointerMove={tilt} onPointerLeave={reset} onTouchStart={event=>{const touch=event.touches[0];touchStart.current={x:touch.clientX,y:touch.clientY}}} onTouchEnd={event=>{const start=touchStart.current;touchStart.current=null;if(!start)return;const touch=event.changedTouches[0];const dx=touch.clientX-start.x,dy=touch.clientY-start.y;if(Math.abs(dx)>42&&Math.abs(dx)>Math.abs(dy))move(dx<0?1:-1)}} onTouchCancel={()=>{touchStart.current=null}}>
+    <div className={styles.stage} data-hero-stage dir="ltr" data-count={projectPositions.length+mediaPanels.length} onPointerMove={tilt} onPointerLeave={reset} onTouchStart={event=>{const touch=event.touches[0];touchStart.current={x:touch.clientX,y:touch.clientY}}} onTouchEnd={event=>{const start=touchStart.current;touchStart.current=null;if(!start)return;const touch=event.changedTouches[0];const dx=touch.clientX-start.x,dy=touch.clientY-start.y;if(Math.abs(dx)>42&&Math.abs(dx)>Math.abs(dy))move(dx<0?1:-1)}} onTouchCancel={()=>{touchStart.current=null}}>
       <div className={styles.sceneHalo} aria-hidden="true"/>
       <div className={styles.sceneOrbit} aria-hidden="true"/>
       <div className={styles.sceneFloor} aria-hidden="true"/>
       <span className={styles.sceneWord} aria-hidden="true">CREATE.</span>
       <div ref={scene} className={styles.sceneRig}>
-        {heroScenePositions(length,activeIndex).map(({index:itemIndex,offset})=>{
+        {projectPositions.map(({index:itemIndex,offset})=>{
           const item=items[itemIndex];
           return <div key={item.id} className={styles.scenePanel} data-offset={offset}>
             <div className={styles.panelEdge} aria-hidden="true"/>
             {offset===0 ? (
               <div className={styles.mainPanel}>
                 <div className={styles.panelChrome} aria-hidden="true"><span>CM / STUDIO</span><span>● ● ●</span></div>
-                {item.project?<Link href={"/work/"+item.project.slug} className={styles.panelArtwork} aria-label={"فتح مشروع "+item.title}><Artwork item={item} priority/></Link>:<div className={styles.panelArtwork}><Artwork item={item} priority/></div>}
-                <div className={styles.panelBottom}><span dir="auto">{item.title}</span><ArrowUpLeft size={17} aria-hidden="true"/></div>
+                {selectedMedia?<button type="button" data-hero-open-media className={styles.panelArtwork} onClick={()=>openMedia(mediaIndex)} aria-label={selectedMedia.type==="VIDEO"?"تشغيل فيديو المشروع":"عرض التصميم بالحجم الكامل"}><SceneMedia media={selectedMedia} cover={item.project?.coverImageUrl} priority/><span className={styles.expandBadge}><Maximize2 size={18} aria-hidden="true"/></span></button>:item.project?<Link href={"/work/"+item.project.slug} className={styles.panelArtwork} aria-label={"فتح مشروع "+item.title}><Artwork item={item} priority/></Link>:<div className={styles.panelArtwork}><Artwork item={item} priority/></div>}
+                <div className={styles.panelBottom}><span dir="auto">{selectedMedia?.caption||item.title}</span><span>{media.length?String(mediaIndex+1)+"/"+media.length:"CM"}</span></div>
               </div>
             ) : <button className={styles.sideButton} type="button" onClick={()=>move(offset)} aria-label={"عرض "+item.title}><Artwork item={item}/></button>}
           </div>;
         })}
+        {mediaPanels.map(({item,offset})=><div key={"media-"+item.id} className={styles.scenePanel} data-offset={offset}><div className={styles.panelEdge} aria-hidden="true"/><button type="button" className={styles.sideButton} aria-label={"عرض "+(item.altText||"تصميم آخر")} onClick={()=>chooseMedia(media.findIndex(entry=>entry.id===item.id))}><SceneMedia media={item}/></button></div>)}
         {(extra||next)&&<div className={styles.scenePhone} aria-hidden="true">
           <div className={styles.phoneCamera}/><div className={styles.phoneContent}>{extra?<ResilientImage src={extra.url} alt="" sizes="200px"/>:next?<Artwork item={next}/>:null}</div><div className={styles.phoneHome}/>
         </div>}
@@ -135,7 +153,9 @@ function Coverflow({ items, gallery }: { items: ShowcaseItem[]; gallery: Creativ
         {!paused&&!reduced&&<button type="button" aria-label={playing?"إيقاف العرض التلقائي":"تشغيل العرض التلقائي"} onClick={()=>setPlaying(value=>!value)}>{playing?<Pause size={16}/>:<Play size={16}/>}</button>}
       </div>}
     </div>
-    {length>1&&<div className={styles.sceneDots} dir="ltr" aria-label="اختيار مشروع">{items.map((item,i)=><button type="button" key={item.id} aria-label={"عرض "+item.title} aria-pressed={activeIndex===i} onClick={()=>{setPlaying(false);setIndex(i)}}/>)}</div>}
+    {length>1&&<div className={styles.sceneDots} dir="ltr" aria-label="اختيار مشروع">{items.map((item,i)=><button type="button" key={item.id} aria-label={"عرض "+item.title} aria-pressed={activeIndex===i} onClick={()=>{setPlaying(false);setMediaChoice(null);setIndex(i)}}/>)}</div>}
+    {media.length>1&&<div className={styles.mediaPicker} data-hero-media-picker dir="ltr" aria-label="تصميمات المشروع الحالي">{media.map((item,i)=><button key={item.id} type="button" aria-pressed={i===mediaIndex} aria-label={(item.type==="VIDEO"?"فيديو ":"تصميم ")+(i+1)} onClick={()=>chooseMedia(i)}><ResilientImage src={heroMediaPoster(item,active.project?.coverImageUrl)} alt="" sizes="76px"/>{item.type==="VIDEO"&&<span><Play size={13} aria-hidden="true"/></span>}</button>)}</div>}
+    <CaseStudyLightbox items={media} openIndex={lightbox} onClose={()=>setLightbox(null)} onNavigate={setLightbox}/>
   </div>;
 }
 
