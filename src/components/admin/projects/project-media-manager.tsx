@@ -8,6 +8,7 @@ import {
   removeProjectMediaAction,
   updateProjectMediaAction,
   moveProjectMediaAction,
+  dropProjectMediaAction,
 } from "@/server/actions/admin/project.action";
 import { getCloudinaryUploadSignatureAction } from "@/server/actions/admin/cloudinary.action";
 import { videoPoster } from "@/lib/media/public-media";
@@ -35,6 +36,8 @@ export function ProjectMediaManager({
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [uploadSummary,setUploadSummary]=useState<string | null>(null);
   const uploadLock=useRef(false);
+  const dragged=useRef<string|null>(null);
+  const [dropTarget,setDropTarget]=useState<string|null>(null);
 
   const sorted = [...media].sort((a, b) => a.displayOrder - b.displayOrder || a.id.localeCompare(b.id));
 
@@ -206,6 +209,7 @@ export function ProjectMediaManager({
         </p>
       ) : null}
 
+      <p className="text-xs text-foreground-muted">اسحب مقبض الترتيب إلى صف آخر لتغيير موضعه، أو استخدم أزرار أعلى وأسفل على الموبايل.</p>
       <ul className="space-y-3">
         {sorted.length === 0 ? (
           <li className="text-sm text-foreground-muted">لا وسائط بعد.</li>
@@ -213,8 +217,11 @@ export function ProjectMediaManager({
           sorted.map((item, index) => (
             <li
               key={item.id}
-              className="flex flex-wrap items-start gap-3 rounded-lg border border-border p-3"
+              className={"flex flex-wrap items-start gap-3 rounded-lg border p-3 " + (dropTarget===item.id?"border-primary bg-muted":"border-border")}
+              onDragOver={event=>{if(dragged.current && !pending && !uploadProgress){event.preventDefault();event.dataTransfer.dropEffect="move";setDropTarget(item.id);}}}
+              onDrop={event=>{event.preventDefault();const source=dragged.current;dragged.current=null;setDropTarget(null);if(!source||source===item.id||pending||uploadLock.current)return;setError(null);startTransition(async()=>{const result=await dropProjectMediaAction(projectId,source,item.id);if(!result.ok)setError(result.error);refresh();});}}
             >
+              <span draggable={!pending&&!uploadProgress} onDragStart={event=>{dragged.current=item.id;event.dataTransfer.effectAllowed="move";event.dataTransfer.setData("text/plain",item.id);}} onDragEnd={()=>{dragged.current=null;setDropTarget(null);}} className="cursor-grab select-none rounded border border-border px-2 py-3 text-lg text-foreground-muted" title="اسحب لإعادة الترتيب" aria-hidden="true">⠿</span>
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded bg-muted"><ResilientImage src={item.type === "VIDEO" ? videoPoster(item.url,item.thumbnailUrl) : item.url} alt={item.altText || "معاينة الوسيط"} sizes="96px" /></div>
               <div className="min-w-0 flex-1 space-y-2 text-sm">
                 <p>

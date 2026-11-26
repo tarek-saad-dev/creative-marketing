@@ -5,6 +5,7 @@ import { withAdminMutation } from "@/server/auth/admin-mutation";
 import {
   addProjectMediaAdmin,
   moveProjectMediaAdmin,
+  dropProjectMediaAdmin,
   chooseProjectCoverAdmin,
   archiveProjectAdmin,
   createProjectAdmin,
@@ -169,4 +170,8 @@ export async function chooseProjectCoverAction(projectId: string, mediaId: strin
 
 export async function moveProjectMediaAction(projectId:string,mediaId:string,direction:-1|1) {
   return withAdminMutation({minimumRole:AdminRole.EDITOR,audit:result=>({action:"project.media.reorder",entityType:"Project",entityId:result.id,metadata:{mediaId,direction}})},()=>moveProjectMediaAdmin(projectId,mediaId,direction));
+}
+
+export async function dropProjectMediaAction(projectId:string,mediaId:string,targetId:string){
+  return withAdminMutation({minimumRole:AdminRole.EDITOR,audit:result=>({action:"project.media.drag_reorder",entityType:"Project",entityId:result.id,metadata:{mediaId,targetId}})},()=>dropProjectMediaAdmin(projectId,mediaId,targetId));
 }

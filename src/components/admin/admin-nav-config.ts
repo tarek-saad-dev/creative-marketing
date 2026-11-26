@@ -43,6 +43,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     icon: Users,
     badgeKey: "leadsNew",
   },
+  { href: "/admin/portfolio", label: "استعراض الأعمال", icon: Images, minimumRole: "ADMIN" },
   { href: "/admin/projects", label: "المشاريع (متقدم)", icon: Briefcase },
   { href: "/admin/services", label: "الخدمات (متقدم)", icon: Layers },
   { href: "/admin/packages", label: "الباقات (متقدم)", icon: Package },

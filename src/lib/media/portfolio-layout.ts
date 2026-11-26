@@ -12,3 +12,11 @@ export function planMediaMove<T extends { id: string; displayOrder: number }>(it
   [sorted[index], sorted[target]] = [sorted[target], sorted[index]];
   return sorted.flatMap((item, displayOrder)=>item.displayOrder === displayOrder ? [] : [{id:item.id,displayOrder}]);
 }
+
+export function planMediaDrop<T extends {id:string;displayOrder:number}>(items:T[],mediaId:string,targetId:string){
+  const sorted=[...items].sort((a,b)=>a.displayOrder-b.displayOrder||a.id.localeCompare(b.id));
+  const source=sorted.findIndex(item=>item.id===mediaId),target=sorted.findIndex(item=>item.id===targetId);
+  if(source<0||target<0||source===target)return [];
+  const [item]=sorted.splice(source,1);sorted.splice(target,0,item);
+  return sorted.flatMap((row,displayOrder)=>row.displayOrder===displayOrder?[]:[{id:row.id,displayOrder}]);
+}

@@ -155,7 +155,7 @@ function Coverflow({ items }: { items: ShowcaseItem[] }) {
   );
 }
 
-export function PortfolioHero({ copy, projects, slogan }: { copy: HeroCopy; projects: WorkWallProject[]; slogan: string }) {
+export function PortfolioHero({ copy, projects, slogan, showArtwork = true }: { copy: HeroCopy; projects: WorkWallProject[]; slogan: string; showArtwork?: boolean }) {
   const parts = splitTitleWithHighlight(copy.title, copy.highlightPhrase);
   const items = getItems(projects).slice(0, 12);
 
@@ -173,8 +173,8 @@ export function PortfolioHero({ copy, projects, slogan }: { copy: HeroCopy; proj
             <BrandButton href="#packages" size="lg" variant="secondary">{copy.secondaryCta}</BrandButton>
           </div>
         </div>
-        <Coverflow items={items} />
-        <p className={styles.heroFoot}>{projects.length ? "SELECTED WORK / مختارات من أعمالنا" : "CREATIVE STUDIES / نماذج توضيحية من اتجاهات التصميم"}</p>
+        {showArtwork && <><Coverflow items={items} />
+        <p className={styles.heroFoot}>{projects.length ? "SELECTED WORK / مختارات من أعمالنا" : "CREATIVE STUDIES / نماذج توضيحية من اتجاهات التصميم"}</p></>}
       </div>
     </section>
   );

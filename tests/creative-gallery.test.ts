@@ -83,3 +83,22 @@ test("reorder handles ties, gaps, bounds and does not mutate source",()=>{
   assert.deepEqual(planMediaMove(source,"missing",1),[]);
   assert.equal(source[0].displayOrder,4);
 });
+
+import { defaultPortfolioSettings, readPortfolioSettings, selectPortfolioProjects } from "../src/lib/content/portfolio-settings";
+import { planMediaDrop } from "../src/lib/media/portfolio-layout";
+test("manual portfolio order skips unavailable projects and respects disabled slots",()=>{
+  const settings=defaultPortfolioSettings();
+  const projects=[{id:"a",primaryMediaType:"IMAGE"},{id:"b",primaryMediaType:"VIDEO",primaryMediaUrl:"/b.mp4"},{id:"c",primaryMediaType:"IMAGE"}];
+  settings.hero.ids=["c","removed","a","c"];
+  assert.deepEqual(selectPortfolioProjects(projects,settings,"hero").map(p=>p.id),["c","a"]);
+  assert.deepEqual(selectPortfolioProjects(projects,settings,"reel").map(p=>p.id),["b"]);
+  settings.device.enabled=false;
+  assert.deepEqual(selectPortfolioProjects(projects,settings,"device"),[]);
+  assert.deepEqual(readPortfolioSettings({invalid:true}),defaultPortfolioSettings());
+});
+test("drag ordering moves to target index and never mutates input",()=>{
+  const source=[{id:"a",displayOrder:0},{id:"b",displayOrder:1},{id:"c",displayOrder:2}];
+  assert.deepEqual(planMediaDrop(source,"a","c"),[{id:"b",displayOrder:0},{id:"c",displayOrder:1},{id:"a",displayOrder:2}]);
+  assert.deepEqual(planMediaDrop(source,"a","unknown"),[]);
+  assert.equal(source[0].id,"a");
+});

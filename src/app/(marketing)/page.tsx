@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { PORTFOLIO_SETTING_KEY, readPortfolioSettings, selectPortfolioProjects } from "@/lib/content/portfolio-settings";
 import { getLandingPageData } from "@/server/services/landing-page.service";
 import { AuroraMarketingMain } from "@/components/layout/aurora-marketing-main";
 import { MarketingHeader } from "@/components/layout/marketing-header";
@@ -28,6 +30,12 @@ export default async function MarketingHomePage() {
     getPublishedShowcaseProjects(),
     getPublishedCreativeGallery(),
   ]);
+  const portfolio = readPortfolioSettings(data.settings[PORTFOLIO_SETTING_KEY]);
+  const heroProjects = selectPortfolioProjects(showcaseProjects,portfolio,"hero");
+  const streamProjects = selectPortfolioProjects(showcaseProjects,portfolio,"stream");
+  const selectedProjects = selectPortfolioProjects(showcaseProjects,portfolio,"selected");
+  const deviceProjects = selectPortfolioProjects(showcaseProjects,portfolio,"device");
+  const reelProjects = selectPortfolioProjects(showcaseProjects,portfolio,"reel");
   const hasActiveOffer = Boolean(data.activeOffer);
   const hasPublishedPrices = data.packages.length > 0;
   const copy = buildHeroCopy({
@@ -69,22 +77,24 @@ export default async function MarketingHomePage() {
       <AuroraMarketingMain>
         <PortfolioHero
           copy={copy}
-          projects={showcaseProjects}
+          projects={heroProjects}
+          showArtwork={portfolio.hero.enabled && (heroProjects.length > 0 || (!showcaseProjects.length && !portfolio.hero.ids.length))}
           slogan={data.brand.slogan}
         />
-        {showcaseProjects.length >= 3 && <MovingPortfolioStrip projects={showcaseProjects.slice(0, 8)} />}
+        {streamProjects.length >= 3 && <MovingPortfolioStrip projects={streamProjects} />}
         <TrustStrip
           serviceGroups={data.serviceGroups}
           trustMetrics={data.trustMetrics}
           clientLogos={data.clientLogos}
         />
-        {showcaseProjects.length > 0 && <WorkSection projects={showcaseProjects.slice(0, 6)} />}
+        {selectedProjects.length > 0 && <WorkSection projects={selectedProjects} />}
+        {!selectedProjects.length && !portfolio.gallery && <section id="work" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><h2 className="font-headline text-3xl font-bold text-white">كل أعمالنا.</h2><Link href="/work" className="mt-4 inline-flex min-h-11 items-center text-brand-aqua underline">استكشف معرض المشاريع</Link></section>}
         <SectionBridge words={["THINK.", "CREATE.", "BUILD.", "GROW."]} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
         <NicheShowcase />
-        {showcaseProjects.length > 1 && <DeviceShowcase projects={showcaseProjects.slice(0, 6)} />}
-        {showcaseProjects.some(project => project.primaryMediaType === "VIDEO") && <PortfolioRail projects={showcaseProjects} showreelOnly />}
-        <CreativeGallery projects={creativeGallery} sectionId={showcaseProjects.length ? "creative-gallery" : "work"} />
+        {deviceProjects.length > 1 && <DeviceShowcase projects={deviceProjects} />}
+        {reelProjects.length > 0 && <PortfolioRail projects={reelProjects} showreelOnly />}
+        {portfolio.gallery && <CreativeGallery projects={creativeGallery} sectionId={selectedProjects.length ? "creative-gallery" : "work"} showComparisons={portfolio.comparisons} />}
         <SectionBridge words={["IDEAS.", "DESIGN.", "IMPACT."]} />
         <CommercialSection
           data={{
