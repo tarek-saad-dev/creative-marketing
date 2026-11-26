@@ -5,6 +5,7 @@ import type { ServiceCategory } from "@/generated/prisma";
 import {
   findFeaturedPublishedProjects,
   findPublishedCreativeGallery,
+  findPublishedHeroMedia,
   findPublishedShowcaseProjects,
   findPublishedProjectBySlug,
   findPublishedProjectSlugs,
@@ -295,4 +296,8 @@ export function buildServicesEcosystem(
 
 export async function getPublishedCreativeGallery() {
   return findPublishedCreativeGallery();
+}
+
+export async function getPublishedHeroMedia(projectIds:string[]){
+  return findPublishedHeroMedia(projectIds);
 }

@@ -9,3 +9,6 @@ Multi-select image/video files; uploads run sequentially and report individual f
 
 ## Visual-first hero
 Desktop split composition prioritizes a CSS perspective scene (up to five selected project covers), with a central linked display, floating layered artwork, a phone preview using a second published image when available, responsive touch/keyboard controls, and optional playback. Mobile reduces peripheral layers. Motion respects global pause/reduced motion. Real published projects retain the dashboard's selected order; clearly labeled concept visuals appear only when the project list is empty. Legacy default hero copy is shortened without editing the database; customized text remains. Browser visual acceptance is still required.
+
+## Project-level hero
+The hero fetches up to 16 media records for each of up to 12 curated published projects independently of the main gallery's 16-project cap. Up to nine distinct media entries per project, cover first, can be selected in the hero; video plays only in the explicit full-screen viewer. Empty side positions can display additional images from the active project. Phone favors a portrait image. On mobile, art precedes supporting text and CTAs. Browser script includes desktop, laptop, mobile and narrow mobile first-viewport checks and captures hero screenshots. No client assets or DB records added.

@@ -12,7 +12,7 @@ await mkdir("qa-artifacts",{recursive:true});
 const browser = await chromium.launch({headless:true});
 const failures = [];
 try {
-  for (const [name,width,height] of [["desktop",1440,900],["mobile",390,844],["small-mobile",320,700]]) {
+  for (const [name,width,height] of [["desktop",1440,900],["laptop",1366,768],["mobile",390,844],["small-mobile",320,700]]) {
     const page = await browser.newPage({viewport:{width,height},reducedMotion:"reduce",isMobile:name!=="desktop",hasTouch:name!=="desktop"});
     const errors=[];
     page.on("pageerror",error=>errors.push(error.message));
@@ -23,6 +23,27 @@ try {
       for(const id of ["work","services","industries","packages","process","contact"]) assert.equal(await page.locator("#"+id).count(),1,"Missing/duplicate section: "+id);
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
       assert.equal(overflow,false,"Horizontal document overflow");
+      const stage=page.locator("#hero [data-hero-stage]");
+      if(await stage.count()){
+        const bounds=await stage.boundingBox();
+        assert.ok(bounds,"Hero artwork should be visible");
+        assert.ok(bounds.y < height*0.65,"Hero artwork starts too far below the fold");
+        assert.ok(Math.min(bounds.y+bounds.height,height)-bounds.y >= Math.min(bounds.height*0.65,160),"Hero artwork is not sufficiently visible in first viewport");
+        const next=page.locator("#hero button[aria-label='التالي']");
+        if(await next.count())await next.click();
+        const picker=page.locator("#hero [data-hero-media-picker] button");
+        if(await picker.count()>1){
+          await picker.nth(1).click();
+          assert.equal(await picker.nth(1).getAttribute("aria-pressed"),"true");
+        }
+        const open=page.locator("#hero [data-hero-open-media]");
+        if(await open.count()){
+          await open.click();await page.getByRole("dialog").waitFor({state:"visible"});
+          await page.keyboard.press("Escape");await page.getByRole("dialog").waitFor({state:"hidden"});
+        }
+        await page.evaluate(()=>window.scrollTo(0,0));
+      }
+      await page.screenshot({path:"qa-artifacts/"+name+"-hero.png",animations:"disabled"});
       await page.screenshot({path:"qa-artifacts/"+name+".png",fullPage:true,animations:"disabled"});
       const serviceTabs=page.locator("#services [role=tab]");
       if(await serviceTabs.count()>1){
