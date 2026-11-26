@@ -3,6 +3,7 @@ import "server-only";
 import type { ServiceCategory } from "@/generated/prisma";
 import {
   findFeaturedPublishedProjects,
+  findPublishedShowcaseProjects,
   findPublishedProjectBySlug,
   findPublishedProjectSlugs,
   findPublishedProjectsForServicePreviews,
@@ -28,6 +29,8 @@ export type WorkWallProject = {
   duration: string | null;
   displayOrder: number;
   primaryMediaType: "IMAGE" | "VIDEO" | null;
+  primaryMediaUrl?: string | null;
+  primaryThumbnailUrl?: string | null;
   services: Array<{
     id: string;
     slug: string;
@@ -125,6 +128,8 @@ function mapWorkWallProject(
     duration: project.duration,
     displayOrder: project.displayOrder,
     primaryMediaType: primary?.type ?? null,
+    primaryMediaUrl: primary?.url ?? null,
+    primaryThumbnailUrl: primary?.thumbnailUrl ?? null,
     services: project.projectServices.map(ps => ps.service),
   };
 }
@@ -133,6 +138,13 @@ export async function getFeaturedWorkWallProjects(): Promise<
   WorkWallProject[]
 > {
   const rows = await findFeaturedPublishedProjects();
+  return rows
+    .map(mapWorkWallProject)
+    .filter((project): project is WorkWallProject => project !== null);
+}
+
+export async function getPublishedShowcaseProjects(): Promise<WorkWallProject[]> {
+  const rows = await findPublishedShowcaseProjects();
   return rows
     .map(mapWorkWallProject)
     .filter((project): project is WorkWallProject => project !== null);
