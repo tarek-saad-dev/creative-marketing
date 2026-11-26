@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mockupStyles } from "./mockup-style";
 
 export const PORTFOLIO_SETTING_KEY = "landing.portfolio";
 export const portfolioSections = [
@@ -14,10 +15,11 @@ const slotSchema = z.object({enabled:z.boolean(),ids:choices});
 export const portfolioSettingsSchema = z.object({
   hero:slotSchema,stream:slotSchema,selected:slotSchema,device:slotSchema,reel:slotSchema,
   gallery:z.boolean(),comparisons:z.boolean(),
+  mockups:z.record(z.string().min(1).max(160),z.enum(mockupStyles)).default({}),
 });
 export type PortfolioSettings = z.infer<typeof portfolioSettingsSchema>;
 export function defaultPortfolioSettings():PortfolioSettings{
-  return {hero:{enabled:true,ids:[]},stream:{enabled:true,ids:[]},selected:{enabled:true,ids:[]},device:{enabled:true,ids:[]},reel:{enabled:true,ids:[]},gallery:true,comparisons:true};
+  return {hero:{enabled:true,ids:[]},stream:{enabled:true,ids:[]},selected:{enabled:true,ids:[]},device:{enabled:true,ids:[]},reel:{enabled:true,ids:[]},gallery:true,comparisons:true,mockups:{}};
 }
 export function readPortfolioSettings(raw:unknown):PortfolioSettings {
   const parsed=portfolioSettingsSchema.safeParse(raw);
