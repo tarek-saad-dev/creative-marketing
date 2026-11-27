@@ -26,9 +26,10 @@ type MarketingHeaderProps = {
   brandName: string;
   assets?: BrandAssets;
   contactHref?: string;
+  visualPreview?:boolean;
 };
 
-export function MarketingHeader({ brandName, assets, contactHref = marketingPrimaryCta.href }: MarketingHeaderProps) {
+export function MarketingHeader({ brandName, assets, contactHref = marketingPrimaryCta.href, visualPreview=false }: MarketingHeaderProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [activeAnchor, setActiveAnchor] = useState("");
@@ -78,7 +79,7 @@ export function MarketingHeader({ brandName, assets, contactHref = marketingPrim
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-header transition-[background-color,box-shadow,border-color,backdrop-filter,height] duration-base ease-standard",
+          visualPreview?"relative z-0":"fixed inset-x-0 top-0 z-header transition-[background-color,box-shadow,border-color,backdrop-filter,height] duration-base ease-standard",
           (scrolled || pathname !== "/")
             ? "border-b border-border/60 bg-background-elevated/90 shadow-soft backdrop-blur-md"
             : "border-b border-transparent bg-transparent"
