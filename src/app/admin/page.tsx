@@ -1,25 +1,29 @@
 import Link from "next/link";
-import {ArrowUpLeft,Briefcase,FileText,Package,Users,AlertTriangle,PanelsTopLeft,Images} from "lucide-react";
+import {ArrowUpLeft,Briefcase,FileText,Package,Users,AlertTriangle,PanelsTopLeft} from "lucide-react";
 import {requireAdmin} from "@/server/auth/require-admin";
 import {canEditContent,canEditCommercial} from "@/lib/admin/roles";
 import {AdminPageHeader} from "@/components/admin/admin-page-header";
 import {getAdminDashboardData,getRecentAuditActivity} from "@/server/services/admin/dashboard.admin.service";
 import {getLeadCrmOverview} from "@/server/repositories/admin/lead.admin.repository";
 import {formatDateTime} from "@/lib/utils";
-import {OpenSiteLink} from "@/components/admin/content/content-helpers";
+import {getWebsiteJourneyData} from "@/server/services/admin/website-journey.service";
+import {WebsiteJourney} from "@/components/admin/website/website-journey";
 export const dynamic="force-dynamic";
 export default async function AdminDashboardPage(){
  const user=await requireAdmin();
  const editable=canEditContent(user.role),commercial=canEditCommercial(user.role);
  const [data,recentActivity,crm]=await Promise.all([getAdminDashboardData(),commercial?getRecentAuditActivity():Promise.resolve([]),getLeadCrmOverview()]);
+ const journey=editable?await getWebsiteJourneyData(data):null;
  const c=data.counts;
  const stats=[{label:"طلبات جديدة",value:c.leadsNew,detail:c.leadsTotal+" إجمالي الطلبات",href:"/admin/leads?status=NEW",icon:Users},{label:"أعمال منشورة",value:c.projectsPublished,detail:c.projectsDraft+" مسودة",href:"/admin/projects",icon:Briefcase},{label:"الباقات المنشورة",value:c.packagesPublished,detail:c.packagesDraft+" مسودة",href:"/admin/content?section=packages",icon:Package},{label:"الخدمات النشطة",value:c.services,detail:"إدارة الخدمات",href:"/admin/content?section=services",icon:FileText}];
  const optional=new Set(["no-active-offer","no-testimonials","single-admin"]);
  const warnings=data.warnings.filter(w=>!optional.has(w.id));
  const suggestions=data.warnings.filter(w=>optional.has(w.id)&& (w.id!=="single-admin"||commercial));
  return <div className="space-y-6">
- <AdminPageHeader title="الرئيسية" description="تابع حالة الموقع والمحتوى وطلبات العملاء." actions={<OpenSiteLink/>}/>
- <div className="rounded-2xl bg-[#2c1f73] p-5 text-white sm:p-7"><p className="text-xs font-semibold tracking-[.15em] text-[#27e8c7]" dir="ltr">CREATIVE MARKETING / CMS</p><h2 data-admin-welcome-title className="mt-3 break-words font-headline text-2xl font-bold text-white">مرحبًا، {user.name}</h2><p className="mt-2 max-w-xl text-sm leading-7 text-white/85">إدارة محتوى الموقع والأعمال والخدمات من مكان واحد.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/admin/content" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#27e8c7] px-4 text-sm font-bold text-[#111827]"><PanelsTopLeft size={18}/>مركز المحتوى</Link>{editable&&<Link href="/admin/projects/new" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/35 px-4 text-sm font-semibold"><Briefcase size={18}/>إضافة مشروع</Link>}{commercial&&<Link href="/admin/brand" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/35 px-4 text-sm font-semibold"><Images size={18}/>الهوية</Link>}</div></div>
+ <AdminPageHeader title="الرئيسية" description="ابدأ العمل من الخطوة المناسبة، وتابع طلبات العملاء وحالة الموقع."/>
+ <div className="rounded-2xl bg-[#2c1f73] p-4 text-white sm:p-5"><p className="text-xs font-semibold tracking-[.15em] text-[#27e8c7]" dir="ltr">CREATIVE MARKETING / CMS</p><h2 data-admin-welcome-title className="mt-2 break-words font-headline text-xl sm:text-2xl font-bold text-white">مرحبًا، {user.name}</h2><p className="mt-2 max-w-xl text-sm leading-7 text-white/85">موقعك، مشاريعك، وعملاؤك. اختر ما تريد تنفيذه اليوم.</p></div>
+ <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{[{href:commercial?"/admin/website":"/admin/content",title:"تعديل الموقع",description:"النصوص والصور والأقسام",icon:PanelsTopLeft},{href:editable?"/admin/projects/new":"/admin/projects",title:editable?"إضافة مشروع جديد":"عرض المشاريع",description:editable?"البيانات ← التصميمات ← النشر":"الأعمال المنشورة والمسودات",icon:Briefcase},{href:"/admin/leads",title:"متابعة العملاء",description:c.leadsNew+" طلب جديد",icon:Users}].map(task=><Link key={task.href} href={task.href} className="admin-card flex min-w-0 items-center gap-3 p-4 hover:border-primary/50"><task.icon size={22} className="shrink-0 text-primary"/><div className="min-w-0 flex-1"><p className="font-semibold">{task.title}</p><p className="mt-1 text-xs text-foreground-muted">{task.description}</p></div><ArrowUpLeft size={17} className="shrink-0 text-primary"/></Link>)}</div>
+ {journey&&<WebsiteJourney readiness={journey.readiness} role={user.role} compact/>}
  <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{stats.map(s=><Link href={s.href} key={s.label} className="admin-card min-w-0 p-4 hover:border-primary/40"><div className="flex items-center justify-between gap-2 text-primary"><s.icon size={20}/><ArrowUpLeft size={16}/></div><p className="mt-4 text-3xl font-bold tabular-nums">{s.value}</p><p className="mt-1 text-sm font-semibold">{s.label}</p><p className="mt-2 text-xs text-foreground-muted">{s.detail}</p></Link>)}</div>
  {crm.due>0&&<Link href="/admin/leads?followup=due" className="admin-card flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-semibold">متابعات العملاء المستحقة</p><p className="text-xs text-foreground-muted">{crm.overdue} متأخرة · {crm.due-crm.overdue} اليوم</p></div><span className="text-sm font-semibold text-primary">فتح {crm.due} متابعة ←</span></Link>}
  <div className="grid items-start gap-5 xl:grid-cols-[1.25fr_1fr]">

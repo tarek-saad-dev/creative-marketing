@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireRole } from "@/server/auth/require-admin";
 import { AdminRole } from "@/generated/prisma";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -41,7 +42,8 @@ export default async function AdminContentPage({
     <div>
       <AdminPageHeader
         title="مركز المحتوى"
-        description="مكان واحد لتعديل بيانات الموقع والمشاريع والأسعار والآراء"
+        description="محررات المحتوى التفصيلية — إدارة الموقع ترشدك إلى المحرر المناسب لكل قسم."
+        actions={canCommercial?<Link href="/admin/website" className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm font-semibold text-primary">العودة لإدارة الموقع</Link>:undefined}
         breadcrumbs={[
           { label: "لوحة التحكم", href: "/admin" },
           { label: "إدارة محتوى الموقع" },

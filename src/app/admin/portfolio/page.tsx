@@ -11,5 +11,5 @@ export const dynamic="force-dynamic";
 export default async function PortfolioAdmin(){
   await requireRole(AdminRole.ADMIN);
   const [raw,projects]=await Promise.all([getSiteSettingByKey(PORTFOLIO_SETTING_KEY),getPublishedShowcaseProjects()]);
-  return <div className="space-y-6"><AdminPageHeader title="التحكم في استعراض الأعمال" description="اختيار المشاريع وترتيبها وإظهار أقسام المعرض في الصفحة الرئيسية." breadcrumbs={[{label:"لوحة التحكم",href:"/admin"},{label:"استعراض الأعمال"}]}/><PortfolioControlForm initial={readPortfolioSettings(raw)} projects={projects}/></div>;
+  return <div className="space-y-6"><AdminPageHeader title="ترتيب عرض الأعمال" description="اختر المشاريع المنشورة التي تظهر في واجهة الموقع، وشريط الأعمال، ومعرض الصور والفيديو." breadcrumbs={[{label:"لوحة التحكم",href:"/admin"},{label:"استعراض الأعمال"}]}/><PortfolioControlForm initial={readPortfolioSettings(raw)} projects={projects}/></div>;
 }
