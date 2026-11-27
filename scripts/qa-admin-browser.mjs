@@ -31,8 +31,12 @@ try{
  console.log("PASS: 69 admin route/viewport checks and mobile navigation");
  await owner.setViewportSize({width:1440,height:900});
  await visit(owner,"/admin/website");await owner.locator("[data-website-journey]").waitFor();
- assert.equal(await owner.locator("a[href=\"/admin/portfolio#portfolio-hero\"]").count()>0,true);
- await owner.locator("a[href=\"/admin/pages?section=hero\"]").click();await owner.getByLabel("العنوان",{exact:true}).waitFor();
+ await owner.locator('a[href="/admin/website?section=hero"]').filter({hasText:"أول جزء في الموقع"}).last().click();await owner.getByLabel("العنوان",{exact:true}).waitFor();
+ assert.equal(new URL(owner.url()).pathname,"/admin/website");
+ await owner.getByRole("link",{name:"الصور والتصميمات",exact:true}).click();
+ await owner.locator("#portfolio-hero").waitFor();
+ assert.equal(await owner.locator("#portfolio-stream").count(),0,"Only the active portfolio section is rendered");
+ assert.equal(new URL(owner.url()).pathname,"/admin/website");
  await visit(owner,"/admin/pages?section=packages");await owner.getByLabel("عنوان الباقات",{exact:true}).waitFor();
  await expectRedirect(editor,"/admin/website","/admin");
  console.log("PASS: guided website journey, deep-linked editor and role restriction");
@@ -44,7 +48,7 @@ try{
   await owner.waitForURL(u=>u.pathname==="/preview/homepage"&&u.searchParams.get("edit")==="1");
   const sections=owner.locator("[data-visual-section]");
   assert.equal(await sections.count(),17,"All sections must remain editable even when hidden or empty");
-  await owner.locator('nav[aria-label="انتقال إلى قسم"] a[href="#visual-industries"]').click();
+  await owner.locator("#visual-section-select").selectOption("industries");
   await owner.waitForURL(u=>u.hash==="#visual-industries");
   await owner.waitForFunction(()=>{const target=document.getElementById("visual-industries"),bar=document.querySelector("[data-visual-toolbar]");if(!target||!bar)return false;const y=target.getBoundingClientRect().top;return y>=bar.getBoundingClientRect().bottom-3&&y<window.innerHeight*0.75;});
   const industry=owner.locator('[data-visual-section="industries"]');
@@ -53,7 +57,7 @@ try{
   await overflow(owner,"visual homepage");
   if(viewport.width!==320)await owner.screenshot({path:"qa-admin-artifacts/visual-"+viewport.width+".png",animations:"disabled"});
   await industry.getByRole("link",{name:"تعديل المجالات والصور",exact:true}).click();
-  await owner.waitForURL(u=>u.pathname==="/admin/pages"&&u.searchParams.get("section")==="industries");
+  await owner.waitForURL(u=>u.pathname==="/admin/website"&&u.searchParams.get("section")==="industries");
   await owner.locator("#industry-title").waitFor();
  }
  await owner.setViewportSize({width:1440,height:900});
@@ -90,7 +94,7 @@ try{
  await editor.getByRole("heading",{name:"QA Draft Work",exact:true}).waitFor();
  const projectPath=new URL(editor.url()).pathname;
  assert.notEqual(projectPath,"/admin/projects/new","Draft must navigate to a persisted project");
- await editor.getByRole("button",{name:"اختيار من المكتبة"}).last().click();
+ await editor.locator("#media").getByRole("button",{name:"اختيار من المكتبة",exact:true}).click();
  await editor.getByRole("dialog").getByRole("button",{name:"اختيار QA Media Project",exact:true}).click();
  await editor.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
  await editor.getByRole("button",{name:"اختيار عدة ملفات",exact:true}).click();
@@ -106,7 +110,8 @@ try{
  assert.equal(await editor.locator("#media ul > li").count(),3);
  await visit(editor,projectPath);
  await editor.getByRole("button",{name:"نشر",exact:true}).click();
- await editor.getByRole("button",{name:"معاينة التفاصيل",exact:true}).waitFor();
+ await editor.getByRole("link",{name:"فتح المشروع المنشور",exact:true}).waitFor();
+ await editor.getByText("إجراءات إضافية",{exact:true}).click();
  await editor.getByRole("button",{name:"إلى مسودة",exact:true}).waitFor();
  console.log("PASS: role-specific access, project creation, media reuse and publication");
  assert.equal(await editor.locator("#placement").count(),0,"Editor cannot manage portfolio settings");
@@ -120,6 +125,24 @@ try{
  await visit(owner,projectPath);
  await owner.locator("#placement").getByText("الواجهة الرئيسية",{exact:true}).locator("..").getByText(/ترتيب 1/).waitFor();
  console.log("PASS: batch media selection, duplicate protection and owner project placement");
+ await visit(owner,"/admin/website?section=hero&tab=artwork");
+ await owner.getByRole("link",{name:"إضافة مشروع جديد",exact:true}).click();
+ await owner.waitForURL(u=>u.pathname==="/admin/projects/new"&&u.searchParams.get("from")==="hero");
+ await owner.getByLabel("اسم المشروع",{exact:true}).fill("QA Context Project");
+ await owner.getByLabel("المجال",{exact:true}).fill("QA");
+ await owner.getByLabel("وصف مختصر",{exact:true}).fill("Synthetic contextual project");
+ await owner.getByRole("button",{name:"حفظ المسودة وإضافة التصميمات"}).click();
+ await owner.waitForURL(u=>/^\/admin\/projects\/[^/]+$/.test(u.pathname)&&u.pathname!=="/admin/projects/new"&&u.searchParams.get("from")==="hero");
+ const contextProjectId=new URL(owner.url()).pathname.split("/").at(-1);
+ await owner.locator("#media").getByRole("button",{name:"اختيار من المكتبة",exact:true}).click();
+ await owner.getByRole("dialog").getByLabel("بحث الوسائط").fill("/qa-artwork.png");
+ await owner.getByRole("dialog").locator('[data-media-url="/qa-artwork.png"]').getByRole("button",{name:/^اختيار /}).click();
+ await owner.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();
+ await owner.waitForURL(u=>u.pathname==="/admin/website"&&u.searchParams.get("section")==="hero"&&u.searchParams.get("project")===contextProjectId);
+ await owner.getByText("المشروع الذي فتحته للتو",{exact:true}).waitFor();
+ console.log("PASS: contextual project creation and publication returns to originating artwork section");
+
  // Verify a draft can be published but is not made live merely by saving.
  await visit(owner,"/admin/pages");
  const heroTitle=owner.getByLabel("العنوان",{exact:true});
@@ -232,8 +255,17 @@ try{
  console.log("PASS: password reset invalidates old session and new credentials work");
  const sessionCookie = c=>/^(?:__Secure-)?authjs\.session-token(?:\.\d+)?$/.test(c.name);
  assert.ok((await personal.context().cookies()).some(sessionCookie),"Expected authenticated session cookie before logout");
+ // Authenticated GET and RSC prefetch must not emit a refreshed session cookie:
+ // those responses may finish after logout and restore a stale JWT.
+ for(const request of [await personal.request.get(base+"/admin/account"),await personal.request.get(base+"/admin/projects",{headers:{RSC:"1","Next-Router-Prefetch":"1"}})]){
+  assert.ok(request.ok(),"Protected request should succeed before logout");
+  assert.ok(!request.headersArray().some(h=>h.name.toLowerCase()==="set-cookie"&&/authjs\.session-token/.test(h.value)),"Read-only admin requests must not rotate JWT cookies");
+ }
+ const inflight=personal.request.get(base+"/admin/projects",{headers:{RSC:"1","Next-Router-Prefetch":"1"}});
  await personal.getByRole("button",{name:/خروج/}).click();
+ await inflight;
  await personal.waitForURL(u=>u.origin===base&&u.pathname==="/admin/login");
+ await personal.locator("#email").waitFor({state:"visible"});
  assert.ok(!(await personal.context().cookies()).some(sessionCookie),"Logout must clear every session cookie chunk");
  const loggedOut=await personal.request.get(base+"/admin",{maxRedirects:0});
  assert.ok([302,303,307,308].includes(loggedOut.status()),"Logout must deny subsequent protected request");
