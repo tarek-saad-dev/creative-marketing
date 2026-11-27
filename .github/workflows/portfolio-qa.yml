@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   portfolio-unit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - run: npm run qa:unit
 
   hero-geometry:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -31,3 +31,17 @@ jobs:
       - run: npm install --no-save --package-lock=false --ignore-scripts playwright
       - run: npx playwright install --with-deps chromium
       - run: node scripts/qa-hero-geometry.mjs
+
+  typecheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run db:generate
+      - run: npx next typegen
+      - run: npm run type-check

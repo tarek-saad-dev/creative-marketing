@@ -56,8 +56,8 @@ export function AdminEntityForm<
     setSubmitting(true);
     setServerError(null);
     setSuccessMessage(null);
-    const result = await action(values);
-    setSubmitting(false);
+    let result:AdminMutationResult<TResult>;
+    try { result=await action(values); } catch { setServerError("تعذر حفظ التعديلات. تحقق من الاتصال ثم حاول مرة أخرى.");return; } finally {setSubmitting(false);}
 
     if (!result.ok) {
       setServerError(result.error);
@@ -83,6 +83,7 @@ export function AdminEntityForm<
     >
       <UnsavedChangesGuard dirty={form.formState.isDirty && !submitting} />
       {children(form)}
+      {successMessage&&<p role="status" className="text-sm text-emerald-700">{successMessage}</p>}
       {serverError ? (
         <p
           ref={errorRef}

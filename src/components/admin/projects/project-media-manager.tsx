@@ -1,5 +1,6 @@
 "use client";
 
+import {MediaPicker} from "@/components/admin/media/media-picker";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import {
@@ -169,6 +170,7 @@ export function ProjectMediaManager({
         </p>
       )}
 
+      <MediaPicker disabled={pending||Boolean(uploadProgress)} onPick={item=>{if(pending||uploadLock.current)return;if(sorted.some(m=>m.url===item.url)){setError("الملف موجود بالفعل في المشروع");return;}setError(null);startTransition(async()=>{const result=await addProjectMediaAction({projectId,type:item.type,url:item.url,autoCover:canAutoCover&&!coverImageUrl&&autoCover,altText:item.altText,thumbnailUrl:item.type==="VIDEO"?(videoPoster(item.url,item.thumbnailUrl)||""):"",width:item.width,height:item.height,displayOrder:Math.max(-1,...sorted.map(m=>m.displayOrder))+1});if(!result.ok)setError(result.error);else refresh();});}}/>
       <p className="rounded-md border border-border bg-muted/40 p-3 text-sm">
         لإضافة مقارنة قبل وبعد، اكتب في بداية تعليق صورتين من نفس المشروع
         <code dir="ltr" className="mx-1 inline-block">[before:brand]</code>

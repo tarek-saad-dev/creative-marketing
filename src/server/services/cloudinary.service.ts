@@ -11,6 +11,7 @@ import { getCloudinaryEnv, isCloudinaryConfigured } from "@/lib/env/server";
 export const CLOUDINARY_FOLDER_PREFIX = "creative-marketing" as const;
 
 export const CLOUDINARY_FOLDERS = {
+  library: `${CLOUDINARY_FOLDER_PREFIX}/library`,
   projects: `${CLOUDINARY_FOLDER_PREFIX}/projects`,
   testimonials: `${CLOUDINARY_FOLDER_PREFIX}/testimonials`,
   clientLogos: `${CLOUDINARY_FOLDER_PREFIX}/client-logos`,

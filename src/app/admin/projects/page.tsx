@@ -1,147 +1,34 @@
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
-import { requireRole } from "@/server/auth/require-admin";
-import { AdminRole, ContentStatus } from "@/generated/prisma";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { ContentStatusBadge, ToneBadge } from "@/components/admin/status-badge";
-import { listAdminProjects } from "@/server/services/admin/project.admin.service";
-import { RowActionButton } from "@/components/admin/row-action-button";
-import { PreviewButton } from "@/components/admin/preview-button";
-import {
-  archiveProjectAction,
-  publishProjectAction,
-  restoreProjectAction,
-  softDeleteProjectAction,
-  unpublishProjectAction,
-} from "@/server/actions/admin/project.action";
-
-export const metadata: Metadata = { title: "الأعمال" };
-export const dynamic = "force-dynamic";
-
-export default async function AdminProjectsPage() {
-  await requireRole(AdminRole.VIEWER);
-  const projects = await listAdminProjects({ includeDeleted: true });
-
-  return (
-    <div>
-      <AdminPageHeader
-        title="الأعمال"
-        description="معرض أعمال الوكالة الظاهر في صفحة الأعمال والصفحة الرئيسية"
-        breadcrumbs={[
-          { label: "لوحة التحكم", href: "/admin" },
-          { label: "الأعمال" },
-        ]}
-        actions={
-          <Link
-            href="/admin/projects/new"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
-          >
-            <Plus className="h-4 w-4" />
-            إضافة مشروع
-          </Link>
-        }
-      />
-
-      <div className="admin-card overflow-x-auto">
-        <table className="admin-table w-full">
-          <thead>
-            <tr>
-              <th>المشروع</th>
-              <th>الوسائط</th>
-              <th>الحالة</th>
-              <th>محذوف</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="py-8 text-center text-foreground-muted"
-                >
-                  لا توجد مشاريع بعد.
-                </td>
-              </tr>
-            ) : (
-              projects.map(project => (
-                <tr key={project.id}>
-                  <td>
-                    <p className="font-medium text-foreground">
-                      {project.title}
-                    </p>
-                    <p className="text-xs text-foreground-muted" dir="ltr">
-                      /work/{project.slug}
-                    </p>
-                  </td>
-                  <td>{project._count.media}</td>
-                  <td>
-                    <ContentStatusBadge status={project.status} />
-                  </td>
-                  <td>
-                    {project.deletedAt ? (
-                      <ToneBadge label="محذوف" tone="danger" />
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td>
-                    <div className="flex flex-wrap items-center justify-end gap-1">
-                      <Link
-                        href={`/admin/projects/${project.id}`}
-                        className="inline-flex h-8 items-center rounded-md px-2 text-xs font-semibold text-primary hover:bg-primary/10"
-                      >
-                        تعديل
-                      </Link>
-                      {!project.deletedAt ? (
-                        <>
-                          {project.status === ContentStatus.PUBLISHED ? (
-                            <PreviewButton path={`/work/${project.slug}`} />
-                          ) : null}
-                          {project.status !== ContentStatus.PUBLISHED ? (
-                            <RowActionButton
-                              id={project.id}
-                              action={publishProjectAction}
-                              label="نشر"
-                              variant="primary"
-                            />
-                          ) : (
-                            <RowActionButton
-                              id={project.id}
-                              action={unpublishProjectAction}
-                              label="إلى مسودة"
-                            />
-                          )}
-                          <RowActionButton
-                            id={project.id}
-                            action={archiveProjectAction}
-                            label="أرشفة"
-                          />
-                          <RowActionButton
-                            id={project.id}
-                            action={softDeleteProjectAction}
-                            label="حذف"
-                            variant="danger"
-                            confirmMessage="حذف هذا المشروع؟"
-                          />
-                        </>
-                      ) : (
-                        <RowActionButton
-                          id={project.id}
-                          action={restoreProjectAction}
-                          label="استعادة"
-                          variant="primary"
-                        />
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+import {Plus,Image as ImageIcon,ArrowUpLeft} from "lucide-react";
+import {requireRole} from "@/server/auth/require-admin";
+import {AdminRole,ContentStatus} from "@/generated/prisma";
+import {canEditContent,canEditCommercial} from "@/lib/admin/roles";
+import {AdminPageHeader} from "@/components/admin/admin-page-header";
+import {ContentStatusBadge,ToneBadge} from "@/components/admin/status-badge";
+import {queryProjectsForAdmin} from "@/server/repositories/admin/project.admin.repository";
+import {parseProjectFilters,projectListHref,type ProjectFilter} from "@/lib/admin/project-filters";
+import {projectPublishChecklist} from "@/lib/content/project-publishing";
+import {ResilientImage} from "@/components/ui/resilient-media";
+import {RowActionButton} from "@/components/admin/row-action-button";
+import {ViewerReadonlyBanner} from "@/components/admin/content/content-helpers";
+import {archiveProjectAction,publishProjectAction,restoreProjectAction,softDeleteProjectAction,unpublishProjectAction} from "@/server/actions/admin/project.action";
+export const metadata:Metadata={title:"المشاريع والأعمال"};
+export const dynamic="force-dynamic";
+const tabs:Array<{id:ProjectFilter;label:string}>=[{id:"all",label:"كل المشاريع"},{id:"published",label:"منشورة"},{id:"draft",label:"مسودات"},{id:"archived",label:"مؤرشفة"},{id:"deleted",label:"المحذوفات"}];
+export default async function Page({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){
+ const user=await requireRole(AdminRole.VIEWER),editable=canEditContent(user.role),commercial=canEditCommercial(user.role);
+ const filters=parseProjectFilters(await searchParams);
+ const data=await queryProjectsForAdmin(filters);
+ return <div className="space-y-5"><AdminPageHeader title="المشاريع والأعمال" description="إدارة معرض الأعمال، الوسائط، المسودات والنشر." breadcrumbs={[{label:"لوحة التحكم",href:"/admin"},{label:"المشاريع"}]} actions={editable?<Link href="/admin/projects/new" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground"><Plus size={18}/>إضافة مشروع</Link>:undefined}/>
+ <ViewerReadonlyBanner canEdit={editable}/>
+ <nav aria-label="حالات المشاريع" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">{tabs.map(tab=><Link key={tab.id} href={projectListHref(filters,{status:tab.id,page:1})} aria-current={filters.status===tab.id?"page":undefined} className={"rounded-xl border p-3 "+(filters.status===tab.id?"border-primary bg-primary/5":"border-border bg-white")}><p className="text-xs text-foreground-muted">{tab.label}</p><p className="mt-2 text-2xl font-bold tabular-nums">{data.counts[tab.id]}</p></Link>)}</nav>
+ <form method="get" className="admin-card grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-[2fr_1fr_1fr_auto]"><input type="hidden" name="status" value={filters.status}/><label className="text-sm">بحث<input name="q" defaultValue={filters.q} maxLength={120} className="admin-input mt-1" placeholder="المشروع أو العميل أو المجال"/></label><label className="text-sm">المجال<select name="industry" defaultValue={filters.industry} className="admin-input mt-1"><option value="">كل المجالات</option>{[...new Set([...data.industries,...(filters.industry?[filters.industry]:[])])].map(i=><option key={i}>{i}</option>)}</select></label><label className="text-sm">الترتيب<select name="sort" defaultValue={filters.sort} className="admin-input mt-1"><option value="recent">آخر تعديل</option><option value="oldest">الأقدم تعديلًا</option><option value="name">الاسم</option></select></label><div className="flex items-end gap-2"><button type="submit" className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">تطبيق</button><Link href="/admin/projects" className="inline-flex min-h-11 items-center px-2 text-sm text-primary">مسح</Link></div></form>
+ <p className="text-sm text-foreground-muted">{data.total} نتيجة · صفحة {data.page} من {data.pages}</p>
+ {data.rows.length?<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{data.rows.map(project=>{
+ const missing=projectPublishChecklist(project).filter(i=>!i.ok);const deleted=Boolean(project.deletedAt);
+ return <article key={project.id} className="admin-card min-w-0 overflow-hidden"><div className="relative aspect-[16/10] bg-[#252c69]"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt||project.title} sizes="(max-width:640px) 100vw, 360px"/><div className="absolute start-3 top-3">{deleted?<ToneBadge label="محذوف" tone="danger"/>:<ContentStatusBadge status={project.status}/>}</div></div><div className="space-y-3 p-4"><h2 className="break-words font-headline font-bold">{project.title}</h2><p className="break-words text-xs text-foreground-muted">{project.industry||"بدون مجال"}{project.clientName?" · "+project.clientName:""}</p><p className="flex items-center gap-2 text-xs text-foreground-muted"><ImageIcon size={15}/>{project._count.media} وسائط · {project._count.projectServices} خدمات{project.featured?" · مميز":""}</p>{!deleted&&<p className={"text-xs leading-6 "+(missing.length?"text-amber-800":"text-emerald-700")}>{missing.length?"قبل النشر: "+missing.map(i=>i.label).join("، "):"جاهز للنشر"}</p>}
+ <div className="flex flex-wrap items-center gap-1 border-t border-border pt-3">{deleted?(commercial&&<RowActionButton id={project.id} action={restoreProjectAction} label="استعادة" variant="primary" confirmMessage="استعادة المشروع كعمل مؤرشف؟"/>):<>{editable&&<><Link href={"/admin/projects/"+project.id} className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground">إدارة المشروع</Link><Link href={"/preview/project/"+project.id} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center px-2 text-xs text-primary">معاينة</Link>{project.status!==ContentStatus.PUBLISHED?<RowActionButton id={project.id} action={publishProjectAction} label="نشر" disabled={missing.length>0} variant="primary" confirmMessage="نشر المشروع؟"/>:<RowActionButton id={project.id} action={unpublishProjectAction} label="إلى مسودة" confirmMessage="إخفاء المشروع المنشور وإعادته لمسودة؟"/>}{project.status!==ContentStatus.ARCHIVED&&<RowActionButton id={project.id} action={archiveProjectAction} label="أرشفة" confirmMessage="أرشفة المشروع وإخفاؤه من الموقع؟"/>}</>}{project.status===ContentStatus.PUBLISHED&&<Link href={"/work/"+project.slug} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-1 px-2 text-xs text-primary">فتح الموقع <ArrowUpLeft size={13}/></Link>}{commercial&&<RowActionButton id={project.id} action={softDeleteProjectAction} label="حذف" variant="danger" confirmMessage="نقل المشروع للمحذوفات؟ يمكن استعادته لاحقًا."/>}</>}</div></div></article>})}</div>:<div className="admin-card p-8 text-center text-sm text-foreground-muted">لا توجد مشاريع مطابقة للفلاتر الحالية.</div>}
+ {data.pages>1&&<nav aria-label="صفحات المشاريع" className="flex items-center justify-center gap-3">{data.page>1&&<Link href={projectListHref(filters,{page:data.page-1})} className="rounded-lg border border-border px-4 py-3 text-sm">السابق</Link>}<span className="text-sm">{data.page} / {data.pages}</span>{data.page<data.pages&&<Link href={projectListHref(filters,{page:data.page+1})} className="rounded-lg border border-border px-4 py-3 text-sm">التالي</Link>}</nav>}
+ </div>;
 }
