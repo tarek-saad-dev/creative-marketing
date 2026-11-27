@@ -34,3 +34,16 @@ export function selectPortfolioProjects<T extends {id:string;primaryMediaType?:s
   const byId=new Map(candidates.map(p=>[p.id,p]));
   return [...new Set(config.ids)].flatMap(id=>{const item=byId.get(id);return item?[item]:[]}).slice(0,meta.limit);
 }
+
+export const portfolioSlotArabic:Record<PortfolioSlot,string>={hero:"الواجهة الرئيسية",stream:"شريط الأعمال",selected:"المشاريع المختارة",device:"عرض الموبايل",reel:"فيديو الاستعراض"};
+/** Promote without dropping other visible projects or enabling disabled slots. */
+export function planProjectPlacement<T extends {id:string;primaryMediaType?:string|null;primaryMediaUrl?:string|null}>(projects:T[],settings:PortfolioSettings,slot:PortfolioSlot,id:string):{ids:string[];changed:boolean}{
+ const config=settings[slot],meta=portfolioSections.find(s=>s.key===slot)!;
+ if(!config.enabled)throw new Error("القسم معطّل. فعّله من إعدادات العرض أولًا.");
+ const candidate=projects.find(p=>p.id===id);
+ if(!candidate||slot==="reel"&&(candidate.primaryMediaType!=="VIDEO"||!candidate.primaryMediaUrl))throw new Error("المشروع غير مؤهل لهذا العرض.");
+ const current=selectPortfolioProjects(projects,settings,slot).map(p=>p.id);
+ if(current[0]===id)return {ids:current,changed:false};
+ if(current.length>=meta.limit&&!current.includes(id))throw new Error("القسم ممتلئ. اختر الأعمال التي تريد الاحتفاظ بها من إعدادات العرض.");
+ return {ids:[id,...current.filter(x=>x!==id)],changed:true};
+}

@@ -274,10 +274,13 @@ export type ProjectMediaCreateInput = {
 
 export async function createProjectMedia(input: ProjectMediaCreateInput, autoCoverAlt?:string) {
   return prisma.$transaction(async tx=>{
-    const media=await tx.projectMedia.create({data:input,select:{id:true,projectId:true}});
+    const project=await tx.project.findFirst({where:{id:input.projectId,deletedAt:null},select:{id:true}});if(!project)throw new Error("المشروع غير موجود");
+    const existing=await tx.projectMedia.findFirst({where:{projectId:input.projectId,url:input.url},select:{id:true}});if(existing)throw new Error("الملف موجود بالفعل في المشروع");
+    const max=await tx.projectMedia.aggregate({where:{projectId:input.projectId},_max:{displayOrder:true}});
+    const media=await tx.projectMedia.create({data:{...input,displayOrder:Math.max(input.displayOrder,(max._max.displayOrder??-1)+1)},select:{id:true,projectId:true}});
     if(autoCoverAlt && input.type==="IMAGE") await tx.project.updateMany({where:{id:input.projectId,deletedAt:null,status:ContentStatus.DRAFT,OR:[{coverImageUrl:null},{coverImageUrl:""}]},data:{coverImageUrl:input.url,coverImageAlt:autoCoverAlt}});
     return media;
-  });
+  },{isolationLevel:"Serializable"});
 }
 
 export async function updateProjectMediaMeta(
