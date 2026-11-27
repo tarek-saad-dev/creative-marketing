@@ -15,6 +15,7 @@ export async function verifyPassword(
 }
 
 export function validatePasswordStrength(password: string): string | null {
+  if (Buffer.byteLength(password,"utf8") > 72) return "كلمة المرور يجب ألا تتجاوز 72 بايت.";
   if (password.length < 12) {
     return "كلمة المرور يجب أن تكون 12 حرفًا على الأقل.";
   }

@@ -6,12 +6,13 @@ import {
   findAdminUserForAuth,
   touchAdminLastLogin,
 } from "@/server/repositories/admin-user.repository";
+import {credentialVersion} from "@/server/auth/credential-version";
 import { verifyPassword } from "@/server/auth/password";
 import { logAdminAction } from "@/server/services/admin-audit.service";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(1).max(256),
 });
 
 /** Generic message — never reveal whether email exists. */
@@ -62,6 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: admin.name,
           email: admin.email,
           role: admin.role,
+          credentialVersion:credentialVersion(admin.passwordHash),
         };
       },
     }),

@@ -140,3 +140,6 @@ export async function softDeleteAdminUser(id: string): Promise<AdminUserSafe> {
     select: adminUserSafeSelect,
   });
 }
+
+/** Server-side credential check only; never return this row to a client. */
+export async function findAdminCredentialById(id:string){return prisma.adminUser.findUnique({where:{id},select:{...adminUserSafeSelect,passwordHash:true}});}
