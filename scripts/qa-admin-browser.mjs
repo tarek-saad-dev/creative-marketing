@@ -70,14 +70,24 @@ try{
  await admin.getByLabel("نتيجة التواصل").fill("Synthetic contact note");
  await admin.getByRole("button",{name:"تسجيل في السجل"}).click();
  await admin.getByText("Synthetic contact note",{exact:true}).waitFor();
- await visit(admin,"/admin/leads?followup=due");await admin.getByText("QA Lead",{exact:true}).first().waitFor();
+ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+  await admin.setViewportSize(viewport);
+  await visit(admin,"/admin/leads?followup=due");
+  const leadLink=admin.getByRole("link",{name:"QA Lead",exact:true});
+  await leadLink.waitFor();assert.equal(await leadLink.count(),1,"Expected one accessible lead link per viewport");
+  assert.equal(await leadLink.getAttribute("href"),"/admin/leads/qa-lead");
+ }
+ await admin.setViewportSize({width:1440,height:900});
  console.log("PASS: private archived preview, draft isolation, rollback and CRM follow-up/contact");
  // A live session must lose its write permissions when the owner changes its role.
  await visit(editor,projectPath);
  await visit(owner,"/admin/users");
  const editorCard=owner.locator("article").filter({hasText:"QA EDITOR"});
  await editorCard.getByLabel("دور QA EDITOR").selectOption("VIEWER");
- await editorCard.getByLabel("دور QA EDITOR").waitFor();await owner.waitForFunction(()=>Array.from(document.querySelectorAll("article")).some(a=>a.textContent.includes("QA EDITOR")&&a.querySelector("select")?.value==="VIEWER"));
+ await editorCard.getByText("مشاهد",{exact:true}).filter({visible:true}).waitFor();
+ await owner.waitForFunction(()=>Array.from(document.querySelectorAll("article")).some(a=>a.querySelector("h2")?.textContent==="QA EDITOR"&&a.querySelector("select")?.value==="VIEWER"&&!a.querySelector("select")?.disabled));
+ await visit(owner,"/admin/users");
+ assert.equal(await editorCard.getByLabel("دور QA EDITOR").inputValue(),"VIEWER","Role change must persist across reload");
  await editor.locator("input[name=url]").fill("/qa-artwork.png?stale=1");
  await editor.getByRole("button",{name:"إضافة من رابط",exact:true}).click();
  await editor.getByRole("alert").filter({hasText:"صلاحية"}).waitFor();
@@ -85,18 +95,29 @@ try{
  const viewerCard=owner.locator("article").filter({hasText:"QA VIEWER"});
  await viewerCard.getByRole("button",{name:"إيقاف الحساب",exact:true}).click();
  await viewerCard.getByRole("button",{name:"إعادة التفعيل",exact:true}).waitFor();
+ await visit(owner,"/admin/users");
+ await viewerCard.getByRole("button",{name:"إعادة التفعيل",exact:true}).waitFor();
  await expectRedirect(viewer,"/admin","/admin/login");
  console.log("PASS: stale write denied and suspended session blocked");
  await visit(owner,"/admin/users");
  const adminCard=owner.locator("article").filter({hasText:"QA ADMIN"});
  await adminCard.getByRole("button",{name:"كلمة المرور",exact:true}).click();
  const resetDialog=owner.getByRole("dialog");
- const newPassword="Qa!"+randomBytes(16).toString("hex");
+ const newPassword="Qa!1"+randomBytes(16).toString("hex");
  await resetDialog.locator('input[type="password"]').fill(newPassword);
  await resetDialog.getByRole("button",{name:"تعيين كلمة المرور",exact:true}).click();
  await resetDialog.waitFor({state:"hidden"});
  await expectRedirect(admin,"/admin","/admin/login");
  const renewed=await session("admin",newPassword);await visit(renewed,"/admin/account");
+ const ownPassword="Qa!2"+randomBytes(16).toString("hex");
+ await renewed.getByLabel("الحالية",{exact:true}).fill(newPassword);
+ await renewed.getByLabel("الجديدة",{exact:true}).fill(ownPassword);
+ await renewed.getByLabel("تأكيد الجديدة",{exact:true}).fill(ownPassword);
+ await renewed.getByRole("button",{name:"حفظ كلمة المرور",exact:true}).click();
+ await renewed.getByText("تم التغيير. سجّل الدخول مرة أخرى بكلمة المرور الجديدة.",{exact:true}).waitFor();
+ await expectRedirect(renewed,"/admin","/admin/login");
+ const personal=await session("admin",ownPassword);await visit(personal,"/admin/account");
+ console.log("PASS: personal password change revokes prior session and permits fresh login");
  console.log("PASS: password reset invalidates old session and new credentials work");
  assert.deepEqual(errors,[],"Browser runtime errors");
  console.log("Admin acceptance passed: protected routes, 3 viewport sizes, draft project, media reuse, homepage publication, CRM, live role, suspension and password reset");
