@@ -2,7 +2,7 @@
 
 import {MediaPicker} from "@/components/admin/media/media-picker";
 import {ResilientImage} from "@/components/ui/resilient-media";
-import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 import {
   projectInputSchema,
@@ -17,14 +17,6 @@ import { Field } from "@/components/admin/field";
 import { projectPublishChecklist } from "@/lib/content/project-publishing";
 import { slugify } from "@/lib/utils";
 import type { AdminProjectDetail } from "@/server/repositories/admin/project.admin.repository";
-
-const STEPS = [
-  { id: 1, label: "البيانات الأساسية" },
-  { id: 2, label: "تفاصيل المشروع" },
-  { id: 3, label: "الصور" },
-  { id: 4, label: "الخدمات" },
-  { id: 5, label: "الحفظ" },
-] as const;
 
 function PublishChecklist({
   values,
@@ -72,7 +64,6 @@ export function ProjectForm({
   services: Array<{ id: string; nameAr: string }>;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState(1);
 
   const defaultValues: ProjectFormInput = {
     title: project?.title ?? "",
@@ -118,25 +109,9 @@ export function ProjectForm({
         const title = watch("title");
         return (
           <div className="space-y-4">
-            {Object.keys(formState.errors).length>0&&<div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive"><p className="font-semibold">راجع الحقول قبل الحفظ</p>{Object.entries(formState.errors).map(([key,error])=><button key={key} type="button" className="block min-h-9 text-start underline" onClick={()=>setStep(["title","slug","clientName","industry","summary"].includes(key)?1:["challenge","solution","duration","resultText"].includes(key)?2:["coverImageUrl","coverImageAlt"].includes(key)?3:key==="serviceIds"?4:5)}>{error?.message?.toString()||"راجع "+key}</button>)}</div>}
-            <div className="flex flex-wrap gap-1">
-              {STEPS.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setStep(item.id)}
-                  className={
-                    step === item.id
-                      ? "rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-                      : "rounded-full px-3 py-1.5 text-xs font-medium text-foreground-muted hover:bg-muted"
-                  }
-                >
-                  {item.id}. {item.label}
-                </button>
-              ))}
-            </div>
-
-            {step === 1 ? (
+            {Object.keys(formState.errors).length>0&&<div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive"><p className="font-semibold">راجع الحقول قبل الحفظ</p>{Object.entries(formState.errors).map(([key,error])=><p key={key}>{error?.message?.toString()||"راجع "+key}</p>)}</div>}
+            <p className="text-xs text-foreground-muted">غيّر البيانات الأساسية واحفظ مباشرة. باقي التفاصيل اختيارية.</p>
+            {(
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="اسم المشروع"
@@ -199,9 +174,9 @@ export function ProjectForm({
                   </details>
                 </div>
               </div>
-            ) : null}
+            )}
 
-            {step === 2 ? (
+            <details className="rounded-lg border border-border p-3" open={Boolean(formState.errors.challenge||formState.errors.solution||formState.errors.duration||formState.errors.resultText)||undefined}><summary className="cursor-pointer text-sm font-semibold">تفاصيل المشروع (اختياري)</summary><div className="mt-3">{(
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="التحدي"
@@ -228,9 +203,9 @@ export function ProjectForm({
                   <input className="admin-input" {...register("duration")} />
                 </Field>
               </div>
-            ) : null}
+            )}</div></details>
 
-            {step === 3 ? (
+            <details className="rounded-lg border border-border p-3" open={Boolean(formState.errors.coverImageUrl||formState.errors.coverImageAlt)||undefined}><summary className="cursor-pointer text-sm font-semibold">تعديل الغلاف يدويًا</summary><div className="mt-3">{(
               <div className="grid gap-4 sm:grid-cols-2">
                 <p className="sm:col-span-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-foreground-muted">
                   اختر الغلاف من مكتبة الوسائط أو استخدم رابط صورة. احفظ المشروع لتطبيق التغيير.
@@ -257,9 +232,9 @@ export function ProjectForm({
                   />
                 </Field>
               </div>
-            ) : null}
+            )}</div></details>
 
-            {step === 4 ? (
+            <details className="rounded-lg border border-border p-3" open={Boolean(formState.errors.serviceIds)||undefined}><summary className="cursor-pointer text-sm font-semibold">الخدمات المرتبطة (اختياري)</summary><div className="mt-3">{(
               <div>
                 <span className="admin-label">اختر الخدمات</span>
                 <div className="mt-2 flex flex-wrap gap-3 rounded-md border border-border p-3">
@@ -284,9 +259,9 @@ export function ProjectForm({
                   )}
                 </div>
               </div>
-            ) : null}
+            )}</div></details>
 
-            {step === 5 ? (
+            <details className="rounded-lg border border-border p-3" open={Boolean(formState.errors.displayOrder||formState.errors.featured)||undefined}><summary className="cursor-pointer text-sm font-semibold">إعدادات العرض المتقدمة</summary><div className="mt-3">{(
               <div className="space-y-4">
                 <PublishChecklist values={watch()} />
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -306,31 +281,8 @@ export function ProjectForm({
                   </label>
                 </div>
               </div>
-            ) : null}
+            )}</div></details>
 
-            <div className="flex flex-wrap justify-between gap-2 border-t border-border pt-3">
-              <button
-                type="button"
-                disabled={step <= 1}
-                onClick={() => setStep(s => Math.max(1, s - 1))}
-                className="inline-flex h-9 items-center rounded-md border border-border px-3 text-sm disabled:opacity-40"
-              >
-                السابق
-              </button>
-              {step < 5 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep(s => Math.min(5, s + 1))}
-                  className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground"
-                >
-                  التالي
-                </button>
-              ) : (
-                <p className="text-xs text-foreground-muted self-center">
-                  استخدم زر الحفظ بالأسفل
-                </p>
-              )}
-            </div>
           </div>
         );
       }}

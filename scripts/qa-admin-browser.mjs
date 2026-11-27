@@ -110,7 +110,8 @@ try{
  assert.equal(await editor.locator("#media ul > li").count(),3);
  await visit(editor,projectPath);
  await editor.getByRole("button",{name:"نشر",exact:true}).click();
- await editor.getByRole("button",{name:"معاينة التفاصيل",exact:true}).waitFor();
+ await editor.getByRole("link",{name:"فتح المشروع المنشور",exact:true}).waitFor();
+ await editor.getByText("إجراءات إضافية",{exact:true}).click();
  await editor.getByRole("button",{name:"إلى مسودة",exact:true}).waitFor();
  console.log("PASS: role-specific access, project creation, media reuse and publication");
  assert.equal(await editor.locator("#placement").count(),0,"Editor cannot manage portfolio settings");
