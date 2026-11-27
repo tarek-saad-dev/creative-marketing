@@ -17,7 +17,7 @@ export async function updateHomepageEditorAction(raw:unknown){
     return {id:row.id,state,action:input.action,versionId:input.action==="restore"?input.versionId:null};
   },{isolationLevel:"Serializable"}).catch(error=>{if(error&&typeof error==="object"&&"code" in error&&["P2034","P2002"].includes(String(error.code)))throw new Error("حدث تعديل متزامن. أعد تحميل الصفحة.");throw error;});
   if(input.action==="publish")revalidateHomepage();
-  revalidatePath("/admin/pages");revalidatePath("/preview/homepage");
+  revalidatePath("/admin/website");revalidatePath("/admin/pages");revalidatePath("/preview/homepage");
   return result;
  });
 }

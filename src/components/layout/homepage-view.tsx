@@ -1,5 +1,6 @@
 import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import Link from "next/link";
+import {VisualSection} from "@/components/admin/website/visual-section";
 import {Fragment,type ReactNode} from "react";
 import {HOMEPAGE_EDITOR_KEY,readHomeEditor,type HomeSectionId,type HomeLayout} from "@/lib/content/homepage-editor";
 import { PORTFOLIO_SETTING_KEY, readPortfolioSettings, selectPortfolioProjects } from "@/lib/content/portfolio-settings";
@@ -25,7 +26,7 @@ import {
 } from "@/components/sections/hero/hero-copy";
 import { FaqJsonLd } from "@/components/seo/faq-json-ld";
 
-export async function HomepageView({preview=false,previewLayout}:{preview?:boolean;previewLayout?:HomeLayout}={}) {
+export async function HomepageView({preview=false,previewLayout,visual=false}:{preview?:boolean;previewLayout?:HomeLayout;visual?:boolean}={}) {
   const [data, showcaseProjects, creativeGallery] = await Promise.all([
     getLandingPageData(),
     getPublishedShowcaseProjects(),
@@ -33,6 +34,7 @@ export async function HomepageView({preview=false,previewLayout}:{preview?:boole
   ]);
   const editor=readHomeEditor(data.settings[HOMEPAGE_EDITOR_KEY]);
   const layout=preview?(previewLayout??editor.draft??editor.published):editor.published;
+  const visualMode=preview&&visual;
   const enabled=new Set(layout.sections.filter(s=>s.enabled).map(s=>s.id));
   const portfolio = readPortfolioSettings(data.settings[PORTFOLIO_SETTING_KEY]);
   const heroProjects = selectPortfolioProjects(showcaseProjects,portfolio,"hero");
@@ -68,19 +70,19 @@ export async function HomepageView({preview=false,previewLayout}:{preview?:boole
   const hasGallery=enabled.has("gallery")&&portfolio.gallery;
   const fallbackWork=<section id="work" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><h2 className="font-headline text-3xl font-bold text-white">كل أعمالنا.</h2><Link href="/work" className="mt-4 inline-flex min-h-11 items-center text-brand-aqua underline">استكشف معرض المشاريع</Link></section>;
   const commercial={offer:data.offer,packages:data.packages,testimonials:data.testimonials,faqs:data.faqs,settings:data.settings};
-  const part=(id:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact")=><CommercialSectionPart part={id} data={commercial} copy={layout.copy}/>;
+  const part=(id:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact")=><CommercialSectionPart part={id} data={commercial} copy={layout.copy} processSteps={layout.processSteps}/>;
   const nodes:Record<HomeSectionId,ReactNode>={
     hero:<PortfolioHero copy={copy} projects={heroProjects} gallery={heroGallery} mockups={portfolio.mockups} showArtwork={portfolio.hero.enabled&&(heroProjects.length>0||(!showcaseProjects.length&&!portfolio.hero.ids.length))} slogan={data.brand.slogan}/>,
     stream:streamProjects.length>=3?<MovingPortfolioStrip projects={streamProjects}/>:null,
     trust:<TrustStrip serviceGroups={data.serviceGroups} trustMetrics={data.trustMetrics} clientLogos={data.clientLogos}/>,
     work:hasWork?<WorkSection projects={selectedProjects}/>:!hasGallery?fallbackWork:null,
-    bridge1:<SectionBridge words={["THINK.","CREATE.","BUILD.","GROW."]}/>,
+    bridge1:<SectionBridge words={layout.bridgeWords.bridge1}/>,
     services:<ServicesSection ecosystem={data.serviceEcosystem}/>,
-    industries:<NicheShowcase/>,
+    industries:<NicheShowcase content={layout.industries}/>,
     device:deviceProjects.length>1?<DeviceShowcase projects={deviceProjects}/>:null,
     reel:reelProjects.length>0?<PortfolioRail projects={reelProjects} showreelOnly/>:null,
     gallery:hasGallery?<CreativeGallery projects={creativeGallery} sectionId={hasWork?"creative-gallery":"work"} showComparisons={portfolio.comparisons}/>:null,
-    bridge2:<SectionBridge words={["IDEAS.","DESIGN.","IMPACT."]}/>,
+    bridge2:<SectionBridge words={layout.bridgeWords.bridge2}/>,
     offer:part("offer"),packages:part("packages"),process:part("process"),testimonials:part("testimonials"),faq:part("faq"),contact:part("contact")
   };
   return (
@@ -98,18 +100,14 @@ export async function HomepageView({preview=false,previewLayout}:{preview?:boole
         تخطي إلى المحتوى
       </a>
 
-      <MarketingHeader assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} />
+      {visualMode?<div inert><MarketingHeader visualPreview assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name}/></div>:<MarketingHeader assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name}/>}
 
       <AuroraMarketingMain>
-        {layout.sections.filter(section=>section.enabled).map(section=><Fragment key={section.id}>{nodes[section.id]}{section.id==="hero"&&!hasWork&&!hasGallery&&!enabled.has("work")?fallbackWork:null}</Fragment>)}
+        {visualMode?layout.sections.map((section,index)=><VisualSection key={section.id} id={section.id} index={index} enabled={section.enabled}>{section.id==="offer"&&!data.offer||section.id==="testimonials"&&!data.testimonials.length||section.id==="faq"&&!data.faqs.length?null:nodes[section.id]}</VisualSection>):layout.sections.filter(section=>section.enabled).map(section=><Fragment key={section.id}>{nodes[section.id]}{section.id==="hero"&&!hasWork&&!hasGallery&&!enabled.has("work")?fallbackWork:null}</Fragment>)}
       </AuroraMarketingMain>
 
-      <MarketingFooter assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])}
-        brandName={data.brand.name}
-        slogan={data.brand.slogan}
-        contactLinks={contactLinks}
-        socialLinks={socialLinks}
-      />
+      {visualMode&&<div className="mx-auto max-w-7xl border border-[#27e8c7]/30 bg-[#18214d] p-4 text-white"><p className="mb-2 text-sm font-bold">اللوجو والفوتر وبيانات الشركة</p><div className="flex flex-wrap gap-2"><Link href="/admin/brand" className="rounded-lg bg-[#27e8c7] px-3 py-2 text-sm font-semibold text-[#111827]">تعديل الهوية واللوجو</Link><Link href="/admin/content?section=settings" className="rounded-lg border border-white/30 px-3 py-2 text-sm font-semibold text-white">بيانات الشركة والتواصل</Link></div></div>}
+      {visualMode?<div inert><MarketingFooter assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} slogan={data.brand.slogan} contactLinks={contactLinks} socialLinks={socialLinks}/></div>:<MarketingFooter assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} slogan={data.brand.slogan} contactLinks={contactLinks} socialLinks={socialLinks}/> }
 
       {!preview&&<MobileStickyCta />}
     </LeadFunnelProvider>

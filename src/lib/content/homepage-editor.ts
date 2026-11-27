@@ -1,4 +1,6 @@
 import {z} from "zod";
+import {processStepsSchema,bridgeWordsSchema,defaultProcessSteps,defaultBridgeWords,extraHomeChanges} from "./homepage-extra-content";
+import {industryContentSchema,defaultIndustryContent,industryChangedFields} from "./industry-content";
 export const HOMEPAGE_EDITOR_KEY="landing.page.editor";
 export const homeSections=[
  {id:"hero",label:"الواجهة الرئيسية",required:true,locked:true,editor:"/admin/content?section=settings"},
@@ -25,11 +27,11 @@ export const homeSectionMeta:Record<HomeSectionId,{id:HomeSectionId;label:string
 const text=z.string().trim().max(1000);
 const copy=z.object({heroTitle:text,heroDescription:text,heroPrimaryCta:z.string().trim().max(80),heroSecondaryCta:z.string().trim().max(80),packagesTitle:text,processTitle:text,processDescription:text,testimonialsTitle:text,faqTitle:text,contactTitle:text,contactDescription:text});
 const section=z.object({id:z.enum(["hero","stream","trust","work","bridge1","services","industries","device","reel","gallery","bridge2","offer","packages","process","testimonials","faq","contact"]),enabled:z.boolean()});
-export const homeLayoutSchema=z.object({sections:z.array(section).length(ids.length),copy}).superRefine((v,ctx)=>{
+export const homeLayoutSchema=z.object({sections:z.array(section).length(ids.length),copy,industries:industryContentSchema.default(defaultIndustryContent),processSteps:processStepsSchema.default(defaultProcessSteps),bridgeWords:bridgeWordsSchema.default(defaultBridgeWords)}).superRefine((v,ctx)=>{
  if(new Set(v.sections.map(s=>s.id)).size!==ids.length||v.sections[0]?.id!=="hero"||v.sections.at(-1)?.id!=="contact"||v.sections.some(s=>homeSectionMeta[s.id].required&&!s.enabled))ctx.addIssue({code:"custom",message:"ترتيب الأقسام أو الأقسام الأساسية غير صالح"});
 });
 export type HomeLayout=z.infer<typeof homeLayoutSchema>;
-export function defaultHomeLayout():HomeLayout{return {sections:ids.map(id=>({id,enabled:true})),copy:{heroTitle:"",heroDescription:"",heroPrimaryCta:"",heroSecondaryCta:"",packagesTitle:"",processTitle:"",processDescription:"",testimonialsTitle:"",faqTitle:"",contactTitle:"",contactDescription:""}};}
+export function defaultHomeLayout():HomeLayout{return {sections:ids.map(id=>({id,enabled:true})),copy:{heroTitle:"",heroDescription:"",heroPrimaryCta:"",heroSecondaryCta:"",packagesTitle:"",processTitle:"",processDescription:"",testimonialsTitle:"",faqTitle:"",contactTitle:"",contactDescription:""},industries:defaultIndustryContent(),processSteps:defaultProcessSteps(),bridgeWords:defaultBridgeWords()};}
 export const HOME_HISTORY_LIMIT=12;
 const revision=z.number().int().nonnegative();
 const archivedVersionSchema=z.object({id:revision,publicationRevision:revision.nullable(),publishedAt:z.string().datetime().nullable(),archivedAt:z.string().datetime(),layout:homeLayoutSchema});
@@ -67,5 +69,5 @@ export function applyHomeEditorMutation(state:HomeEditorState,raw:unknown,now=ne
 export function describeHomeChanges(published:HomeLayout,draft:HomeLayout){
  const sections=draft.sections.flatMap((section,index)=>{const previous=published.sections.find(s=>s.id===section.id)!;const oldIndex=published.sections.findIndex(s=>s.id===section.id);return oldIndex!==index||previous.enabled!==section.enabled?[{id:section.id,from:oldIndex+1,to:index+1,wasEnabled:previous.enabled,enabled:section.enabled}]:[];});
  const copy=(Object.keys(draft.copy) as Array<keyof HomeLayout["copy"]>).filter(key=>draft.copy[key]!==published.copy[key]).map(key=>({key,before:published.copy[key],after:draft.copy[key]}));
- return {sections,copy};
+ return {sections,copy:[...copy,...industryChangedFields(published.industries,draft.industries),...extraHomeChanges(published,draft)]};
 }

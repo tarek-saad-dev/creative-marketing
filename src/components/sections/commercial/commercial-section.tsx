@@ -18,7 +18,7 @@ function asString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-export function CommercialSectionPart({data,part,copy}:{data:CommercialSectionProps["data"];part:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact";copy?:HomeLayout["copy"]}) {
+export function CommercialSectionPart({data,part,copy,processSteps}:{processSteps?:HomeLayout["processSteps"];data:CommercialSectionProps["data"];part:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact";copy?:HomeLayout["copy"]}) {
   const testimonials = data.testimonials;
   const pricingProof = testimonials[0] ?? null;
   const finalProof =
@@ -28,7 +28,7 @@ export function CommercialSectionPart({data,part,copy}:{data:CommercialSectionPr
   switch(part){
     case "offer":return <LimitedOfferSection offer={data.offer} packages={data.packages}/>;
     case "packages":return <PricingSection packages={data.packages} featuredTestimonial={pricingProof} hasActiveOffer={data.offer?.computedStatus==="active"} title={copy?.packagesTitle||undefined}/>;
-    case "process":return <ProcessSection title={copy?.processTitle||undefined} description={copy?.processDescription||undefined}/>;
+    case "process":return <ProcessSection title={copy?.processTitle||undefined} description={copy?.processDescription||undefined} steps={processSteps}/>;
     case "testimonials":return <TestimonialsSection testimonials={testimonials} title={copy?.testimonialsTitle||undefined}/>;
     case "faq":return <FaqSection faqs={data.faqs} title={copy?.faqTitle||undefined}/>;
     case "contact":return <FinalConversionSection testimonial={finalProof} responseHours={responseHours||null} title={copy?.contactTitle||undefined} description={copy?.contactDescription||undefined}/>;

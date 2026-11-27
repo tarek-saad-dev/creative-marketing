@@ -5,7 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { PROCESS_STEPS } from "@/lib/content/process-steps";
 import { ProcessTimeline } from "@/components/sections/commercial/process-timeline";
 
-export function ProcessSection({title,description}:{title?:string;description?:string}={}) {
+export function ProcessSection({title,description,steps}:{title?:string;description?:string;steps?:Array<{title:string;description:string}>}={}) {
   return (
     <CinematicSection
       id="process"
@@ -23,7 +23,7 @@ export function ProcessSection({title,description}:{title?:string;description?:s
             description={description??"مسار عمل منظم من الفهم إلى النشر والتطوير حسب نطاق الباكدج."}
           />
         </Reveal>
-        <ProcessTimeline steps={PROCESS_STEPS} />
+        <ProcessTimeline steps={steps?steps.map((step,i)=>({...step,number:String(i+1).padStart(2,"0")})):PROCESS_STEPS} />
       </Container>
     </CinematicSection>
   );
