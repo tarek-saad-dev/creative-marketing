@@ -6,6 +6,7 @@ import type { AdminRole } from "@/generated/prisma";
  * Full Credentials authorize lives in `src/auth.ts`.
  */
 export const authConfig = {
+  ...(process.env.VERCEL === "1" ? { useSecureCookies: true } : {}),
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
@@ -15,12 +16,8 @@ export const authConfig = {
     maxAge: 60 * 60 * 12, // 12 hours
   },
   callbacks: {
-    authorized({ auth, request }) {
-      const pathname = request.nextUrl.pathname;
-      if (!pathname.startsWith("/admin")) return true;
-      if (pathname === "/admin/login") return true;
-      return Boolean(auth?.user);
-    },
+    // Explicit middleware owns authentication redirects, using the incoming origin.
+    authorized() { return true; },
     jwt({ token, user }) {
       if (user) {
         token.sub = user.id;

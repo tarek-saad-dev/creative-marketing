@@ -12,13 +12,14 @@ const browser=await chromium.launch({headless:true});
 const errors=[];
 const contexts=[];
 const dismissUnsaved=new WeakSet();
-async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());if(d.type()==="confirm"&&d.message().includes("تعديلات غير محفوظة")&&dismissUnsaved.has(page)){dismissUnsaved.delete(page);await d.dismiss();}else await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
+async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());if(d.type()==="confirm"&&d.message().includes("تعديلات غير محفوظة")&&dismissUnsaved.has(page)){dismissUnsaved.delete(page);await d.dismiss();}else await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.origin===base&&u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
 async function visit(page,path){const response=await page.goto(base+path,{waitUntil:"domcontentloaded"});assert.ok(response?.ok(),path+" HTTP "+response?.status());assert.equal(new URL(page.url()).pathname,path.split("?")[0],"Unexpected redirect: "+path);await page.locator("#admin-main h1").waitFor();assert.equal(await page.getByText("Application error: a server-side exception has occurred",{exact:false}).count(),0);assert.equal(await page.getByRole("heading",{name:"تعذر تحميل هذه الصفحة",exact:true}).count(),0,path+" error boundary");}
-async function expectRedirect(page,path,target){await page.goto(base+path);await page.waitForURL(u=>u.pathname===target);}
+async function expectRedirect(page,path,target){await page.goto(base+path);await page.waitForURL(u=>u.origin===base&&u.pathname===target);}
 async function overflow(page,path){const dimensions=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(dimensions.scroll<=dimensions.client+2,path+" overflow "+JSON.stringify(dimensions));}
 try{
  const guest=await browser.newContext();contexts.push(guest);
- for(const path of ["/admin","/admin/users","/admin/pages","/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");}
+ for(const path of ["/admin","/admin?utm_source=qa","/admin/users","/admin/pages","/admin/projects","/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");const location=response.headers().location;assert.ok(location,path+" missing Location");const target=new URL(location,base);assert.equal(target.origin,base,path+" must stay on request origin");assert.equal(target.pathname,"/admin/login");}
+ console.log("PASS: same-origin guest redirects despite mismatched AUTH_URL");
  const owner=await session("owner"),editor=await session("editor"),viewer=await session("viewer"),admin=await session("admin");
  const routes=["/admin","/admin/website","/admin/content","/admin/pages","/admin/projects","/admin/projects/new","/admin/projects/qa-media-project","/admin/media","/admin/portfolio","/admin/brand","/admin/content?section=services","/admin/content?section=packages","/admin/content?section=offers","/admin/content?section=testimonials","/admin/content?section=trust","/admin/content?section=logos","/admin/content?section=faqs","/admin/leads","/admin/leads/qa-lead","/admin/users","/admin/account","/admin/settings","/admin/audit"];
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:700}]){
@@ -217,6 +218,16 @@ try{
  const personal=await session("admin",ownPassword);await visit(personal,"/admin/account");
  console.log("PASS: personal password change revokes prior session and permits fresh login");
  console.log("PASS: password reset invalidates old session and new credentials work");
+ const sessionCookie = c=>/^(?:__Secure-)?authjs\.session-token(?:\.\d+)?$/.test(c.name);
+ assert.ok((await personal.context().cookies()).some(sessionCookie),"Expected authenticated session cookie before logout");
+ await personal.getByRole("button",{name:/خروج/}).click();
+ await personal.waitForURL(u=>u.origin===base&&u.pathname==="/admin/login");
+ assert.ok(!(await personal.context().cookies()).some(sessionCookie),"Logout must clear every session cookie chunk");
+ const loggedOut=await personal.request.get(base+"/admin",{maxRedirects:0});
+ assert.ok([302,303,307,308].includes(loggedOut.status()),"Logout must deny subsequent protected request");
+ assert.equal(new URL(loggedOut.headers().location,base).href,base+"/admin/login");
+ await expectRedirect(personal,"/admin","/admin/login");
+ console.log("PASS: logout clears session cookies and denies subsequent protected request");
  assert.deepEqual(errors,[],"Browser runtime errors");
  console.log("Admin acceptance passed: protected routes, 3 viewport sizes, draft project, media reuse, homepage publication, CRM, live role, suspension and password reset");
 }catch(e){for(const [i,context] of contexts.entries()){const pages=context.pages();if(pages.length)await pages[0].screenshot({path:"qa-admin-artifacts/failure-"+i+".png",fullPage:true}).catch(()=>{});}throw e;}finally{await browser.close();}

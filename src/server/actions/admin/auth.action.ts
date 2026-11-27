@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
 
 export type LoginActionResult = { ok: true } | { ok: false; error: string };
@@ -39,5 +40,6 @@ export async function loginAction(
 }
 
 export async function signOutAction(): Promise<void> {
-  await signOut({ redirectTo: "/admin/login" });
+  await signOut({ redirect: false });
+  redirect("/admin/login");
 }
