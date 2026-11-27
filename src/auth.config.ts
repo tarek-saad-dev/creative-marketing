@@ -6,6 +6,8 @@ import type { AdminRole } from "@/generated/prisma";
  * Full Credentials authorize lives in `src/auth.ts`.
  */
 export const authConfig = {
+  // Vercel is HTTPS even if an obsolete AUTH_URL still names a local origin.
+  ...(process.env.VERCEL === "1" ? { useSecureCookies: true } : {}),
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
@@ -15,12 +17,9 @@ export const authConfig = {
     maxAge: 60 * 60 * 12, // 12 hours
   },
   callbacks: {
-    authorized({ auth, request }) {
-      const pathname = request.nextUrl.pathname;
-      if (!pathname.startsWith("/admin")) return true;
-      if (pathname === "/admin/login") return true;
-      return Boolean(auth?.user);
-    },
+    // The middleware's explicit guard owns redirects, using the incoming
+    // request origin rather than Auth.js's AUTH_URL-rewritten request.
+    authorized() { return true; },
     jwt({ token, user }) {
       if (user) {
         token.sub = user.id;

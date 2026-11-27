@@ -27,7 +27,8 @@ jobs:
       CM_QA_LOCAL_DATABASE: '1'
       DATABASE_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
       DIRECT_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
-      AUTH_URL: http://127.0.0.1:3000
+      # Deliberately different from the browser origin to catch redirect leaks.
+      AUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: 'true'
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       NEXT_TELEMETRY_DISABLED: '1'

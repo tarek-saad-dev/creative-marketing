@@ -28,6 +28,16 @@ try {
         const hero=await page.locator("#hero").boundingBox();
         assert.ok(hero && hero.height>=height-2,"Desktop hero must fill viewport");
       }
+      for (const path of ["/admin","/admin/projects","/admin/users","/admin?utm_source=qa","/preview/homepage"]) {
+        const protectedResponse=await page.request.get(new URL(path,base.origin).toString(),{maxRedirects:0});
+        assert.ok([302,303,307,308].includes(protectedResponse.status()),path+" must redirect guests");
+        const location=protectedResponse.headers().location;assert.ok(location,path+" missing Location");
+        const target=new URL(location,base.origin);assert.equal(target.origin,base.origin,path+" redirects outside the deployment");assert.equal(target.pathname,"/admin/login");
+      }
+      const loginResponse=await page.goto(new URL("/admin/login",base.origin).toString(),{waitUntil:"domcontentloaded"});
+      assert.equal(loginResponse?.status(),200);assert.equal(new URL(page.url()).origin,base.origin);
+      await page.locator("#email").waitFor();await page.locator("#password").waitFor();
+      await page.goto(base.origin,{waitUntil:"domcontentloaded"});await page.locator("#hero").waitFor();
       const privatePreview=await page.request.get(new URL("/preview/project/qa-private",base.origin).toString(),{maxRedirects:0});
       assert.ok([302,303,307,308].includes(privatePreview.status()),"Private preview must require login");
       for(const path of ["/preview/homepage","/preview/homepage?version=1"]){const res=await page.request.get(new URL(path,base.origin).toString(),{maxRedirects:0});assert.ok([302,303,307,308].includes(res.status()),"Homepage preview must require login");}
