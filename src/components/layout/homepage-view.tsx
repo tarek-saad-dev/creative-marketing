@@ -76,7 +76,7 @@ export async function HomepageView({preview=false,previewLayout}:{preview?:boole
     work:hasWork?<WorkSection projects={selectedProjects}/>:!hasGallery?fallbackWork:null,
     bridge1:<SectionBridge words={["THINK.","CREATE.","BUILD.","GROW."]}/>,
     services:<ServicesSection ecosystem={data.serviceEcosystem}/>,
-    industries:<NicheShowcase/>,
+    industries:<NicheShowcase content={layout.industries}/>,
     device:deviceProjects.length>1?<DeviceShowcase projects={deviceProjects}/>:null,
     reel:reelProjects.length>0?<PortfolioRail projects={reelProjects} showreelOnly/>:null,
     gallery:hasGallery?<CreativeGallery projects={creativeGallery} sectionId={hasWork?"creative-gallery":"work"} showComparisons={portfolio.comparisons}/>:null,
