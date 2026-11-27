@@ -208,3 +208,11 @@ test("visual homepage provides safe local editor routes for every section",()=>{
 
 import {planProjectPlacement} from "../src/lib/content/portfolio-settings";
 test("guided placement preserves other visible work, respects capacity and never enables disabled slots",()=>{const projects=[{id:"a"},{id:"b"},{id:"c",primaryMediaType:"VIDEO",primaryMediaUrl:"/clip.mp4"}];const settings=defaultPortfolioSettings();assert.deepEqual(planProjectPlacement(projects,settings,"hero","b"),{ids:["b","a","c"],changed:true});assert.equal(planProjectPlacement(projects,settings,"hero","a").changed,false);assert.throws(()=>planProjectPlacement(projects,settings,"reel","a"));assert.throws(()=>planProjectPlacement(projects,settings,"hero","draft"));settings.hero={enabled:false,ids:[]};assert.throws(()=>planProjectPlacement(projects,settings,"hero","b"));settings.selected={enabled:true,ids:[]};const full=Array.from({length:7},(_,i)=>({id:String(i)}));assert.throws(()=>planProjectPlacement(full,settings,"selected","6"));assert.deepEqual(planProjectPlacement(full,settings,"selected","5").ids,["5","0","1","2","3","4"]);});
+
+import {fillLaunchCopy,launchCopy} from "../src/lib/content/launch-copy";
+import {defaultHomeLayout as launchDefaultLayout,homeLayoutSchema as launchLayoutSchema} from "../src/lib/content/homepage-editor";
+test("launch copy fills empty overrides only, preserves media and layout, and is idempotent",()=>{
+ const initial=launchDefaultLayout();initial.copy.heroTitle="عنوان خاص";initial.industries.cards.salons.imageUrl="/real.jpg";
+ const snapshot=structuredClone(initial);const next=fillLaunchCopy(initial);
+ assert.deepEqual(initial,snapshot);assert.equal(next.copy.heroTitle,"عنوان خاص");assert.equal(next.copy.contactTitle,launchCopy.contactTitle);assert.deepEqual(next.industries,initial.industries);assert.deepEqual(next.sections,initial.sections);assert.ok(launchLayoutSchema.safeParse(next).success);assert.deepEqual(fillLaunchCopy(next),next);
+});
