@@ -42,3 +42,6 @@ Editor+ library aggregates referenced project, cover, service, logo, testimonial
 
 ## Projects workspace
 Canonical /admin/projects uses server-filtered status/industry/search, sort and 18-item pagination with actual status counts. CMS project panel links to the same workspace. Viewer has no mutation controls, editor may edit/publish/archive, ADMIN+ may soft-delete/restore. Cover selection uses MediaPicker with a contained preview, and generic forms display success and handle network errors. CI browser jobs pin Ubuntu 24.04 because ubuntu-latest switched to a runner whose Microsoft apt source failed with HTTP 403 during Chromium dependencies; restore independent TypeScript gate. No public design or data changes.
+
+## Services and packages workspace
+Existing /admin/services and /admin/packages redirect to canonical content hub panels; package edit/new deep links are retained. Services search and status/category filters, project counts and direct library picker. Package status and readiness filters, serialized decimal DTOs, feature previews, ADMIN-only published/archived edits and commercial lifecycle; editors may prepare draft packages but not change featured flag. Transactional recheck on package updates and publishing. No production price or offer changes. Authenticated acceptance pending.
