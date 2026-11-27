@@ -31,7 +31,7 @@ export function PortfolioControlForm({initial,projects}:{initial:PortfolioSettin
   }
   function save(){
     setNotice("");setError("");
-    startTransition(async()=>{const result=await savePortfolioSettingsAction(value);if(!result.ok){setError(result.error);return;}setSaved(value);setNotice("تم حفظ إعدادات الاستعراض.");router.refresh();});
+    startTransition(async()=>{const result=await savePortfolioSettingsAction(value,saved);if(!result.ok){setError(result.error);return;}setSaved(value);setNotice("تم حفظ إعدادات الاستعراض.");router.refresh();});
   }
   return <div className="space-y-5">
     <UnsavedChangesGuard dirty={dirty&&!pending}/>
