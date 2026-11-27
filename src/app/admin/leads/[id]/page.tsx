@@ -8,6 +8,9 @@ import { getAdminLeadById } from "@/server/services/admin/lead.admin.service";
 import { listAdminUsers } from "@/server/repositories/admin-user.repository";
 import { LeadAssignSelect } from "@/components/admin/leads/lead-assign-select";
 import { LeadStatusActions } from "@/components/admin/leads/lead-status-actions";
+import {LeadCrmActions} from "@/components/admin/leads/lead-crm-actions";
+import {latestLeadFollowups} from "@/server/repositories/admin/lead.admin.repository";
+import {cairoToday,contactPhone,readCrmEvent,leadStageLabels} from "@/lib/admin/lead-crm";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "تفاصيل العميل المحتمل" };
@@ -43,7 +46,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
   const { id } = await params;
   const [lead, admins] = await Promise.all([
     getAdminLeadById(id),
-    listAdminUsers(),
+    user.role==="ADMIN"||user.role==="OWNER"?listAdminUsers():Promise.resolve([]),
   ]);
 
   if (!lead) notFound();
@@ -51,6 +54,9 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
   const canMutate =
     user.role === AdminRole.OWNER || user.role === AdminRole.ADMIN;
 
+  const open=["NEW","CONTACTED","QUALIFIED"].includes(lead.status);
+  const dueDate=(await latestLeadFollowups([id]))[0]?.dueDate??null;
+  const phone=contactPhone(lead.phone);
   return (
     <div>
       <AdminPageHeader
@@ -71,8 +77,9 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
           <DetailRow label="الاسم" value={lead.name} />
           <DetailRow
             label="الهاتف"
-            value={<span dir="ltr">{lead.phone}</span>}
+            value={<span dir="ltr">{canMutate?lead.phone:lead.phone.replace(/.(?=.{4})/g,"•")}</span>}
           />
+          {canMutate&&phone&&<div className="my-3 flex flex-wrap gap-2"><a href={"https://wa.me/"+phone} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white">فتح واتساب</a><a href={"tel:+"+phone} className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm">اتصال</a></div>}
           <DetailRow label="اسم المشروع" value={lead.projectName ?? "—"} />
           <DetailRow label="المجال" value={lead.industry ?? "—"} />
           <DetailRow label="مرحلة المشروع" value={lead.projectStage ?? "—"} />
@@ -88,6 +95,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
           />
           <DetailRow label="الرسالة" value={lead.message ?? "—"} />
           <DetailRow label="المصدر" value={lead.source ?? "—"} />
+          <DetailRow label="الحملة" value={lead.utmCampaign??"—"}/><DetailRow label="UTM Source" value={lead.utmSource??"—"}/><DetailRow label="UTM Medium" value={lead.utmMedium??"—"}/>
           <DetailRow
             label="تاريخ الإنشاء"
             value={formatDateTime(lead.createdAt)}
@@ -115,6 +123,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
         </div>
 
         <div className="space-y-4">
+          {canMutate?<LeadCrmActions leadId={id} dueDate={dueDate} today={cairoToday()} open={open}/>:<div className="admin-card p-4 text-sm">المتابعة القادمة: {dueDate??"غير محددة"}</div>}
           {canMutate ? (
             <div className="admin-card p-4">
               <h2 className="mb-2 text-sm font-semibold text-foreground">
@@ -124,7 +133,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
                 leadId={lead.id}
                 assignedAdminId={lead.assignedAdmin?.id ?? null}
                 admins={admins
-                  .filter(a => a.isActive)
+                  .filter(a => a.isActive&&["ADMIN","OWNER"].includes(a.role))
                   .map(a => ({ id: a.id, name: a.name }))}
               />
             </div>
@@ -132,7 +141,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
 
           <div className="admin-card p-4">
             <h2 className="mb-2 text-sm font-semibold text-foreground">
-              سجل الأحداث
+              سجل الأحداث (آخر 100)
             </h2>
             {lead.events.length === 0 ? (
               <p className="text-xs text-foreground-muted">
@@ -140,16 +149,17 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
               </p>
             ) : (
               <ul className="space-y-2">
-                {lead.events.map(event => (
+                {lead.events.map(event => {const crm=readCrmEvent(event.metadata);const transition=event.metadata&&typeof event.metadata==="object"&&!Array.isArray(event.metadata)?event.metadata as Record<string,unknown>:null;return (
                   <li key={event.id} className="text-xs">
                     <p className="font-medium text-foreground">
-                      {EVENT_LABELS[event.type] ?? event.type}
+                      {crm?.kind==="followup"?(crm.dueDate?"متابعة مجدولة · "+crm.dueDate:"إنهاء المتابعة"):crm?.kind==="contact"?"تواصل مسجل · "+({whatsapp:"واتساب",phone:"مكالمة",meeting:"اجتماع",other:"أخرى"}[crm.channel]??crm.channel):EVENT_LABELS[event.type]??event.type}
                     </p>
                     <p className="text-foreground-muted">
-                      {formatDateTime(event.createdAt)}
+                      {formatDateTime(event.createdAt)}{crm?.actor?" · "+crm.actor:""}
                     </p>
+                    {crm?.kind==="contact"&&<p className="mt-1 whitespace-pre-wrap break-words text-sm">{crm.note}</p>}{!crm&&typeof transition?.from==="string"&&typeof transition?.to==="string"&&<p className="mt-1 text-foreground-muted">{leadStageLabels[transition.from as keyof typeof leadStageLabels]??transition.from} ← {leadStageLabels[transition.to as keyof typeof leadStageLabels]??transition.to}</p>}
                   </li>
-                ))}
+                );})}
               </ul>
             )}
           </div>

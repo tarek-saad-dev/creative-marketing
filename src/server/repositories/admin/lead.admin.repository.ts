@@ -157,7 +157,7 @@ export async function createLeadEventRow(
 }
 
 /** Existing LeadEvent metadata supports CRM entries without changing the database enum. */
-import {cairoToday,readCrmEvent} from "@/lib/admin/lead-crm";
+import {cairoToday} from "@/lib/admin/lead-crm";
 export async function latestLeadFollowups(ids?:string[]){
  if(ids&&ids.length===0)return [];
  const condition=ids?Prisma.sql`AND "leadId" IN (${Prisma.join(ids)})`:Prisma.empty;

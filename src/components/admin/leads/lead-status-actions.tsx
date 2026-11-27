@@ -12,9 +12,9 @@ import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog";
 const LABELS: Record<LeadStatus, string> = {
   NEW: "جديد",
   CONTACTED: "تم التواصل",
-  QUALIFIED: "مؤهل",
-  WON: "مكتسب",
-  LOST: "خاسر",
+  QUALIFIED: "مؤهل / تفاوض",
+  WON: "تم التعاقد",
+  LOST: "لم يتم الاتفاق",
   ARCHIVED: "مؤرشف",
 };
 
@@ -63,7 +63,7 @@ export function LeadStatusActions({
       <div>
         <h2 className="font-semibold">تغيير الحالة</h2>
         <p className="text-sm text-foreground-muted">
-          الحالية: {LABELS[status]} ({status})
+          الحالية: {LABELS[status]}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {NEXT[status].map(next => (
@@ -81,8 +81,8 @@ export function LeadStatusActions({
       </div>
 
       {canCorrect ? (
-        <div>
-          <h3 className="text-sm font-semibold">تصحيح الحالة (OWNER/ADMIN)</h3>
+        <details>
+          <summary className="cursor-pointer text-sm font-semibold">تصحيح الحالة</summary>
           <div className="mt-2 flex flex-wrap gap-2">
             {Object.values(LeadStatus)
               .filter(s => s !== status)
@@ -105,7 +105,7 @@ export function LeadStatusActions({
                 />
               ))}
           </div>
-        </div>
+        </details>
       ) : null}
 
       <div>
