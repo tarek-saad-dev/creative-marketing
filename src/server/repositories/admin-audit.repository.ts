@@ -54,7 +54,7 @@ export async function listAuditLogs(filter: AuditLogFilter = {}): Promise<{
   page: number;
   pageSize: number;
 }> {
-  const page = Math.max(1, filter.page ?? 1);
+  const requestedPage=Number.isSafeInteger(filter.page)&&Number(filter.page)>0?Math.min(Number(filter.page),100000):1;
   const pageSize = Math.min(100, Math.max(1, filter.pageSize ?? 30));
 
   const where: Prisma.AdminAuditLogWhereInput = {
@@ -73,16 +73,15 @@ export async function listAuditLogs(filter: AuditLogFilter = {}): Promise<{
       : {}),
   };
 
-  const [rows, total] = await Promise.all([
-    prisma.adminAuditLog.findMany({
+  const total=await prisma.adminAuditLog.count({where});
+  const page=Math.min(requestedPage,Math.max(1,Math.ceil(total/pageSize)));
+  const rows=await prisma.adminAuditLog.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" },{id:"desc"}],
       select: adminAuditLogSelect,
       skip: (page - 1) * pageSize,
       take: pageSize,
-    }),
-    prisma.adminAuditLog.count({ where }),
-  ]);
+    });
 
   return { rows, total, page, pageSize };
 }

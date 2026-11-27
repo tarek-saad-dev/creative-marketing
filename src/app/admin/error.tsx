@@ -1,0 +1,3 @@
+"use client";
+import Link from "next/link";
+export default function ErrorPage({reset}:{error:Error&{digest?:string};reset:()=>void}){return <section role="alert" className="admin-card mx-auto max-w-xl space-y-4 p-6"><h1 className="font-headline text-xl font-bold">تعذر تحميل هذه الصفحة</h1><p className="text-sm leading-7 text-foreground-muted">تحقق من الاتصال وحاول مرة أخرى. إذا كنت تحفظ تعديلًا، راجع حالته قبل تكرار العملية.</p><div className="flex flex-wrap gap-3"><button type="button" onClick={reset} className="min-h-11 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">إعادة المحاولة</button><Link href="/admin" className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm">العودة للرئيسية</Link></div></section>;}

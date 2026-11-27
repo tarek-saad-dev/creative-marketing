@@ -1,0 +1,79 @@
+name: Admin acceptance QA
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  admin-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cmqa
+          POSTGRES_PASSWORD: local-qa-only
+          POSTGRES_DB: cm_admin_qa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cmqa -d cm_admin_qa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      CI: 'true'
+      CM_QA_LOCAL_DATABASE: '1'
+      DATABASE_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
+      DIRECT_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
+      AUTH_URL: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: 'true'
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Generate ephemeral test credentials
+        shell: bash
+        run: |
+          secret="$(openssl rand -hex 32)"
+          password="Qa!$(openssl rand -hex 16)"
+          echo "::add-mask::$secret"
+          echo "::add-mask::$password"
+          echo "AUTH_SECRET=$secret" >> "$GITHUB_ENV"
+          echo "QA_PASSWORD=$password" >> "$GITHUB_ENV"
+      - run: npm ci --ignore-scripts
+      - run: npm run db:generate
+      - name: Migrate only the disposable database
+        env:
+          DIRECT_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=disable
+        run: npm run db:deploy
+      - name: Start local Neon-compatible bridge
+        run: |
+          node scripts/qa-db-bridge.mjs > /tmp/cm-qa-bridge.log 2>&1 &
+          sleep 2
+          cat /tmp/cm-qa-bridge.log
+      - run: npx tsx scripts/qa-admin-fixtures.ts
+      - run: npm install --no-save --package-lock=false --ignore-scripts playwright
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start isolated application and execute browser acceptance
+        run: |
+          npm start -- --hostname 127.0.0.1 > /tmp/cm-qa-next.log 2>&1 &
+          node scripts/qa-admin-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: admin-qa-screenshots
+          path: qa-admin-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Diagnostics
+        if: failure()
+        run: |
+          tail -100 /tmp/cm-qa-bridge.log || true
+          tail -150 /tmp/cm-qa-next.log || true
