@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Noto_Kufi_Arabic, Cairo } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
+import {getPublicSeo} from "@/server/services/seo.service";
 
 /**
  * Arabic-first type stack:
@@ -23,45 +24,18 @@ const cairo = Cairo({
   display: "swap",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "http://localhost:3000";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "Creative Marketing",
-    template: "%s | Creative Marketing",
-  },
-  description:
-    "وكالة كرييتف ماركتنج: استراتيجية، محتوى، تصميم وإدارة سوشيال ميديا تساعد مشروعك يظهر باحتراف ويكسب ثقة العميل من أول نظرة.",
-  applicationName: "Creative Marketing",
-  keywords: [
-    "Creative Marketing",
-    "تسويق إبداعي",
-    "سوشيال ميديا",
-    "هوية بصرية",
-    "إدارة صفحات",
-    "محتوى",
-  ],
-  authors: [{ name: "Creative Marketing" }],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Creative Marketing",
-    description: "WE THINK. WE CREATE. YOU GROW.",
-    locale: "ar_EG",
-    type: "website",
-    siteName: "Creative Marketing",
-    url: siteUrl,
-  },
-  twitter: {
-    card: "summary",
-    title: "Creative Marketing",
-    description: "WE THINK. WE CREATE. YOU GROW.",
-  },
-};
+export async function generateMetadata():Promise<Metadata>{
+ const seo=await getPublicSeo();
+ return {
+  metadataBase:new URL(seo.origin),
+  title:{default:seo.title,template:"%s | Creative Marketing"},
+  description:seo.description,
+  applicationName:"Creative Marketing",
+  authors:[{name:"Creative Marketing"}],
+  openGraph:{title:seo.title,description:seo.description,locale:"ar_EG",type:"website",siteName:"Creative Marketing",images:seo.image?[seo.image]:undefined},
+  twitter:{card:seo.image?"summary_large_image":"summary",title:seo.title,description:seo.description,images:seo.image?[seo.image]:undefined},
+ };
+}
 
 export const viewport: Viewport = {
   themeColor: "#2C1F73",

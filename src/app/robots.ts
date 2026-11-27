@@ -1,14 +1,10 @@
 import type { MetadataRoute } from "next";
 
-function getSiteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
-}
+import {getPublicSeo} from "@/server/services/seo.service";
+export const dynamic="force-dynamic";
 
-export default function robots(): MetadataRoute.Robots {
-  const siteUrl = getSiteUrl();
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const {origin:siteUrl}=await getPublicSeo();
 
   return {
     rules: {
