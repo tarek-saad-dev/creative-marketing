@@ -32,7 +32,7 @@ export function ContentSectionNav({ active }: { active: ContentSectionId }) {
 
       {/* Tablet/desktop: horizontal tabs */}
       <nav
-        className="mb-6 hidden gap-1 overflow-x-auto pb-1 md:flex"
+        className="mb-6 hidden flex-wrap gap-1 rounded-xl border border-border bg-white p-2 md:flex"
         aria-label="أقسام محتوى الموقع"
       >
         {CONTENT_SECTIONS.map(section => {

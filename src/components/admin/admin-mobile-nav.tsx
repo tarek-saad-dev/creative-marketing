@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Menu, Sparkles, X } from "lucide-react";
+import type {SimpleAdminRole} from "@/lib/admin/roles";
 import { AdminSidebarNav } from "./admin-sidebar";
 
-export function AdminMobileNav({ leadsNew = 0 }: { leadsNew?: number }) {
+export function AdminMobileNav({ leadsNew = 0,role }: { leadsNew?: number;role:SimpleAdminRole }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -26,7 +27,7 @@ export function AdminMobileNav({ leadsNew = 0 }: { leadsNew?: number }) {
         >
           <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
           <div className="fixed inset-y-0 start-0 flex w-72 max-w-[85vw]">
-            <DialogPanel className="admin-shell flex w-full flex-col bg-primary">
+            <DialogPanel className="admin-shell flex w-full flex-col bg-[#2c1f73]">
               <div className="flex items-center justify-between px-4 py-4">
                 <div className="flex items-center gap-2 text-white">
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
@@ -47,9 +48,8 @@ export function AdminMobileNav({ leadsNew = 0 }: { leadsNew?: number }) {
               </div>
               <div
                 className="flex-1 overflow-y-auto px-3 pb-6 [&_.admin-nav-link]:text-white/75 [&_.admin-nav-link:hover]:bg-white/10 [&_.admin-nav-link:hover]:text-white [&_.admin-nav-link[data-active='true']]:bg-white [&_.admin-nav-link[data-active='true']]:text-primary"
-                onClick={() => setIsOpen(false)}
               >
-                <AdminSidebarNav badgeCounts={{ leadsNew }} />
+                <AdminSidebarNav role={role} badgeCounts={{ leadsNew }} onNavigate={()=>setIsOpen(false)} />
               </div>
             </DialogPanel>
           </div>

@@ -1,80 +1,21 @@
 "use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Sparkles } from "lucide-react";
-import { ADMIN_NAV_ITEMS } from "./admin-nav-config";
-
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/admin") return pathname === "/admin";
-  if (href === "/admin/content") {
-    return (
-      pathname === "/admin/content" || pathname.startsWith("/admin/content/")
-    );
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
+import {usePathname} from "next/navigation";
+import {ADMIN_NAV_ICONS} from "./admin-nav-config";
+import {visibleWorkspaceGroups,workspaceItemActive} from "@/lib/admin/workspace";
+import type {SimpleAdminRole} from "@/lib/admin/roles";
+export function AdminSidebarNav({role,badgeCounts,onNavigate}:{role:SimpleAdminRole;badgeCounts?:{leadsNew?:number};onNavigate?:()=>void}){
+ const pathname=usePathname();
+ return <nav aria-label="التنقل الرئيسي" className="space-y-6">{visibleWorkspaceGroups(role).map(group=><div key={group.label} className="space-y-1.5">
+ <p className="px-3 text-[11px] font-semibold tracking-wide text-white/65">{group.label}</p>
+ {group.items.map(item=>{const Icon=ADMIN_NAV_ICONS[item.icon as keyof typeof ADMIN_NAV_ICONS];const active=workspaceItemActive(pathname,item);const badge=item.badgeKey==="leadsNew"?(badgeCounts?.leadsNew??0):0;
+ return <Link key={item.href} href={item.href} onClick={onNavigate} className={"flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors "+(active?"bg-white text-[#2c1f73]":"text-white/85 hover:bg-white/10 hover:text-white")} aria-current={active?"page":undefined}><Icon size={18} aria-hidden="true" className="shrink-0"/><span className="flex-1">{item.label}</span>{badge>0&&<span className={"rounded-full px-2 py-0.5 text-xs font-bold "+(active?"bg-[#2c1f73]/10 text-[#2c1f73]":"bg-white/15 text-white")}>{badge>99?"99+":badge}</span>}</Link>})}
+ </div>)}</nav>;
 }
-
-export function AdminSidebarNav({
-  className = "",
-  badgeCounts,
-}: {
-  className?: string;
-  badgeCounts?: { leadsNew?: number };
-}) {
-  const pathname = usePathname();
-
-  return (
-    <nav
-      className={`flex flex-col gap-1 ${className}`}
-      aria-label="التنقل الرئيسي"
-    >
-      {ADMIN_NAV_ITEMS.map(item => {
-        const Icon = item.icon;
-        const active = isActive(pathname, item.href);
-        const badge =
-          item.badgeKey === "leadsNew" ? (badgeCounts?.leadsNew ?? 0) : 0;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="admin-nav-link"
-            data-active={active ? "true" : "false"}
-            aria-current={active ? "page" : undefined}
-          >
-            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="flex-1">{item.label}</span>
-            {badge > 0 ? (
-              <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold text-white group-data-[active=true]:bg-primary/10 group-data-[active=true]:text-primary">
-                {badge > 99 ? "99+" : badge}
-              </span>
-            ) : null}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-export function AdminSidebar({
-  badgeCounts,
-}: {
-  badgeCounts?: { leadsNew?: number };
-}) {
-  return (
-    <aside className="hidden w-64 shrink-0 border-e border-border bg-primary lg:flex lg:flex-col">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white">
-          <Sparkles className="h-5 w-5" />
-        </span>
-        <div className="leading-tight text-white">
-          <p className="font-headline text-sm font-bold">Creative Marketing</p>
-          <p className="text-xs text-white/70">لوحة التحكم</p>
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 pb-6 [&_.admin-nav-link]:text-white/75 [&_.admin-nav-link:hover]:bg-white/10 [&_.admin-nav-link:hover]:text-white [&_.admin-nav-link[data-active='true']]:bg-white [&_.admin-nav-link[data-active='true']]:text-primary">
-        <AdminSidebarNav badgeCounts={badgeCounts} />
-      </div>
-    </aside>
-  );
+export function AdminSidebar({role,badgeCounts}:{role:SimpleAdminRole;badgeCounts?:{leadsNew?:number}}){
+ return <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col bg-[#2c1f73] text-white lg:flex">
+ <Link href="/admin" className="flex items-center gap-3 px-5 py-6"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#27e8c7] font-bold text-[#111827]">CM</span><div><p className="font-headline text-sm font-bold">Creative Marketing</p><p className="mt-1 text-[11px] text-white/70">CMS WORKSPACE</p></div></Link>
+ <div className="flex-1 overflow-y-auto px-3 pb-6"><AdminSidebarNav role={role} badgeCounts={badgeCounts}/></div>
+ <p className="border-t border-white/15 px-5 py-4 text-[11px] text-white/65">WE THINK. WE CREATE. YOU GROW.</p>
+ </aside>;
 }

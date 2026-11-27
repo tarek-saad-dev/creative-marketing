@@ -133,16 +133,13 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       href: "/admin/content?section=projects",
     });
   }
-  if (packagesWithoutPrice > 0) {
+  if (packagesInvalidPrice > 0) {
+    warnings.push({id:"packages-invalid-price",message:"بعض الباقات المنشورة بلا سعر صالح ولن تظهر للعامة.",href:"/admin/content?section=packages"});
+  }
+  if (packagesWithoutPrice > packagesInvalidPrice) {
     warnings.push({
       id: "packages-no-price",
       message: "الباكدجات بدون أسعار.",
-      href: "/admin/content?section=packages",
-    });
-  } else if (packagesInvalidPrice > 0) {
-    warnings.push({
-      id: "packages-invalid-price",
-      message: "بعض الباكدجات المنشورة بلا سعر صالح ولن تظهر للعامة.",
       href: "/admin/content?section=packages",
     });
   }

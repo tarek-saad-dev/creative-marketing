@@ -4,6 +4,7 @@ import { AdminRole } from "@/generated/prisma";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { ContentSectionNav } from "@/components/admin/content/content-section-nav";
 import { ContentQuickStatus } from "@/components/admin/content/content-helpers";
+import { CmsOverview } from "@/components/admin/content/cms-overview";
 import { SettingsPanel } from "@/components/admin/content/settings-panel";
 import { ProjectsPanel } from "@/components/admin/content/projects-panel";
 import { ServicesPanel } from "@/components/admin/content/services-panel";
@@ -34,12 +35,12 @@ export default async function AdminContentPage({
   const sectionMeta = CONTENT_SECTIONS.find(s => s.id === section)!;
   const canEdit = canEditContent(user.role);
   const canCommercial = canEditCommercial(user.role);
-  const data = await getAdminDashboardData();
+  const data = section==="overview"?await getAdminDashboardData():null;
 
   return (
     <div>
       <AdminPageHeader
-        title="إدارة محتوى الموقع"
+        title="مركز المحتوى"
         description="مكان واحد لتعديل بيانات الموقع والمشاريع والأسعار والآراء"
         breadcrumbs={[
           { label: "لوحة التحكم", href: "/admin" },
@@ -47,7 +48,7 @@ export default async function AdminContentPage({
         ]}
       />
 
-      <ContentQuickStatus
+      {data&&<ContentQuickStatus
         items={[
           {
             label: "مشاريع منشورة",
@@ -70,7 +71,7 @@ export default async function AdminContentPage({
             href: "/admin/leads",
           },
         ]}
-      />
+      />}
 
       <ContentSectionNav active={section} />
 
@@ -78,6 +79,7 @@ export default async function AdminContentPage({
         {sectionMeta.description}
       </p>
 
+      {data&&<CmsOverview data={data} canCommercial={canCommercial}/>}
       {section === "settings" ? (
         <SettingsPanel canEdit={canCommercial} />
       ) : null}

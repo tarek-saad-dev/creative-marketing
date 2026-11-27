@@ -1,4 +1,5 @@
 export const CONTENT_SECTIONS = [
+  {id:"overview",label:"نظرة عامة",description:"إدارة كل أجزاء الموقع من مكان واحد"},
   {
     id: "settings",
     label: "بيانات الموقع",
@@ -59,5 +60,5 @@ export function parseContentSection(
 ): ContentSectionId {
   const raw = Array.isArray(value) ? value[0] : value;
   if (raw && isContentSectionId(raw)) return raw;
-  return "settings";
+  return "overview";
 }

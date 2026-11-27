@@ -45,10 +45,10 @@ export default async function AdminLayout({
       >
         تخطي إلى المحتوى
       </a>
-      <AdminSidebar badgeCounts={{ leadsNew }} />
+      <AdminSidebar role={user.role} badgeCounts={{ leadsNew }} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar user={user} leadsNew={leadsNew} />
-        <main id="admin-main" className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main id="admin-main" className="mx-auto w-full max-w-[1560px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>
