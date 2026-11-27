@@ -130,7 +130,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     warnings.push({
       id: "no-published-projects",
       message: "لا توجد مشاريع منشورة.",
-      href: "/admin/content?section=projects",
+      href: "/admin/projects",
     });
   }
   if (packagesInvalidPrice > 0) {
@@ -143,10 +143,10 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       href: "/admin/content?section=packages",
     });
   }
-  if (!whatsappNormalized) {
+  if (!/^[1-9]\d{7,14}$/.test(whatsappNormalized.replace(/\D/g,""))) {
     warnings.push({
       id: "whatsapp-missing",
-      message: "رقم واتساب غير مضاف.",
+      message: "رقم واتساب غير مضاف أو غير صالح.",
       href: "/admin/content?section=settings",
     });
   }

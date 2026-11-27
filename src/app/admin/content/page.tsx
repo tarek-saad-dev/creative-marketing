@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {redirect} from "next/navigation";
 import { requireRole } from "@/server/auth/require-admin";
 import { AdminRole } from "@/generated/prisma";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -7,7 +8,6 @@ import { ContentSectionNav } from "@/components/admin/content/content-section-na
 import { ContentQuickStatus } from "@/components/admin/content/content-helpers";
 import { CmsOverview } from "@/components/admin/content/cms-overview";
 import { SettingsPanel } from "@/components/admin/content/settings-panel";
-import { ProjectsPanel } from "@/components/admin/content/projects-panel";
 import { ServicesPanel } from "@/components/admin/content/services-panel";
 import { PackagesPanel } from "@/components/admin/content/packages-panel";
 import { OffersPanel } from "@/components/admin/content/offers-panel";
@@ -33,6 +33,7 @@ export default async function AdminContentPage({
   const user = await requireRole(AdminRole.VIEWER);
   const sp = await searchParams;
   const section = parseContentSection(sp.section);
+  if(section==="projects")redirect("/admin/projects");
   const sectionMeta = CONTENT_SECTIONS.find(s => s.id === section)!;
   const canEdit = canEditContent(user.role);
   const canCommercial = canEditCommercial(user.role);
@@ -41,12 +42,13 @@ export default async function AdminContentPage({
   return (
     <div>
       <AdminPageHeader
-        title="مركز المحتوى"
-        description="محررات المحتوى التفصيلية — إدارة الموقع ترشدك إلى المحرر المناسب لكل قسم."
+        title={section==="overview"?"مركز المحتوى":sectionMeta.label}
+        description={section==="overview"?"اختر نوع المحتوى الذي تريد إدارته.":sectionMeta.description}
         actions={canCommercial?<Link href="/admin/website" className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm font-semibold text-primary">العودة لإدارة الموقع</Link>:undefined}
         breadcrumbs={[
           { label: "لوحة التحكم", href: "/admin" },
-          { label: "إدارة محتوى الموقع" },
+          { label: "مركز المحتوى",href:section==="overview"?undefined:"/admin/content" },
+          ...(section==="overview"?[]:[{label:sectionMeta.label}]),
         ]}
       />
 
@@ -55,7 +57,7 @@ export default async function AdminContentPage({
           {
             label: "مشاريع منشورة",
             value: data.counts.projectsPublished,
-            href: "/admin/content?section=projects",
+            href: "/admin/projects",
           },
           {
             label: "باكدجات منشورة",
@@ -77,15 +79,13 @@ export default async function AdminContentPage({
 
       <ContentSectionNav active={section} />
 
-      <p className="mb-4 text-sm text-foreground-muted">
-        {sectionMeta.description}
-      </p>
+
 
       {data&&<CmsOverview data={data} canCommercial={canCommercial} canEdit={canEdit}/>}
       {section === "settings" ? (
         <SettingsPanel canEdit={canCommercial} />
       ) : null}
-      {section === "projects" ? <ProjectsPanel canEdit={canEdit} /> : null}
+
       {section === "services" ? <ServicesPanel canEdit={canEdit} canArchive={canCommercial} /> : null}
       {section === "packages" ? (
         <PackagesPanel canEdit={canEdit} canPublish={canCommercial} filter={["all","PUBLISHED","DRAFT","ARCHIVED","incomplete"].includes(sp.status??"")?sp.status:"all"} editId={sp.edit} newPackage={sp.new==="1"} />
