@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 type PageProps = { params: Promise<{ id: string }> };
 
 export default async function EditAdminProjectPage({ params }: PageProps) {
-  await requireRole(AdminRole.EDITOR);
+  const user=await requireRole(AdminRole.EDITOR);
   const { id } = await params;
   const [project, services] = await Promise.all([
     getAdminProjectById(id),
@@ -95,6 +95,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
       </div>
 
       <div className="mb-4 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-[160px_1fr]"><div className="relative aspect-square overflow-hidden rounded-lg bg-muted"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt || project.title} sizes="160px" /></div><div className="space-y-2"><h2 className="font-bold">معاينة الغلاف في الموقع</h2><p className="text-sm text-foreground-muted">أضف الوسائط ثم اختر صورة كغلاف. المشاريع المنشورة تظهر تلقائيًا في المعارض حسب الترتيب والتمييز.</p>{project.status===ContentStatus.PUBLISHED && <Link href={"/work/"+project.slug} target="_blank" className="text-sm text-primary underline">فتح صفحة المشروع المنشورة</Link>}</div></div>
+      {project.status===ContentStatus.PUBLISHED&&<section className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><h2 className="font-bold text-emerald-800">المشروع منشور — الخطوة التالية</h2><p className="mt-1 text-sm leading-6 text-emerald-800">يمكن للزوار مشاهدة المشروع الآن. إذا كان الاختيار التلقائي مفعّلًا، يمكن أن يظهر في استعراض الموقع حسب ترتيبه.</p><div className="mt-3 flex flex-wrap gap-2">{["ADMIN","OWNER"].includes(user.role)&&<Link href="/admin/portfolio#portfolio-hero" className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">اختيار ظهور المشروع في الواجهة</Link>}<Link href="/admin/projects/new" className="inline-flex min-h-10 items-center rounded-lg border border-emerald-300 px-3 text-sm font-semibold text-emerald-800">إضافة مشروع آخر</Link>{["ADMIN","OWNER"].includes(user.role)&&<Link href="/admin/website" className="inline-flex min-h-10 items-center px-3 text-sm text-primary">العودة لإدارة الموقع</Link>}</div></section>}
       <div className="space-y-6">
         <div id="details" className="admin-card scroll-mt-nav p-4">
           <ProjectForm

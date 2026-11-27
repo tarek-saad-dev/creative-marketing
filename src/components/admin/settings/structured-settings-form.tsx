@@ -114,7 +114,7 @@ export function StructuredSettingsForm({
         </div>
       </section>
 
-      <section className="admin-card space-y-4 p-4">
+      <section id="contact-settings" className="admin-card scroll-mt-24 space-y-4 p-4">
         <h2 className="text-lg font-semibold">التواصل</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
