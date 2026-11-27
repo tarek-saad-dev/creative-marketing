@@ -1,124 +1,20 @@
 import Link from "next/link";
-import { ContentStatus } from "@/generated/prisma";
-import { ContentStatusBadge, ToneBadge } from "@/components/admin/status-badge";
-import { listAdminPackages } from "@/server/services/admin/package.admin.service";
-import {
-  CreatePackageDialog,
-  EditPackageDialog,
-} from "@/components/admin/packages/package-form-dialogs";
-import { RowActionButton } from "@/components/admin/row-action-button";
-import {
-  publishPackageAction,
-  unpublishPackageAction,
-} from "@/server/actions/admin/package.action";
-import { hasValidConfiguredPrice } from "@/lib/validation/pricing";
-import { decimalToPublicString } from "@/lib/validation/decimal-price";
-import { ViewerReadonlyBanner } from "@/components/admin/content/content-helpers";
-
-export async function PackagesPanel({
-  canEdit,
-  canPublish = canEdit,
-}: {
-  canEdit: boolean;
-  canPublish?: boolean;
-}) {
-  const packages = await listAdminPackages();
-
-  return (
-    <div className="space-y-4">
-      <ViewerReadonlyBanner canEdit={canEdit} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-headline text-xl font-bold text-foreground">
-            الباكدجات
-          </h2>
-          <p className="text-sm text-foreground-muted">
-            حدّد الأسعار والميزات — النشر يبقى محميًا حتى اكتمال البيانات.
-          </p>
-        </div>
-        {canEdit ? <CreatePackageDialog /> : null}
-      </div>
-
-      {packages.length === 0 ? (
-        <div className="admin-card p-8 text-center text-sm text-foreground-muted">
-          لا توجد باكدجات بعد.
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {packages.map(pkg => {
-            const priceValid = hasValidConfiguredPrice(pkg.originalPrice);
-            return (
-              <article key={pkg.id} className="admin-card flex flex-col p-4">
-                <div className="mb-3 flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-semibold text-foreground">
-                      {pkg.name}
-                    </h3>
-                    {pkg.isFeatured ? (
-                      <p className="text-xs font-medium text-primary">
-                        الباقة المميزة
-                      </p>
-                    ) : null}
-                  </div>
-                  <ContentStatusBadge status={pkg.status} />
-                </div>
-
-                <div className="mb-4 space-y-1 text-sm">
-                  {priceValid ? (
-                    <p dir="ltr" className="font-semibold text-foreground">
-                      {decimalToPublicString(pkg.originalPrice)} {pkg.currency}
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      <ToneBadge label="السعر غير محدد" tone="warning" />
-                      {canEdit ? (
-                        <EditPackageDialog
-                          pkg={pkg}
-                          triggerLabel="إضافة السعر"
-                          triggerClassName="inline-flex h-9 w-full items-center justify-center rounded-md bg-amber-800 px-3 text-xs font-semibold text-amber-50 hover:bg-amber-900"
-                        />
-                      ) : null}
-                    </div>
-                  )}
-                  <p className="text-xs text-foreground-muted">
-                    {pkg.features.length} ميزة
-                    {pkg.idealFor ? ` · مناسب لـ: ${pkg.idealFor}` : ""}
-                  </p>
-                </div>
-
-                <div className="mt-auto flex flex-wrap gap-1">
-                  {canEdit && priceValid ? (
-                    <EditPackageDialog pkg={pkg} />
-                  ) : null}
-                  {canPublish ? (
-                    pkg.status !== ContentStatus.PUBLISHED ? (
-                      <RowActionButton
-                        id={pkg.id}
-                        action={publishPackageAction}
-                        label="نشر"
-                        variant="primary"
-                      />
-                    ) : (
-                      <RowActionButton
-                        id={pkg.id}
-                        action={unpublishPackageAction}
-                        label="إلى مسودة"
-                      />
-                    )
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="text-xs text-foreground-muted">
-        الصفحة المتقدمة:{" "}
-        <Link href="/admin/packages" className="text-primary hover:underline">
-          إدارة الباقات
-        </Link>
-      </p>
-    </div>
-  );
+import {ContentStatus} from "@/generated/prisma";
+import {ContentStatusBadge} from "@/components/admin/status-badge";
+import {listAdminPackages} from "@/server/services/admin/package.admin.service";
+import {CreatePackageDialog,EditPackageDialog} from "@/components/admin/packages/package-form-dialogs";
+import {RowActionButton} from "@/components/admin/row-action-button";
+import {archivePackageAction,publishPackageAction,softDeletePackageAction,unpublishPackageAction} from "@/server/actions/admin/package.action";
+import {packageMissingFields,mayEditPackage} from "@/lib/admin/commercial-readiness";
+import {decimalToPublicString} from "@/lib/validation/decimal-price";
+import {ViewerReadonlyBanner} from "@/components/admin/content/content-helpers";
+export async function PackagesPanel({canEdit,canPublish=false,filter="all",editId,newPackage=false}:{canEdit:boolean;canPublish?:boolean;filter?:string;editId?:string;newPackage?:boolean}){
+ const packages=await listAdminPackages();const tabs=[{id:"all",label:"الكل"},{id:"PUBLISHED",label:"منشورة"},{id:"DRAFT",label:"مسودات"},{id:"ARCHIVED",label:"مؤرشفة"},{id:"incomplete",label:"تحتاج إكمال"}];
+ const matches=(p:typeof packages[number],id:string)=>id==="all"||id===p.status||id==="incomplete"&&packageMissingFields(p).length>0;
+ const selected=packages.filter(p=>matches(p,filter)||p.id===editId);
+ return <div className="space-y-4"><ViewerReadonlyBanner canEdit={canEdit}/><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-headline text-xl font-bold">إدارة الباقات والأسعار</h2><p className="text-sm text-foreground-muted">الأسعار الفعلية، المميزات، وحالة الجاهزية.</p></div>{canEdit&&<CreatePackageDialog commercial={canPublish} initialOpen={newPackage&&!editId}/>}</div>
+ <nav aria-label="حالات الباقات" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">{tabs.map(t=><Link key={t.id} href={"/admin/content?section=packages&status="+t.id} aria-current={filter===t.id?"page":undefined} className={"rounded-lg border p-3 "+(filter===t.id?"border-primary bg-primary/5":"border-border bg-white")}><p className="text-xs text-foreground-muted">{t.label}</p><p className="mt-2 text-xl font-bold">{packages.filter(p=>matches(p,t.id)).length}</p></Link>)}</nav>
+ <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{selected.map(pkg=>{const missing=packageMissingFields(pkg),price=decimalToPublicString(pkg.originalPrice),editable=canEdit&&mayEditPackage(pkg.status,canPublish);
+ const model={...pkg,originalPrice:pkg.originalPrice?.toString()??null};
+ return <article key={pkg.id} className="admin-card flex min-w-0 flex-col gap-3 p-5"><div className="flex items-start justify-between gap-2"><h3 className="break-words font-headline text-lg font-bold">{pkg.name}</h3><ContentStatusBadge status={pkg.status}/></div>{pkg.isFeatured&&<p className="text-xs font-semibold text-primary">باقة مميزة</p>}<p className="text-2xl font-bold tabular-nums" dir="ltr">{price?price+" "+pkg.currency:"—"}</p><p className="text-xs text-foreground-muted">{pkg.billingPeriod||"دورة الفوترة غير محددة"} · {pkg.features.length} ميزة</p><p className="text-sm">{pkg.idealFor||"لم يحدد الجمهور المناسب"}</p><p className={"text-xs leading-6 "+(missing.length?"text-amber-800":"text-emerald-700")}>{missing.length?"قبل النشر: "+missing.join("، "):"جاهزة للنشر"}</p><details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm font-semibold">عرض المميزات</summary><ul className="mt-3 space-y-2 text-sm">{pkg.features.map(f=><li key={f.id} className={f.included?"":"text-foreground-muted"}>{f.included?"✓":"—"} {f.title}</li>)}</ul></details><div className="mt-auto flex flex-wrap gap-1 border-t border-border pt-3">{editable&&<EditPackageDialog pkg={model} commercial={canPublish} initialOpen={editId===pkg.id}/>}{canPublish&&<>{pkg.status!==ContentStatus.PUBLISHED?<RowActionButton id={pkg.id} action={publishPackageAction} label="نشر" variant="primary" disabled={missing.length>0} confirmMessage="نشر الباقة والأسعار؟"/>:<RowActionButton id={pkg.id} action={unpublishPackageAction} label="إلى مسودة" confirmMessage="إخفاء الباقة من الموقع؟"/>}{pkg.status!==ContentStatus.ARCHIVED&&<RowActionButton id={pkg.id} action={archivePackageAction} label="أرشفة" confirmMessage="أرشفة الباقة؟"/>}<RowActionButton id={pkg.id} action={softDeletePackageAction} label="حذف" variant="danger" confirmMessage="حذف الباقة من القائمة؟"/></>}</div>{!editable&&canEdit&&<p className="text-xs text-foreground-muted">تعديل هذه الباقة يحتاج مسؤولًا.</p>}</article>})}</div>{!selected.length&&<p className="admin-card p-6 text-center text-sm text-foreground-muted">لا توجد باقات مطابقة.</p>}</div>;
 }

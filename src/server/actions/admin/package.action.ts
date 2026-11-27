@@ -1,6 +1,8 @@
 "use server";
 
 import { AdminRole } from "@/generated/prisma";
+import {getCurrentAdmin} from "@/server/auth/require-admin";
+import {canEditCommercial} from "@/lib/admin/roles";
 import { withAdminMutation } from "@/server/auth/admin-mutation";
 import {
   archivePackageAdmin,
@@ -22,7 +24,7 @@ export async function createPackageAction(rawInput: unknown) {
         metadata: { slug: result.slug },
       }),
     },
-    () => createPackageAdmin(rawInput)
+    async () => {const user=await getCurrentAdmin();if(!user||user.role==="VIEWER")throw new Error("غير مصرح");return createPackageAdmin(rawInput,canEditCommercial(user.role));}
   );
 }
 
@@ -37,7 +39,7 @@ export async function updatePackageAction(id: string, rawInput: unknown) {
         metadata: { slug: result.slug },
       }),
     },
-    () => updatePackageAdmin(id, rawInput)
+    async () => {const user=await getCurrentAdmin();if(!user||user.role==="VIEWER")throw new Error("غير مصرح");return updatePackageAdmin(id,rawInput,canEditCommercial(user.role));}
   );
 }
 
@@ -51,35 +53,35 @@ export async function publishPackageAction(id: string) {
         entityId: result.id,
       }),
     },
-    () => publishPackageAdmin(id)
+    async () => {const user=await getCurrentAdmin();if(!user||!canEditCommercial(user.role))throw new Error("غير مصرح");return publishPackageAdmin(id);}
   );
 }
 
 export async function unpublishPackageAction(id: string) {
   return withAdminMutation(
     {
-      minimumRole: AdminRole.EDITOR,
+      minimumRole: AdminRole.ADMIN,
       audit: result => ({
         action: "package.unpublish",
         entityType: "Package",
         entityId: result.id,
       }),
     },
-    () => unpublishPackageAdmin(id)
+    async () => {const user=await getCurrentAdmin();if(!user||!canEditCommercial(user.role))throw new Error("غير مصرح");return unpublishPackageAdmin(id);}
   );
 }
 
 export async function archivePackageAction(id: string) {
   return withAdminMutation(
     {
-      minimumRole: AdminRole.EDITOR,
+      minimumRole: AdminRole.ADMIN,
       audit: result => ({
         action: "package.archive",
         entityType: "Package",
         entityId: result.id,
       }),
     },
-    () => archivePackageAdmin(id)
+    async () => {const user=await getCurrentAdmin();if(!user||!canEditCommercial(user.role))throw new Error("غير مصرح");return archivePackageAdmin(id);}
   );
 }
 
@@ -93,6 +95,6 @@ export async function softDeletePackageAction(id: string) {
         entityId: result.id,
       }),
     },
-    () => softDeletePackageAdmin(id)
+    async () => {const user=await getCurrentAdmin();if(!user||!canEditCommercial(user.role))throw new Error("غير مصرح");return softDeletePackageAdmin(id);}
   );
 }

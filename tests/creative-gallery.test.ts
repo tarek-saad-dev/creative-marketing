@@ -178,3 +178,6 @@ test("media library deduplicates URLs, preserves usages and validates upload nam
 
 import {parseProjectFilters,projectListHref} from "../src/lib/admin/project-filters";
 test("project workspace filters are bounded and links preserve query",()=>{const f=parseProjectFilters({status:"draft",q:"  حملة ديسمبر  ",industry:"تعليم",page:"3",sort:"name"});assert.equal(f.q,"حملة ديسمبر");assert.equal(f.page,3);const url=new URL(projectListHref(f,{page:2}),"https://example.com");assert.equal(url.searchParams.get("status"),"draft");assert.equal(url.searchParams.get("industry"),"تعليم");assert.equal(url.searchParams.get("page"),"2");assert.equal(parseProjectFilters({page:"Infinity",status:"oops"}).page,1);assert.equal(parseProjectFilters({status:"oops"}).status,"all");});
+
+import {packageMissingFields,mayEditPackage,mayChangePackageFeatureFlag} from "../src/lib/admin/commercial-readiness";
+test("package readiness and commercial permission rules",()=>{assert.equal(packageMissingFields({originalPrice:"1500",idealFor:"صالونات",features:[{}]}).length,0);assert.equal(packageMissingFields({originalPrice:"0",idealFor:"",features:[]}).length,3);assert.equal(mayEditPackage("PUBLISHED",false),false);assert.equal(mayEditPackage("DRAFT",false),true);assert.equal(mayChangePackageFeatureFlag(false,true,false),false);assert.equal(mayEditPackage("PUBLISHED",true),true);});

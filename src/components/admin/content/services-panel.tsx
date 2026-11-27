@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { listAdminServices } from "@/server/services/admin/service.admin.service";
 import { CreateServiceDialog } from "@/components/admin/services/service-form-dialog";
 import { ServicesGroupedPanel } from "@/components/admin/content/services-grouped-panel";
 import { ViewerReadonlyBanner } from "@/components/admin/content/content-helpers";
 
-export async function ServicesPanel({ canEdit }: { canEdit: boolean }) {
+export async function ServicesPanel({ canEdit,canArchive=false }: { canEdit: boolean;canArchive?:boolean }) {
   const services = await listAdminServices();
   const listItems = services.map(service => ({
     id: service.id,
@@ -38,14 +37,8 @@ export async function ServicesPanel({ canEdit }: { canEdit: boolean }) {
         {canEdit ? <CreateServiceDialog /> : null}
       </div>
 
-      <ServicesGroupedPanel services={listItems} readOnly={!canEdit} />
+      <ServicesGroupedPanel services={listItems} readOnly={!canEdit} canArchive={canArchive} />
 
-      <p className="text-xs text-foreground-muted">
-        الصفحة المتقدمة:{" "}
-        <Link href="/admin/services" className="text-primary hover:underline">
-          إدارة الخدمات
-        </Link>
-      </p>
     </div>
   );
 }

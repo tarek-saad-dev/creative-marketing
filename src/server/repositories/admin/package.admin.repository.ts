@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import {packageMissingFields,mayEditPackage,mayChangePackageFeatureFlag} from "@/lib/admin/commercial-readiness";
 import { ContentStatus } from "@/generated/prisma";
 
 export async function listPackagesForAdmin() {
@@ -85,9 +86,12 @@ export async function createPackageRow(input: PackageWriteInput) {
   });
 }
 
-export async function updatePackageRow(id: string, input: PackageWriteInput) {
+export async function updatePackageRow(id: string, input: PackageWriteInput,commercial=false) {
   return prisma.$transaction(async tx => {
-    if (input.isFeatured) {
+    const old=await tx.package.findUnique({where:{id}});
+    if(!old||old.deletedAt||!mayEditPackage(old.status,commercial)||!mayChangePackageFeatureFlag(old.isFeatured,input.isFeatured,commercial))throw new Error("الباقة غير متاحة للتعديل");
+    if(old.status===ContentStatus.PUBLISHED&&packageMissingFields(input).length)throw new Error("أكمل بيانات الباقة المنشورة");
+    if (input.isFeatured&&commercial) {
       await tx.package.updateMany({
         where: { isFeatured: true, deletedAt: null, id: { not: id } },
         data: { isFeatured: false },
@@ -121,15 +125,11 @@ export async function updatePackageRow(id: string, input: PackageWriteInput) {
     }
 
     return pkg;
-  });
+  },{isolationLevel:"Serializable"});
 }
 
 export async function setPackageStatus(id: string, status: ContentStatus) {
-  return prisma.package.update({
-    where: { id },
-    data: { status },
-    select: { id: true, slug: true, status: true },
-  });
+  return prisma.$transaction(async tx=>{const pkg=await tx.package.findUnique({where:{id},include:{features:true}});if(!pkg||pkg.deletedAt)throw new Error("الباقة غير موجودة");if(status===ContentStatus.PUBLISHED&&packageMissingFields(pkg).length)throw new Error("أكمل بيانات الباقة قبل النشر");return tx.package.update({where:{id,deletedAt:null},data:{status},select:{id:true,slug:true,status:true}});},{isolationLevel:"Serializable"});
 }
 
 export async function softDeletePackageRow(id: string) {

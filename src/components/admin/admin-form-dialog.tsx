@@ -15,15 +15,15 @@ export function AdminFormDialog({
   title,
   description,
   children,
-  widthClassName = "max-w-lg",
+  widthClassName = "max-w-lg",initialOpen=false,
 }: {
   trigger: (open: () => void) => React.ReactNode;
   title: string;
   description?: string;
   children: (close: () => void) => React.ReactNode;
-  widthClassName?: string;
+  widthClassName?: string;initialOpen?:boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const close = () => setIsOpen(false);
 
   return (

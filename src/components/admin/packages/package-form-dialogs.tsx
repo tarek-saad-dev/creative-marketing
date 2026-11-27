@@ -5,11 +5,12 @@ import { AdminFormDialog } from "@/components/admin/admin-form-dialog";
 import { PackageForm } from "@/components/admin/packages/package-form";
 import type { Package, PackageFeature } from "@/generated/prisma";
 
-type PackageWithFeatures = Package & { features: PackageFeature[] };
+type PackageWithFeatures = Omit<Package,"originalPrice"> & {originalPrice:string|null} & { features: PackageFeature[] };
 
-export function CreatePackageDialog() {
+export function CreatePackageDialog({commercial=false,initialOpen=false}:{commercial?:boolean;initialOpen?:boolean}={}) {
   return (
     <AdminFormDialog
+      initialOpen={initialOpen}
       title="إضافة باقة جديدة"
       widthClassName="max-w-3xl"
       trigger={open => (
@@ -23,22 +24,23 @@ export function CreatePackageDialog() {
         </button>
       )}
     >
-      {close => <PackageForm onDone={close} />}
+      {close => <PackageForm commercial={commercial} onDone={close} />}
     </AdminFormDialog>
   );
 }
 
 export function EditPackageDialog({
-  pkg,
+  pkg,commercial=false,initialOpen=false,
   triggerLabel = "تعديل",
   triggerClassName,
 }: {
-  pkg: PackageWithFeatures;
+  pkg: PackageWithFeatures;commercial?:boolean;initialOpen?:boolean;
   triggerLabel?: string;
   triggerClassName?: string;
 }) {
   return (
     <AdminFormDialog
+      initialOpen={initialOpen}
       title={`تعديل: ${pkg.name}`}
       widthClassName="max-w-3xl"
       trigger={open => (
@@ -55,7 +57,7 @@ export function EditPackageDialog({
         </button>
       )}
     >
-      {close => <PackageForm pkg={pkg} onDone={close} />}
+      {close => <PackageForm pkg={pkg} commercial={commercial} onDone={close} />}
     </AdminFormDialog>
   );
 }

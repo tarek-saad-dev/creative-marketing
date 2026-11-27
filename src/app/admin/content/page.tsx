@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminContentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ section?: string }>;
+  searchParams: Promise<{ section?: string;status?:string;edit?:string;new?:string }>;
 }) {
   const user = await requireRole(AdminRole.VIEWER);
   const sp = await searchParams;
@@ -84,11 +84,11 @@ export default async function AdminContentPage({
         <SettingsPanel canEdit={canCommercial} />
       ) : null}
       {section === "projects" ? <ProjectsPanel canEdit={canEdit} /> : null}
-      {section === "services" ? <ServicesPanel canEdit={canEdit} /> : null}
+      {section === "services" ? <ServicesPanel canEdit={canEdit} canArchive={canCommercial} /> : null}
       {section === "packages" ? (
-        <PackagesPanel canEdit={canEdit} canPublish={canCommercial} />
+        <PackagesPanel canEdit={canEdit} canPublish={canCommercial} filter={["all","PUBLISHED","DRAFT","ARCHIVED","incomplete"].includes(sp.status??"")?sp.status:"all"} editId={sp.edit} newPackage={sp.new==="1"} />
       ) : null}
-      {section === "offers" ? <OffersPanel canEdit={canCommercial} /> : null}
+      {section === "offers" ? <OffersPanel canEdit={canCommercial} editId={sp.edit} newOffer={sp.new==="1"} /> : null}
       {section === "testimonials" ? (
         <TestimonialsPanel canEdit={canEdit} />
       ) : null}

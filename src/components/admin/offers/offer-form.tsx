@@ -19,7 +19,7 @@ import type { LimitedOffer, OfferPackage, Package } from "@/generated/prisma";
 
 type OfferWithPackages = LimitedOffer & {
   offerPackages: Array<
-    OfferPackage & { package: Pick<Package, "id" | "name" | "originalPrice"> }
+    Omit<OfferPackage,"offerPrice"> & {offerPrice:string; package: Pick<Package, "id" | "name"> & {originalPrice:string|null}}
   >;
 };
 

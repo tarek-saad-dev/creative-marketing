@@ -16,7 +16,7 @@ import { Field } from "@/components/admin/field";
 import { slugify } from "@/lib/utils";
 import type { Package, PackageFeature } from "@/generated/prisma";
 
-type PackageWithFeatures = Package & { features: PackageFeature[] };
+type PackageWithFeatures = Omit<Package,"originalPrice"> & {originalPrice:string|null} & { features: PackageFeature[] };
 
 /**
  * Separate named component so `useFieldArray` is called from a proper React
@@ -28,9 +28,9 @@ type PackageWithFeatures = Package & { features: PackageFeature[] };
  */
 function PackageFormFields({
   form: formProp,
-  pkg,
+  pkg,commercial,
 }: {
-  form: unknown;
+  form: unknown;commercial:boolean;
   pkg?: PackageWithFeatures;
 }) {
   const form = formProp as UseFormReturn<PackageFormInput>;
@@ -138,11 +138,11 @@ function PackageFormFields({
           />
         </Field>
         <label className="flex items-center gap-2 self-end pb-2 text-sm text-foreground">
-          <input type="checkbox" {...register("isFeatured")} />
+          {commercial?<input type="checkbox" {...register("isFeatured")} />:<input type="checkbox" checked={watch("isFeatured")} disabled readOnly/>}
           باقة مميزة (Featured)
         </label>
         <p className="sm:col-span-2 text-xs text-foreground-muted">
-          يمكن تمييز باقة واحدة فقط. عند التفعيل تُلغى المميزة من أي باقة أخرى.
+          تمييز الباقات يحتاج مسؤولًا. عند التفعيل تُلغى المميزة من أي باقة أخرى.
         </p>
       </div>
 
@@ -221,7 +221,7 @@ function PackageFormFields({
                 </div>
                 <button
                   type="button"
-                  onClick={() => remove(index)}
+                  onClick={() => {remove(index);getValues("features").forEach((_,i)=>setValue(`features.${i}.displayOrder`,i,{shouldDirty:true}));}}
                   className="flex h-10 w-10 items-center justify-center rounded-md text-destructive hover:bg-destructive/10"
                   aria-label="حذف الميزة"
                 >
@@ -237,10 +237,10 @@ function PackageFormFields({
 }
 
 export function PackageForm({
-  pkg,
+  pkg,commercial=false,
   onDone,
 }: {
-  pkg?: PackageWithFeatures;
+  pkg?: PackageWithFeatures;commercial?:boolean;
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -283,7 +283,7 @@ export function PackageForm({
       {form => (
         <PackageFormFields
           form={form as UseFormReturn<PackageFormInput>}
-          pkg={pkg}
+          pkg={pkg} commercial={commercial}
         />
       )}
     </AdminEntityForm>

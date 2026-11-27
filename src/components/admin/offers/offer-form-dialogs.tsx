@@ -7,7 +7,7 @@ import type { LimitedOffer, OfferPackage, Package } from "@/generated/prisma";
 
 type OfferWithPackages = LimitedOffer & {
   offerPackages: Array<
-    OfferPackage & { package: Pick<Package, "id" | "name" | "originalPrice"> }
+    Omit<OfferPackage,"offerPrice"> & {offerPrice:string; package: Pick<Package, "id" | "name"> & {originalPrice:string|null}}
   >;
 };
 
@@ -18,12 +18,13 @@ type AvailablePackage = {
 };
 
 export function CreateOfferDialog({
-  availablePackages,
+  availablePackages,initialOpen=false,
 }: {
-  availablePackages: AvailablePackage[];
+  initialOpen?:boolean;availablePackages: AvailablePackage[];
 }) {
   return (
     <AdminFormDialog
+      initialOpen={initialOpen}
       title="إضافة عرض محدود"
       widthClassName="max-w-2xl"
       trigger={open => (
@@ -45,14 +46,15 @@ export function CreateOfferDialog({
 }
 
 export function EditOfferDialog({
-  offer,
+  offer,initialOpen=false,
   availablePackages,
 }: {
-  offer: OfferWithPackages;
+  offer: OfferWithPackages;initialOpen?:boolean;
   availablePackages: AvailablePackage[];
 }) {
   return (
     <AdminFormDialog
+      initialOpen={initialOpen}
       title={`تعديل: ${offer.name}`}
       widthClassName="max-w-2xl"
       trigger={open => (

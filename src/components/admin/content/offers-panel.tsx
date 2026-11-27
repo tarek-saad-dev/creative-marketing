@@ -1,4 +1,5 @@
-import Link from "next/link";
+import {isValidPublicOfferPrice} from "@/lib/validation/pricing";
+import {calculateSavingPercent,decimalToPublicString} from "@/lib/validation/decimal-price";
 import { listAdminOffers } from "@/server/services/admin/offer.admin.service";
 import { listAdminPackages } from "@/server/services/admin/package.admin.service";
 import {
@@ -15,7 +16,7 @@ import { resolvePublicOfferStatus } from "@/lib/offers/offer-status";
 import { formatDateTime } from "@/lib/utils";
 import { ViewerReadonlyBanner } from "@/components/admin/content/content-helpers";
 
-export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
+export async function OffersPanel({ canEdit,editId,newOffer=false }: { canEdit: boolean;editId?:string;newOffer?:boolean }) {
   const [offers, packages] = await Promise.all([
     listAdminOffers(),
     listAdminPackages(),
@@ -23,7 +24,7 @@ export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
   const availablePackages = packages.map(pkg => ({
     id: pkg.id,
     name: pkg.name,
-    originalPrice: pkg.originalPrice,
+    originalPrice: pkg.originalPrice?.toString()??null,
   }));
   const now = new Date();
 
@@ -40,7 +41,7 @@ export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
           </p>
         </div>
         {canEdit ? (
-          <CreateOfferDialog availablePackages={availablePackages} />
+          <CreateOfferDialog availablePackages={availablePackages} initialOpen={newOffer&&!editId} />
         ) : null}
       </div>
 
@@ -54,7 +55,8 @@ export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {offers.map(offer => {
-            const eligible = offer.offerPackages?.length ?? 0;
+            const eligible = offer.offerPackages.filter(row=>!row.package.deletedAt&&row.package.status==="PUBLISHED"&&isValidPublicOfferPrice(row.offerPrice,row.package.originalPrice)).length;
+            const model={...offer,offerPackages:offer.offerPackages.map(row=>({...row,offerPrice:row.offerPrice.toString(),package:{...row.package,originalPrice:row.package.originalPrice?.toString()??null}}))};
             const effective = resolvePublicOfferStatus(offer, eligible, now);
             return (
               <article key={offer.id} className="admin-card space-y-3 p-4">
@@ -74,27 +76,28 @@ export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
                   {formatDateTime(offer.endsAt)}
                 </p>
                 <p className="text-xs text-foreground-muted">
-                  {eligible} باكدج مرتبطة
+                  {eligible} من {offer.offerPackages.length} باقة مؤهلة
                   {offer.maxSlots != null
                     ? ` · المقاعد ${offer.bookedSlots}/${offer.maxSlots}`
                     : " · بدون حد مقاعد"}
                 </p>
+                <div className="space-y-2 border-t border-border pt-3">{offer.offerPackages.map(row=>{const original=decimalToPublicString(row.package.originalPrice);const discount=decimalToPublicString(row.offerPrice);const valid=!row.package.deletedAt&&row.package.status==="PUBLISHED"&&isValidPublicOfferPrice(row.offerPrice,row.package.originalPrice);const saving=original&&discount?calculateSavingPercent(original,discount):null;return <div key={row.packageId} className="flex flex-wrap justify-between gap-2 text-xs"><span>{row.package.name}</span><span dir="ltr">{original??"—"} → {discount??"—"} {saving!==null?"("+saving+"%)":""}</span>{!valid&&<span className="text-amber-800">غير مؤهلة للنشر</span>}</div>})}</div>
                 {canEdit ? (
                   <div className="flex flex-wrap gap-1">
                     <EditOfferDialog
-                      offer={offer}
+                      offer={model} initialOpen={editId===offer.id}
                       availablePackages={availablePackages}
                     />
                     <RowActionButton
                       id={offer.id}
                       action={activateOfferAction}
-                      label="تشغيل"
+                      label="تشغيل" disabled={eligible===0||offer.endsAt<now} confirmMessage="تفعيل العرض؟"
                       variant="primary"
                     />
                     <RowActionButton
                       id={offer.id}
                       action={disableOfferAction}
-                      label="إيقاف"
+                      label="إيقاف" confirmMessage="إيقاف العرض؟"
                     />
                   </div>
                 ) : null}
@@ -104,12 +107,6 @@ export async function OffersPanel({ canEdit }: { canEdit: boolean }) {
         </div>
       )}
 
-      <p className="text-xs text-foreground-muted">
-        الصفحة المتقدمة:{" "}
-        <Link href="/admin/offers" className="text-primary hover:underline">
-          إدارة العروض
-        </Link>
-      </p>
     </div>
   );
 }
