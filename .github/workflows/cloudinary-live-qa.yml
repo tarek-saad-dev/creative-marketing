@@ -1,0 +1,39 @@
+name: Cloudinary live acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type RUN to upload and remove synthetic QA assets"
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: cloudinary-live-acceptance
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Confirm explicit test authorization
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: test "$CONFIRM" = RUN
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Generate synthetic video
+        run: |
+          command -v ffmpeg >/dev/null
+          ffmpeg -v error -f lavfi -i color=c=blue:s=160x90:r=10 -t 1 -c:v libx264 -pix_fmt yuv420p -movflags +faststart "$RUNNER_TEMP/cloudinary-qa.mp4"
+      - name: Upload, verify delivery and remove QA files
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: npm run admin:test-cloudinary -- --live --video "$RUNNER_TEMP/cloudinary-qa.mp4"

@@ -60,7 +60,8 @@ async function main(){
  if(videoIndex>=0&&(!videoPath||!videoPath.toLowerCase().endsWith(".mp4")))throw new Error("--video requires a local synthetic MP4 file");
  const video=videoPath?await readFile(videoPath):undefined;
  if(video&&(!video.length||video.length>100*1024*1024))throw new Error("Video must be nonempty and no larger than 100 MB");
- const folders=["creative-marketing/library","creative-marketing/projects/qa-"+randomUUID()];
+ const runId="qa-"+randomUUID();
+ const folders=["creative-marketing/library/"+runId,"creative-marketing/projects/"+runId];
  for(const folder of folders){
   await probe(cloudName,apiKey,secret,folder,"image",image);
   if(video)await probe(cloudName,apiKey,secret,folder,"video",video);
