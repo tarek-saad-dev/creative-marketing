@@ -7,14 +7,14 @@ import {HOMEPAGE_EDITOR_KEY,homeEditorMutationSchema,readHomeEditor,applyHomeEdi
 import {revalidateHomepage} from "@/server/services/revalidation.service";
 import {revalidatePath} from "next/cache";
 export async function updateHomepageEditorAction(raw:unknown){
- return withAdminMutation({minimumRole:AdminRole.ADMIN,audit:result=>({action:"homepage."+result.action,entityType:"SiteSetting",entityId:result.id,metadata:{revision:result.state.revision}})},async()=>{
+ return withAdminMutation({minimumRole:AdminRole.ADMIN,audit:result=>({action:"homepage."+result.action,entityType:"SiteSetting",entityId:result.id,metadata:{revision:result.state.revision,...(result.versionId!==null?{restoredVersion:result.versionId}:{})}})},async()=>{
   const admin=await getCurrentAdmin();if(!admin||!["ADMIN","OWNER"].includes(admin.role))throw new Error("ليس لديك صلاحية لتعديل الصفحة");
   const input=homeEditorMutationSchema.parse(raw);
   const result=await prisma.$transaction(async tx=>{
     const current=await tx.siteSetting.findUnique({where:{key:HOMEPAGE_EDITOR_KEY}});
     const state=applyHomeEditorMutation(readHomeEditor(current?.value),input);
     const row=await tx.siteSetting.upsert({where:{key:HOMEPAGE_EDITOR_KEY},create:{key:HOMEPAGE_EDITOR_KEY,value:state,description:"Homepage draft and published layout"},update:{value:state}});
-    return {id:row.id,state,action:input.action};
+    return {id:row.id,state,action:input.action,versionId:input.action==="restore"?input.versionId:null};
   },{isolationLevel:"Serializable"}).catch(error=>{if(error&&typeof error==="object"&&"code" in error&&["P2034","P2002"].includes(String(error.code)))throw new Error("حدث تعديل متزامن. أعد تحميل الصفحة.");throw error;});
   if(input.action==="publish")revalidateHomepage();
   revalidatePath("/admin/pages");revalidatePath("/preview/homepage");

@@ -1,7 +1,7 @@
 import { BRAND_ASSETS_KEY, readBrandAssets } from "@/lib/content/brand-assets";
 import Link from "next/link";
 import {Fragment,type ReactNode} from "react";
-import {HOMEPAGE_EDITOR_KEY,readHomeEditor,type HomeSectionId} from "@/lib/content/homepage-editor";
+import {HOMEPAGE_EDITOR_KEY,readHomeEditor,type HomeSectionId,type HomeLayout} from "@/lib/content/homepage-editor";
 import { PORTFOLIO_SETTING_KEY, readPortfolioSettings, selectPortfolioProjects } from "@/lib/content/portfolio-settings";
 import { getLandingPageData } from "@/server/services/landing-page.service";
 import { AuroraMarketingMain } from "@/components/layout/aurora-marketing-main";
@@ -25,14 +25,14 @@ import {
 } from "@/components/sections/hero/hero-copy";
 import { FaqJsonLd } from "@/components/seo/faq-json-ld";
 
-export async function HomepageView({preview=false}:{preview?:boolean}={}) {
+export async function HomepageView({preview=false,previewLayout}:{preview?:boolean;previewLayout?:HomeLayout}={}) {
   const [data, showcaseProjects, creativeGallery] = await Promise.all([
     getLandingPageData(),
     getPublishedShowcaseProjects(),
     getPublishedCreativeGallery(),
   ]);
   const editor=readHomeEditor(data.settings[HOMEPAGE_EDITOR_KEY]);
-  const layout=preview?(editor.draft??editor.published):editor.published;
+  const layout=preview?(previewLayout??editor.draft??editor.published):editor.published;
   const enabled=new Set(layout.sections.filter(s=>s.enabled).map(s=>s.id));
   const portfolio = readPortfolioSettings(data.settings[PORTFOLIO_SETTING_KEY]);
   const heroProjects = selectPortfolioProjects(showcaseProjects,portfolio,"hero");
@@ -88,6 +88,7 @@ export async function HomepageView({preview=false}:{preview?:boolean}={}) {
       packages={funnelPackages}
       services={funnelServices}
       hasWhatsApp={data.contactReadiness.hasWhatsApp}
+      readOnly={preview}
     >
       {!preview&&enabled.has("faq")&&<FaqJsonLd faqs={data.faqs} />}
       <a
