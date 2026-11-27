@@ -30,3 +30,6 @@ Replaces tiny showcase labels with a two-level editorial title, portfolio index 
 
 ## Project publishing studio
 Quick creation collects title, industry, summary and optional client/services, uses a server-generated unique ASCII slug (including Arabic-only titles), saves only a draft, then navigates to media. Optional first-image cover assignment is conditional and transactional, draft-only and never replaces an existing cover. Media supports file drop. One readiness checklist is reused for server publish and admin views. Deleted projects cannot be edited. No migration, actual uploads or production project mutations. Authenticated end-to-end acceptance remains required.
+
+## Admin CMS workspace
+Admin-only interface redesign, preserving the restored public UI. Grouped role-aware sidebar, mobile navigation, CMS overview cards linking existing editors, live dashboard counts and separated optional suggestions. Existing routes and server authorization remain intact; no content mutations or schema changes. Audit activity only displayed to ADMIN+. Authenticated desktop/mobile review pending.

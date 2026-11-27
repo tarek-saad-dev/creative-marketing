@@ -1,238 +1,29 @@
 import Link from "next/link";
-import {
-  AlertTriangle,
-  Briefcase,
-  MessageSquareQuote,
-  Package,
-  Percent,
-  Settings,
-  Users,
-} from "lucide-react";
-import { requireAdmin } from "@/server/auth/require-admin";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import {
-  getAdminDashboardData,
-  getRecentAuditActivity,
-} from "@/server/services/admin/dashboard.admin.service";
-import { formatDateTime } from "@/lib/utils";
-import { OpenSiteLink } from "@/components/admin/content/content-helpers";
-
-export const dynamic = "force-dynamic";
-
-const QUICK_ACTIONS = [
-  {
-    href: "/admin/projects/new",
-    label: "أضف مشروعًا",
-    icon: Briefcase,
-  },
-  {
-    href: "/admin/content?section=settings",
-    label: "عدّل بيانات الموقع",
-    icon: Settings,
-  },
-  {
-    href: "/admin/content?section=packages",
-    label: "أضف أسعار الباكدجات",
-    icon: Package,
-  },
-  {
-    href: "/admin/content?section=offers",
-    label: "أنشئ عرضًا",
-    icon: Percent,
-  },
-  {
-    href: "/admin/content?section=testimonials",
-    label: "أضف رأي عميل",
-    icon: MessageSquareQuote,
-  },
-  {
-    href: "/admin/leads",
-    label: "راجع طلبات العملاء",
-    icon: Users,
-  },
-] as const;
-
-const WARNING_ACTIONS: Record<string, { label: string; href: string }> = {
-  "no-published-projects": {
-    label: "أضف مشروعًا الآن",
-    href: "/admin/projects/new",
-  },
-  "packages-no-price": {
-    label: "أضف الأسعار الآن",
-    href: "/admin/content?section=packages",
-  },
-  "packages-invalid-price": {
-    label: "أضف الأسعار الآن",
-    href: "/admin/content?section=packages",
-  },
-  "whatsapp-missing": {
-    label: "أضف رقم واتساب",
-    href: "/admin/content?section=settings",
-  },
-  "no-active-offer": {
-    label: "أنشئ عرضًا",
-    href: "/admin/content?section=offers",
-  },
-  "no-testimonials": {
-    label: "أضف رأي عميل",
-    href: "/admin/content?section=testimonials",
-  },
-  "cloudinary-not-configured": {
-    label: "إدارة الصور",
-    href: "/admin/content?section=projects",
-  },
-  "leads-new": {
-    label: "راجع الطلبات",
-    href: "/admin/leads",
-  },
-  "trust-incomplete": {
-    label: "راجع أرقام الثقة",
-    href: "/admin/content?section=trust",
-  },
-  "testimonials-unapproved": {
-    label: "راجع الآراء",
-    href: "/admin/content?section=testimonials",
-  },
-};
-
-export default async function AdminDashboardPage() {
-  await requireAdmin();
-  const [data, recentActivity] = await Promise.all([
-    getAdminDashboardData(),
-    getRecentAuditActivity(),
-  ]);
-
-  return (
-    <div>
-      <AdminPageHeader
-        title="لوحة التحكم"
-        description="ابدأ من هنا — إجراءات سريعة وتنبيهات واضحة"
-        actions={<OpenSiteLink />}
-      />
-
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {QUICK_ACTIONS.map(action => {
-          const Icon = action.icon;
-          return (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="admin-card flex items-center gap-3 p-4 transition-shadow hover:shadow-card"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="text-sm font-semibold text-foreground">
-                {action.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-
-      {data.warnings.length > 0 ? (
-        <div className="admin-card mb-6 space-y-3 border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-center gap-2 text-amber-900">
-            <AlertTriangle className="h-4 w-4" />
-            <h2 className="text-sm font-semibold">تنبيهات تحتاج متابعة</h2>
-          </div>
-          <ul className="space-y-3">
-            {data.warnings.map(warning => {
-              const action = WARNING_ACTIONS[warning.id];
-              return (
-                <li
-                  key={warning.id}
-                  className="flex flex-wrap items-center justify-between gap-2 text-sm text-amber-900"
-                >
-                  <span>{warning.message}</span>
-                  {action ? (
-                    <Link
-                      href={action.href}
-                      className="inline-flex h-8 items-center rounded-md bg-amber-900 px-3 text-xs font-semibold text-amber-50 hover:bg-amber-950"
-                    >
-                      {action.label}
-                    </Link>
-                  ) : warning.href ? (
-                    <Link
-                      href={warning.href}
-                      className="text-xs font-semibold underline"
-                    >
-                      فتح
-                    </Link>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : (
-        <div className="admin-card mb-6 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-          لا توجد تنبيهات حاليًا — كل شيء يبدو جيدًا.
-        </div>
-      )}
-
-      <div className="mb-6 flex flex-wrap gap-3">
-        <Link
-          href="/admin/content"
-          className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
-        >
-          إدارة محتوى الموقع
-        </Link>
-        <Link
-          href="/admin/leads"
-          className="inline-flex h-10 items-center rounded-md border border-border px-4 text-sm font-semibold text-foreground"
-        >
-          طلبات العملاء
-          {data.counts.leadsNew > 0 ? (
-            <span className="ms-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-              {data.counts.leadsNew}
-            </span>
-          ) : null}
-        </Link>
-      </div>
-
-      <div className="admin-card p-4">
-        <h2 className="mb-3 text-sm font-semibold text-foreground">
-          آخر النشاطات
-        </h2>
-        {recentActivity.length === 0 ? (
-          <p className="text-sm text-foreground-muted">
-            لا يوجد نشاط مسجل بعد.
-          </p>
-        ) : (
-          <ul className="divide-y divide-border">
-            {recentActivity.map(entry => (
-              <li
-                key={entry.id}
-                className="flex items-center justify-between gap-3 py-2 text-sm"
-              >
-                <div>
-                  <span className="font-medium text-foreground">
-                    {entry.adminUser?.name ?? "نظام"}
-                  </span>{" "}
-                  <span className="text-foreground-muted">
-                    — {entry.action}
-                  </span>
-                </div>
-                <time
-                  className="shrink-0 text-xs text-foreground-muted"
-                  dateTime={entry.createdAt.toISOString()}
-                >
-                  {formatDateTime(entry.createdAt)}
-                </time>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-3 text-end">
-          <Link
-            href="/admin/audit"
-            className="text-xs font-semibold text-primary hover:underline"
-          >
-            عرض سجل النشاط بالكامل ←
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+import {ArrowUpLeft,Briefcase,FileText,Package,Users,AlertTriangle,PanelsTopLeft,Images} from "lucide-react";
+import {requireAdmin} from "@/server/auth/require-admin";
+import {canEditContent,canEditCommercial} from "@/lib/admin/roles";
+import {AdminPageHeader} from "@/components/admin/admin-page-header";
+import {getAdminDashboardData,getRecentAuditActivity} from "@/server/services/admin/dashboard.admin.service";
+import {formatDateTime} from "@/lib/utils";
+import {OpenSiteLink} from "@/components/admin/content/content-helpers";
+export const dynamic="force-dynamic";
+export default async function AdminDashboardPage(){
+ const user=await requireAdmin();
+ const editable=canEditContent(user.role),commercial=canEditCommercial(user.role);
+ const [data,recentActivity]=await Promise.all([getAdminDashboardData(),commercial?getRecentAuditActivity():Promise.resolve([])]);
+ const c=data.counts;
+ const stats=[{label:"طلبات جديدة",value:c.leadsNew,detail:c.leadsTotal+" إجمالي الطلبات",href:"/admin/leads?status=NEW",icon:Users},{label:"أعمال منشورة",value:c.projectsPublished,detail:c.projectsDraft+" مسودة",href:"/admin/projects",icon:Briefcase},{label:"الباقات المنشورة",value:c.packagesPublished,detail:c.packagesDraft+" مسودة",href:"/admin/content?section=packages",icon:Package},{label:"الخدمات النشطة",value:c.services,detail:"إدارة الخدمات",href:"/admin/content?section=services",icon:FileText}];
+ const optional=new Set(["no-active-offer","no-testimonials","single-admin"]);
+ const warnings=data.warnings.filter(w=>!optional.has(w.id));
+ const suggestions=data.warnings.filter(w=>optional.has(w.id)&& (w.id!=="single-admin"||commercial));
+ return <div className="space-y-6">
+ <AdminPageHeader title="الرئيسية" description="تابع حالة الموقع والمحتوى وطلبات العملاء." actions={<OpenSiteLink/>}/>
+ <div className="rounded-2xl bg-[#2c1f73] p-5 text-white sm:p-7"><p className="text-xs font-semibold tracking-[.15em] text-[#27e8c7]" dir="ltr">CREATIVE MARKETING / CMS</p><h2 className="mt-3 font-headline text-2xl font-bold">مرحبًا، {user.name}</h2><p className="mt-2 max-w-xl text-sm leading-7 text-white/85">إدارة محتوى الموقع والأعمال والخدمات من مكان واحد.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/admin/content" className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#27e8c7] px-4 text-sm font-bold text-[#111827]"><PanelsTopLeft size={18}/>مركز المحتوى</Link>{editable&&<Link href="/admin/projects/new" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/35 px-4 text-sm font-semibold"><Briefcase size={18}/>إضافة مشروع</Link>}{commercial&&<Link href="/admin/brand" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/35 px-4 text-sm font-semibold"><Images size={18}/>الهوية</Link>}</div></div>
+ <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{stats.map(s=><Link href={s.href} key={s.label} className="admin-card min-w-0 p-4 hover:border-primary/40"><div className="flex items-center justify-between gap-2 text-primary"><s.icon size={20}/><ArrowUpLeft size={16}/></div><p className="mt-4 text-3xl font-bold tabular-nums">{s.value}</p><p className="mt-1 text-sm font-semibold">{s.label}</p><p className="mt-2 text-xs text-foreground-muted">{s.detail}</p></Link>)}</div>
+ <div className="grid items-start gap-5 xl:grid-cols-[1.25fr_1fr]">
+ <section className="admin-card p-5"><h2 className="flex items-center gap-2 font-headline text-base font-bold"><AlertTriangle size={19} className="text-amber-600"/>تحتاج متابعتك <span className="text-sm text-foreground-muted">({warnings.length})</span></h2>{warnings.length?<ul className="mt-3 divide-y divide-border">{warnings.map(w=><li key={w.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span>{w.message}</span>{w.href&&<Link href={w.href} className="shrink-0 text-xs font-semibold text-primary">مراجعة</Link>}</li>)}</ul>:<p className="mt-4 text-sm text-emerald-700">لا توجد تنبيهات تحتاج متابعة.</p>}{suggestions.length>0&&<details className="mt-4 border-t border-border pt-3"><summary className="cursor-pointer text-sm font-semibold text-foreground-muted">اقتراحات لتحسين الموقع ({suggestions.length})</summary><ul className="mt-3 space-y-3">{suggestions.map(w=><li key={w.id} className="text-sm">{w.href?<Link href={w.href} className="text-primary underline">{w.message}</Link>:w.message}</li>)}</ul></details>}</section>
+ <section className="admin-card p-5"><h2 className="font-headline text-base font-bold">جاهزية المحتوى</h2><dl className="mt-3 divide-y divide-border">{[{label:"مشاريع مسودة",value:c.projectsDraft,href:"/admin/projects"},{label:"باقات مسودة",value:c.packagesDraft,href:"/admin/content?section=packages"},{label:"آراء عملاء منشورة",value:c.testimonialsPublished,href:"/admin/content?section=testimonials"},{label:"عروض نشطة",value:c.offersActive,href:"/admin/content?section=offers"}].map(item=><div key={item.label} className="flex items-center justify-between gap-3 py-3 text-sm"><dt><Link href={item.href} className="hover:text-primary">{item.label}</Link></dt><dd className="font-bold tabular-nums">{item.value}</dd></div>)}</dl><p className="mt-3 border-t border-border pt-3 text-xs text-foreground-muted">رفع الوسائط المباشر: {data.cloudinaryConfigured?"مُعدّ":"غير مُعدّ — استخدم روابط الصور"}</p></section>
+ </div>
+ {commercial&&<section className="admin-card p-5"><div className="flex items-center justify-between gap-3"><h2 className="font-headline text-base font-bold">آخر النشاطات</h2><Link href="/admin/audit" className="text-xs font-semibold text-primary">سجل النشاط</Link></div>{recentActivity.length?<ul className="mt-3 divide-y divide-border">{recentActivity.map(entry=><li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"><span>{entry.adminUser?.name??"نظام"} · <span dir="ltr" className="text-foreground-muted">{entry.action}</span></span><time className="text-xs text-foreground-muted" dateTime={entry.createdAt.toISOString()}>{formatDateTime(entry.createdAt)}</time></li>)}</ul>:<p className="mt-4 text-sm text-foreground-muted">لا يوجد نشاط مسجل بعد.</p>}</section>}
+ </div>;
 }
