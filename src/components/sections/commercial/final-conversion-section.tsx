@@ -8,11 +8,12 @@ import type { PublicTestimonial } from "@/server/services/commercial-landing.ser
 type FinalConversionSectionProps = {
   testimonial?: PublicTestimonial | null;
   responseHours?: string | null;
+  title?:string;description?:string;
 };
 
 export function FinalConversionSection({
   testimonial,
-  responseHours,
+  responseHours,title,description,
 }: FinalConversionSectionProps) {
   return (
     <CinematicSection
@@ -30,10 +31,10 @@ export function FinalConversionSection({
           id="contact-heading"
           className="font-headline text-display-xl text-foreground text-balance text-editorial"
         >
-          مشروعك يستحق يظهر بالشكل اللي يخلي الناس تثق فيه.
+          {title??"مشروعك يستحق يظهر بالشكل اللي يخلي الناس تثق فيه."}
         </h2>
         <p className="body-text mx-auto max-w-xl">
-          احكِ لنا عن مشروعك، وسنقترح عليك الباكدج الأنسب بدون تعقيد.
+          {description??"احكِ لنا عن مشروعك، وسنقترح عليك الباكدج الأنسب بدون تعقيد."}
         </p>
         <p className="body-text-muted">
           تواصل مباشر · خطوات واضحة · بدون رسائل مزعجة

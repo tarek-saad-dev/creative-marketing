@@ -13,12 +13,14 @@ type PricingSectionProps = {
   packages: PublicPackageCard[];
   featuredTestimonial?: PublicTestimonial | null;
   hasActiveOffer: boolean;
+  title?:string;
 };
 
 export function PricingSection({
   packages,
   featuredTestimonial,
   hasActiveOffer,
+  title,
 }: PricingSectionProps) {
   return (
     <CinematicSection
@@ -33,7 +35,7 @@ export function PricingSection({
           <SectionHeading
             id="packages-heading"
             eyebrow="packages"
-            title="اختار البداية المناسبة لمشروعك."
+            title={title??"اختار البداية المناسبة لمشروعك."}
             description={
               packages.length > 0
                 ? hasActiveOffer

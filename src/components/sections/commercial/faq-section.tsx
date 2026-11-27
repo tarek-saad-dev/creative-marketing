@@ -13,10 +13,10 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import type { PublicFaq } from "@/server/services/commercial-landing.service";
 
 type FaqSectionProps = {
-  faqs: PublicFaq[];
+  faqs: PublicFaq[];title?:string;
 };
 
-export function FaqSection({ faqs }: FaqSectionProps) {
+export function FaqSection({ faqs,title }: FaqSectionProps) {
   if (faqs.length === 0) return null;
 
   return (
@@ -30,7 +30,7 @@ export function FaqSection({ faqs }: FaqSectionProps) {
         <SectionHeading
           id="faq-heading"
           eyebrow="FAQ"
-          title="أسئلة تتكرر قبل ما نبدأ."
+          title={title??"أسئلة تتكرر قبل ما نبدأ."}
         />
         <div className="card-glow divide-y divide-white/10 rounded-2xl card-glass">
           {faqs.map(faq => (

@@ -33,3 +33,6 @@ Quick creation collects title, industry, summary and optional client/services, u
 
 ## Admin CMS workspace
 Admin-only interface redesign, preserving the restored public UI. Grouped role-aware sidebar, mobile navigation, CMS overview cards linking existing editors, live dashboard counts and separated optional suggestions. Existing routes and server authorization remain intact; no content mutations or schema changes. Audit activity only displayed to ADMIN+. Authenticated desktop/mobile review pending.
+
+## Homepage Page Editor
+/admin/pages provides ADMIN+ draft-only editing of homepage sections and supported copy overrides. Default layout matches restored public homepage exactly, including portfolio conditional rendering. Hero/contact stay first/last, core navigation anchors stay enabled and work link fallback remains. Private /preview/homepage uses same renderer with inert content and no submission controls or indexing. Save does not change public layout, publish copies the saved draft atomically; revision protects concurrent edits. Existing CMS content records and media remain independently managed. No schema migration or production mutation. Authenticated preview/publish acceptance pending.
