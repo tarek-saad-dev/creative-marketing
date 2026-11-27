@@ -71,7 +71,11 @@ try{
  await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();
  assert.equal(unsavedDialogs.get(owner),previousDialogs+1,"Cancel must actually display the unsaved changes dialog");
  assert.equal(new URL(owner.url()).pathname,"/admin/pages");
- assert.equal(await owner.getByLabel("العنوان",{exact:true}).inputValue(),"QA Unsaved Navigation");
+ const retainedTitle=owner.locator("#home-copy-heroTitle");
+ await retainedTitle.waitFor({state:"visible"});
+ assert.equal(await retainedTitle.inputValue(),"QA Unsaved Navigation","Cancelled navigation must retain the edited title");
+ assert.equal(await owner.getByRole("textbox",{name:"العنوان",exact:true}).count(),1,"Title accessible name must not include its entered value");
+ assert.equal(new URL(owner.url()).pathname,"/admin/pages");
  await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();await owner.waitForURL(u=>u.pathname==="/admin/website");
  assert.equal(unsavedDialogs.get(owner),previousDialogs+2,"Accept must actually display the unsaved changes dialog");
  console.log("PASS: cancelled navigation preserves unsaved input; canonical project page");
