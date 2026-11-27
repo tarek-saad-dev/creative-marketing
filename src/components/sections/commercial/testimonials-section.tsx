@@ -5,11 +5,11 @@ import { Reveal } from "@/components/motion/reveal";
 import type { PublicTestimonial } from "@/server/services/commercial-landing.service";
 
 type TestimonialsSectionProps = {
-  testimonials: PublicTestimonial[];
+  testimonials: PublicTestimonial[];title?:string;
 };
 
 export function TestimonialsSection({
-  testimonials,
+  testimonials,title,
 }: TestimonialsSectionProps) {
   if (testimonials.length === 0) {
     if (process.env.NODE_ENV === "development") {
@@ -38,7 +38,7 @@ export function TestimonialsSection({
           <SectionHeading
             id="testimonials-heading"
             eyebrow="social proof"
-            title="الثقة تبدأ من تجربة واضحة."
+            title={title??"الثقة تبدأ من تجربة واضحة."}
           />
         </Reveal>
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

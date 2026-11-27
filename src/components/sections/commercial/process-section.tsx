@@ -5,7 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { PROCESS_STEPS } from "@/lib/content/process-steps";
 import { ProcessTimeline } from "@/components/sections/commercial/process-timeline";
 
-export function ProcessSection() {
+export function ProcessSection({title,description}:{title?:string;description?:string}={}) {
   return (
     <CinematicSection
       id="process"
@@ -19,8 +19,8 @@ export function ProcessSection() {
           <SectionHeading
             id="process-heading"
             eyebrow="process"
-            title="من أول رسالة… كل خطوة واضحة."
-            description="مسار عمل منظم من الفهم إلى النشر والتطوير حسب نطاق الباكدج."
+            title={title??"من أول رسالة… كل خطوة واضحة."}
+            description={description??"مسار عمل منظم من الفهم إلى النشر والتطوير حسب نطاق الباكدج."}
           />
         </Reveal>
         <ProcessTimeline steps={PROCESS_STEPS} />
