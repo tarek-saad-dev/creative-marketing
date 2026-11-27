@@ -11,6 +11,7 @@ import { MovingPortfolioStrip, DeviceShowcase } from "@/components/sections/work
 import { NicheShowcase } from "@/components/sections/niches/niche-showcase";
 import { CreativeGallery } from "@/components/sections/work/creative-gallery";
 import { getPublishedCreativeGallery, getPublishedShowcaseProjects, getPublishedHeroMedia } from "@/server/services/project.service";
+import { SectionBridge } from "@/components/motion/section-bridge";
 import { TrustStrip } from "@/components/sections/trust-strip";
 import { WorkSection } from "@/components/sections/work/work-section";
 import { ServicesSection } from "@/components/sections/services/services-section";
@@ -75,7 +76,7 @@ export default async function MarketingHomePage() {
 
       <MarketingHeader assets={readBrandAssets(data.settings[BRAND_ASSETS_KEY])} brandName={data.brand.name} />
 
-      <AuroraMarketingMain quiet>
+      <AuroraMarketingMain>
         <PortfolioHero
           copy={copy}
           projects={heroProjects}
@@ -84,19 +85,21 @@ export default async function MarketingHomePage() {
           showArtwork={portfolio.hero.enabled && (heroProjects.length > 0 || (!showcaseProjects.length && !portfolio.hero.ids.length))}
           slogan={data.brand.slogan}
         />
-        {selectedProjects.length > 0 && <WorkSection projects={selectedProjects} />}
-        {portfolio.gallery && creativeGallery.length > 0 && <CreativeGallery projects={creativeGallery} sectionId={selectedProjects.length ? "creative-gallery" : "work"} showComparisons={portfolio.comparisons} />}
-        {!selectedProjects.length && (!portfolio.gallery || !creativeGallery.length) && <section id="work" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><h2 className="font-headline text-3xl font-bold text-white">أعمالنا.</h2><p className="mt-3 max-w-xl text-foreground-muted">{showcaseProjects.length?"تصفّح المشاريع المنشورة وتفاصيلها.":"نعمل حاليًا على تجهيز معرض أعمالنا."}</p><Link href="/work" className="mt-4 inline-flex min-h-11 items-center text-brand-aqua underline">استكشف معرض المشاريع</Link></section>}
         {streamProjects.length >= 3 && <MovingPortfolioStrip projects={streamProjects} />}
-        {deviceProjects.length > 1 && <DeviceShowcase projects={deviceProjects} />}
-        {reelProjects.length > 0 && <PortfolioRail projects={reelProjects} showreelOnly />}
-        {(data.trustMetrics.length > 0 || data.clientLogos.length > 0) && <TrustStrip
+        <TrustStrip
           serviceGroups={data.serviceGroups}
           trustMetrics={data.trustMetrics}
           clientLogos={data.clientLogos}
-        />}
+        />
+        {selectedProjects.length > 0 && <WorkSection projects={selectedProjects} />}
+        {!selectedProjects.length && !portfolio.gallery && <section id="work" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><h2 className="font-headline text-3xl font-bold text-white">كل أعمالنا.</h2><Link href="/work" className="mt-4 inline-flex min-h-11 items-center text-brand-aqua underline">استكشف معرض المشاريع</Link></section>}
+        <SectionBridge words={["THINK.", "CREATE.", "BUILD.", "GROW."]} />
         <ServicesSection ecosystem={data.serviceEcosystem} />
         <NicheShowcase />
+        {deviceProjects.length > 1 && <DeviceShowcase projects={deviceProjects} />}
+        {reelProjects.length > 0 && <PortfolioRail projects={reelProjects} showreelOnly />}
+        {portfolio.gallery && <CreativeGallery projects={creativeGallery} sectionId={selectedProjects.length ? "creative-gallery" : "work"} showComparisons={portfolio.comparisons} />}
+        <SectionBridge words={["IDEAS.", "DESIGN.", "IMPACT."]} />
         <CommercialSection
           data={{
             offer: data.offer,

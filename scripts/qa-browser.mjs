@@ -52,13 +52,10 @@ try {
         await assertSceneBounds();
         const next=page.locator("#hero button[aria-label='التالي']");
         if(await next.count()){await next.click();await assertSceneBounds();}
-        const visibleObjects=await stage.locator("[data-hero-object]:visible").count();
-        assert.ok(visibleObjects<=(width<=767?1:3),"Minimal hero object limit");
-        assert.equal(await page.locator("#hero [data-hero-stage] [data-offset='0']:visible").count(),1);
-        const picker=page.locator("#hero [data-hero-media-picker] select");
-        if(await picker.count()){
-          await picker.selectOption("1");
-          assert.equal(await picker.inputValue(),"1");
+        const picker=page.locator("#hero [data-hero-media-picker] button");
+        if(await picker.count()>1){
+          await picker.nth(1).click();
+          assert.equal(await picker.nth(1).getAttribute("aria-pressed"),"true");
         }
         const open=page.locator("#hero [data-hero-open-media]");
         if(await open.count()){

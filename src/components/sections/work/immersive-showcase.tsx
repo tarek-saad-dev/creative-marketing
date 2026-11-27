@@ -11,9 +11,9 @@ import { BrandButton } from "@/components/ui/brand-button";
 import { splitTitleWithHighlight, type HeroCopy } from "@/components/sections/hero/hero-copy";
 import type { WorkWallProject } from "@/server/services/project.service";
 import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-lightbox";
-import { buildHeroMedia, heroMediaPoster, type HeroMedia, minimalHeroPositions } from "@/lib/content/hero-scene";
+import { buildHeroMedia, heroMediaPoster, heroExtraMedia, type HeroMedia, heroScenePositions } from "@/lib/content/hero-scene";
 import type { CreativeGalleryProject } from "@/lib/content/creative-gallery";
-import { resolveMockupStyle, type MockupChoice } from "@/lib/content/mockup-style";
+import { resolveMockupStyle, mockupLabels, type MockupChoice } from "@/lib/content/mockup-style";
 import styles from "./immersive-showcase.module.css";
 
 type Concept = { id: string; title: string; label: string; word: string; sub: string; theme: string };
@@ -84,11 +84,13 @@ function Coverflow({ items, gallery, mockups, detailHref }: { items: ShowcaseIte
   const mediaIndex=mediaChoice && mediaChoice.projectId===active?.id ? Math.min(mediaChoice.index,Math.max(0,media.length-1)):0;
   const selectedMedia=media[mediaIndex];
   const activeStyle=resolveMockupStyle(active?.project,(active?mockups[active.id]:undefined)??"auto",selectedMedia?.type,active?.concept?.theme);
-  const projectPositions=minimalHeroPositions(length,activeIndex);
-  const emptyOffsets=[-1,1].filter(offset=>!projectPositions.some(pos=>pos.offset===offset));
-  const mediaPanels=media.filter((item,i)=>i!==mediaIndex&&item.type==="IMAGE").slice(0,emptyOffsets.length).map((item,i)=>({item,offset:emptyOffsets[i]}));
+  const {phone:extra,panels:extraPanels}=heroExtraMedia(media,mediaIndex);
+  const projectPositions=heroScenePositions(length,activeIndex);
+  const emptyOffsets=[-1,1,-2,2].filter(offset=>!projectPositions.some(pos=>pos.offset===offset));
+  const mediaPanels=extraPanels.slice(0,emptyOffsets.length).map((item,i)=>({item,offset:emptyOffsets[i]}));
   function chooseMedia(index:number){if(!active||index<0||index>=media.length)return;setMediaChoice({projectId:active.id,index});}
   function openMedia(index:number){setLightbox(index);}
+  const next=length>1?items[(activeIndex+1)%length]:null;
 
   function move(delta:number){
     if(length<2)return;
@@ -108,10 +110,15 @@ function Coverflow({ items, gallery, mockups, detailHref }: { items: ShowcaseIte
   if(!active)return null;
 
   return <div className={styles.coverflow} role="region" aria-roledescription="معرض دوار" aria-label="استوديو عرض الأعمال ثلاثي الأبعاد" data-paused={paused||reduced} onKeyDown={event=>{if(lightbox!==null || (event.target instanceof HTMLElement&&event.target.closest("[data-hero-media-picker]")))return;if(event.key==="ArrowRight"||event.key==="ArrowLeft"){event.preventDefault();move(event.key==="ArrowRight"?1:-1);}}}>
-    <div className={styles.sceneTop} dir="ltr"><span className={styles.sceneTitle}>CREATIVE <strong>SHOWCASE.</strong></span>{!active.project&&<span className={styles.editionTitle}>DESIGN CONCEPTS</span>}</div>
-    <div className={styles.stage} data-hero-stage dir="ltr" data-count={projectPositions.length+mediaPanels.length} data-phone="false" onPointerMove={tilt} onPointerLeave={reset} onTouchStart={event=>{const touch=event.touches[0];touchStart.current={x:touch.clientX,y:touch.clientY}}} onTouchEnd={event=>{const start=touchStart.current;touchStart.current=null;if(!start)return;const touch=event.changedTouches[0];const dx=touch.clientX-start.x,dy=touch.clientY-start.y;if(Math.abs(dx)>42&&Math.abs(dx)>Math.abs(dy))move(dx<0?1:-1)}} onTouchCancel={()=>{touchStart.current=null}}>
+    <div className={styles.sceneTop} dir="ltr">
+      <div className={styles.sceneIdentity}><span className={styles.sceneIndex}>CM <b>/</b> STUDIO</span><span className={styles.sceneTitle}>CREATIVE <strong>SHOWCASE.</strong></span></div>
+      <div className={styles.sceneEdition}><span className={styles.editionIndex}>PORTFOLIO / {String(activeIndex+1).padStart(2,"0")}</span><span className={styles.editionTitle}>{active.project?"SELECTED WORK":"DESIGN CONCEPTS"}</span></div>
+    </div>
+    <div className={styles.stage} data-hero-stage dir="ltr" data-count={projectPositions.length+mediaPanels.length} data-phone={Boolean(extra||next)} onPointerMove={tilt} onPointerLeave={reset} onTouchStart={event=>{const touch=event.touches[0];touchStart.current={x:touch.clientX,y:touch.clientY}}} onTouchEnd={event=>{const start=touchStart.current;touchStart.current=null;if(!start)return;const touch=event.changedTouches[0];const dx=touch.clientX-start.x,dy=touch.clientY-start.y;if(Math.abs(dx)>42&&Math.abs(dx)>Math.abs(dy))move(dx<0?1:-1)}} onTouchCancel={()=>{touchStart.current=null}}>
       <div className={styles.sceneHalo} aria-hidden="true"/>
+      <div className={styles.sceneOrbit} aria-hidden="true"/>
       <div className={styles.sceneFloor} aria-hidden="true"/>
+      <span className={styles.sceneWord} aria-hidden="true">CREATE.</span>
       <div ref={scene} className={styles.sceneRig}>
         {projectPositions.map(({index:itemIndex,offset})=>{
           const item=items[itemIndex];
@@ -120,18 +127,23 @@ function Coverflow({ items, gallery, mockups, detailHref }: { items: ShowcaseIte
             <div className={styles.panelEdge} aria-hidden="true"/>
             {offset===0 ? (
               <div className={styles.mainPanel}>
+                <div className={styles.panelChrome} aria-hidden="true"><span>{activeStyle==="book"?"EDITORIAL / BOOK":activeStyle==="social"?"SOCIAL / CREATIVE":activeStyle==="brand"?"VISUAL IDENTITY":activeStyle==="screen"?"MOTION / SCREEN":"CM / STUDIO"}</span><span>{activeStyle==="screen"?"● ● ●": "CM"}</span></div>
                 {selectedMedia?<button type="button" data-hero-open-media className={styles.panelArtwork} onClick={()=>openMedia(mediaIndex)} aria-label={selectedMedia.type==="VIDEO"?"تشغيل فيديو المشروع":"عرض التصميم بالحجم الكامل"}><SceneMedia media={selectedMedia} cover={item.project?.coverImageUrl} priority/><span className={styles.expandBadge}><Maximize2 size={18} aria-hidden="true"/></span></button>:item.project?<Link href={detailHref??("/work/"+item.project.slug)} className={styles.panelArtwork} aria-label={"فتح مشروع "+item.title}><Artwork item={item} priority/></Link>:<div className={styles.panelArtwork}><Artwork item={item} priority/></div>}
+                <div className={styles.panelBottom}><span dir="auto">{selectedMedia?.caption||item.title}</span><span>{media.length?String(mediaIndex+1)+"/"+media.length:"CM"}</span></div>
               </div>
             ) : <button className={styles.sideButton} type="button" onClick={()=>move(offset)} aria-label={"عرض "+item.title}><Artwork item={item}/></button>}
           </div>;
         })}
         {mediaPanels.map(({item,offset})=><div key={"media-"+item.id} className={styles.scenePanel} data-hero-object data-offset={offset} data-mockup={resolveMockupStyle(active.project,mockups[active.id]??"auto",item.type)}><div className={styles.panelEdge} aria-hidden="true"/><button type="button" className={styles.sideButton} aria-label={"عرض "+(item.altText||"تصميم آخر")} onClick={()=>chooseMedia(media.findIndex(entry=>entry.id===item.id))}><SceneMedia media={item}/></button></div>)}
+        {(extra||next)&&<div className={styles.scenePhone} data-hero-object aria-hidden="true">
+          <div className={styles.phoneCamera}/><div className={styles.phoneContent}>{extra?<ResilientImage src={extra.url} alt="" sizes="200px"/>:next?<Artwork item={next}/>:null}</div><div className={styles.phoneHome}/>
+        </div>}
       </div>
     </div>
     <div className={styles.stageCaption}>
       <div className={styles.captionText} aria-live="polite">
-        <h2>{active.title}</h2>
-        {active.project?<Link href={detailHref??("/work/"+active.project.slug)} className={styles.detailLink}>استكشف المشروع <ArrowUpLeft size={15} aria-hidden="true"/></Link>:<span className={styles.smallText}>نموذج توضيحي، ليس عمل عميل</span>}
+        <span className={styles.eyebrow}>{active.label} · {mockupLabels[activeStyle]}</span><h2>{active.title}</h2>
+        {active.project?<Link href={detailHref??("/work/"+active.project.slug)} className={styles.detailLink}>استكشف المشروع <ArrowUpLeft size={15} aria-hidden="true"/></Link>:<span className={styles.smallText}>تصور بصري توضيحي، ليس مشروع عميل</span>}
       </div>
       {length>1&&<div className={styles.controls} dir="ltr">
         <button type="button" onClick={()=>move(-1)} aria-label="السابق"><ArrowLeft size={20}/></button>
@@ -139,7 +151,8 @@ function Coverflow({ items, gallery, mockups, detailHref }: { items: ShowcaseIte
         <button type="button" onClick={()=>move(1)} aria-label="التالي"><ArrowRight size={20}/></button>
       </div>}
     </div>
-    {media.length>1&&<div className={styles.minimalMediaPicker} data-hero-media-picker><label><span>أعمال المشروع</span><select aria-label="اختيار تصميم من المشروع" value={mediaIndex} onChange={e=>chooseMedia(Number(e.target.value))}>{media.map((item,i)=><option key={item.id} value={i}>{item.type==="VIDEO"?"فيديو":"تصميم"} {i+1} / {media.length}</option>)}</select></label></div>}
+    {length>1&&<div className={styles.sceneDots} dir="ltr" aria-label="اختيار مشروع">{items.map((item,i)=><button type="button" key={item.id} aria-label={"عرض "+item.title} aria-pressed={activeIndex===i} onClick={()=>{setMediaChoice(null);setIndex(i)}}/>)}</div>}
+    {media.length>1&&<div className={styles.mediaPicker} data-hero-media-picker dir="ltr" aria-label="تصميمات المشروع الحالي">{media.map((item,i)=><button key={item.id} type="button" aria-pressed={i===mediaIndex} aria-label={(item.type==="VIDEO"?"فيديو ":"تصميم ")+(i+1)} onClick={()=>chooseMedia(i)}><ResilientImage src={heroMediaPoster(item,active.project?.coverImageUrl)} alt="" sizes="76px"/>{item.type==="VIDEO"&&<span><Play size={13} aria-hidden="true"/></span>}</button>)}</div>}
     <CaseStudyLightbox items={media} openIndex={lightbox} onClose={()=>setLightbox(null)} onNavigate={setLightbox}/>
   </div>;
 }
@@ -147,17 +160,19 @@ function Coverflow({ items, gallery, mockups, detailHref }: { items: ShowcaseIte
 export function PortfolioHero({copy,projects,slogan,showArtwork=true,gallery=[],mockups={},detailHref}:{copy:HeroCopy;projects:WorkWallProject[];slogan:string;showArtwork?:boolean;gallery?:CreativeGalleryProject[];mockups?:Record<string,MockupChoice>;detailHref?:string}){
   const parts=splitTitleWithHighlight(copy.title,copy.highlightPhrase);
   const items=getItems(projects).slice(0,12);
-  return <section id="hero" aria-labelledby="hero-heading" className={styles.hero} data-artwork={showArtwork} data-minimal="true">
+  return <section id="hero" aria-labelledby="hero-heading" className={styles.hero} data-artwork={showArtwork}>
     <div className={styles.heroGlow} aria-hidden="true"/>
     <div className={styles.heroInner}>
       <div className={styles.heroCopy}>
         <p className={styles.slogan} dir="ltr">{slogan}</p>
+        <p className={styles.eyebrow}>{copy.eyebrow}</p>
         <h1 id="hero-heading">{parts.before}{parts.highlight&&<span>{parts.highlight}</span>}{parts.after}</h1>
         <p className={styles.description}>{copy.description}</p>
-        <div className={styles.ctas}><BrandButton href="#work" size="lg">{copy.primaryCta}<ArrowDown size={17} aria-hidden="true"/></BrandButton><Link href="#packages" className={styles.secondaryHeroLink}>{copy.secondaryCta}</Link></div>
+        <div className={styles.ctas}><BrandButton href="#work" size="lg">{copy.primaryCta}<ArrowDown size={17} aria-hidden="true"/></BrandButton><BrandButton href="#packages" size="lg" variant="secondary">{copy.secondaryCta}</BrandButton></div>
       </div>
       {showArtwork&&<Coverflow items={items} gallery={gallery} mockups={mockups} detailHref={detailHref}/>}
     </div>
+    <div className={styles.heroRibbon} dir="ltr" aria-label="مجالات التصميم"><span>BRANDING</span><i/><span>SOCIAL MEDIA</span><i/><span>CONTENT CREATION</span><i/><span>MOTION</span></div>
   </section>;
 }
 
