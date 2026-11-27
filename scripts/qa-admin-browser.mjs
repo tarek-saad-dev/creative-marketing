@@ -34,8 +34,10 @@ try{
  await editor.getByLabel("المجال",{exact:true}).fill("QA");
  await editor.getByLabel("وصف مختصر",{exact:true}).fill("Synthetic draft created by browser test");
  await editor.getByRole("button",{name:"حفظ المسودة وإضافة التصميمات"}).click();
- await editor.waitForURL(u=>/^\/admin\/projects\/[^/]+$/.test(u.pathname));
+ await editor.waitForURL(u=>/^\/admin\/projects\/[^/]+$/.test(u.pathname)&&u.pathname!=="/admin/projects/new");
+ await editor.getByRole("heading",{name:"QA Draft Work",exact:true}).waitFor();
  const projectPath=new URL(editor.url()).pathname;
+ assert.notEqual(projectPath,"/admin/projects/new","Draft must navigate to a persisted project");
  await editor.getByRole("button",{name:"اختيار من المكتبة"}).last().click();
  await editor.getByRole("dialog").getByRole("button",{name:"اختيار QA Media Project",exact:true}).click();
  await editor.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
@@ -81,6 +83,7 @@ try{
  console.log("PASS: private archived preview, draft isolation, rollback and CRM follow-up/contact");
  // A live session must lose its write permissions when the owner changes its role.
  await visit(editor,projectPath);
+ await editor.locator("#media input[name=url]").waitFor();
  await visit(owner,"/admin/users");
  const editorCard=owner.locator("article").filter({hasText:"QA EDITOR"});
  await editorCard.getByLabel("دور QA EDITOR").selectOption("VIEWER");
@@ -88,7 +91,8 @@ try{
  await owner.waitForFunction(()=>Array.from(document.querySelectorAll("article")).some(a=>a.querySelector("h2")?.textContent==="QA EDITOR"&&a.querySelector("select")?.value==="VIEWER"&&!a.querySelector("select")?.disabled));
  await visit(owner,"/admin/users");
  assert.equal(await editorCard.getByLabel("دور QA EDITOR").inputValue(),"VIEWER","Role change must persist across reload");
- await editor.locator("input[name=url]").fill("/qa-artwork.png?stale=1");
+ assert.equal(new URL(editor.url()).pathname,projectPath);
+ await editor.locator("#media input[name=url]").fill("/qa-artwork.png?stale=1");
  await editor.getByRole("button",{name:"إضافة من رابط",exact:true}).click();
  await editor.getByRole("alert").filter({hasText:"صلاحية"}).waitFor();
  await expectRedirect(editor,"/admin/projects/new","/admin");
