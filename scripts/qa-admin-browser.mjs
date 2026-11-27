@@ -71,6 +71,21 @@ try{
   await owner.getByRole("button",{name:"نشر",exact:true}).click();await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
   response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Homepage Headline"),"Restore was not published");
  }
+ await visit(owner,"/admin/pages?section=industries");
+ await owner.getByLabel("عنوان مجالاتنا",{exact:true}).fill("QA Industry Headline");
+ await owner.getByLabel("اسم البطاقة",{exact:true}).fill("QA Salon Card");
+ await owner.getByLabel("صورة المجال",{exact:true}).fill("/qa-artwork.png");
+ await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();
+ await owner.getByText("تم حفظ المسودة فقط.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Industry Headline"),"Industry draft leaked publicly");
+ const industryPreview=await owner.request.get(base+"/preview/homepage");assert.ok(industryPreview.ok());assert.ok((await industryPreview.text()).includes("QA Industry Headline"),"Industry draft preview missing");
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();
+ await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");const industryHtml=await response.text();assert.ok(industryHtml.includes("QA Industry Headline")&&industryHtml.includes("QA Salon Card"),"Industry publication missing");
+ await owner.getByRole("button",{name:"استرجاع كمسودة",exact:true}).first().click();await owner.getByText("تم استرجاع الإصدار كمسودة.",{exact:false}).waitFor();
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Industry Headline"),"Industry restore not published");
+ console.log("PASS: industry card draft, preview, publication and rollback");
  await visit(admin,"/admin/leads/qa-lead");
  await admin.getByRole("button",{name:"اليوم",exact:true}).click();
  await admin.getByRole("button",{name:"حفظ الموعد",exact:true}).click();

@@ -22,7 +22,7 @@ export default async function Page(){
  work:{description:"المشاريع المختارة من معرض أعمالك.",status:c.projectsPublished+" مشروع منشور",actions:[{label:"إدارة المشاريع",href:"/admin/projects"},portfolio("selected","اختيار وترتيب الأعمال")]},
  bridge1:{description:"فاصل بصري زخرفي بين الأقسام؛ النص ثابت حاليًا.",status:"عنصر تصميم",actions:[edit("bridge1")]},
  services:{description:"الخدمات وأسماؤها وصورها ووصفها.",status:c.services+" خدمة نشطة",actions:[content("services","تعديل الخدمات")]},
- industries:{description:"عدّل عنوان القسم وصور بطاقات الصالونات والمدرسين والكتب وترتيبها.",status:Object.values(editor.published.industries.cards).filter(c=>c.imageUrl).length+" / 3 صور مخصصة",actions:[{label:"تعديل المجالات والصور",href:"/admin/pages?section=industries"}]}},
+ industries:{description:"عدّل عنوان القسم وصور بطاقات الصالونات والمدرسين والكتب وترتيبها.",status:Object.values(editor.published.industries.cards).filter(c=>c.imageUrl).length+" / 3 صور مخصصة",actions:[{label:"تعديل المجالات والصور",href:"/admin/pages?section=industries"}]},
  device:{description:"عرض الأعمال داخل إطار الموبايل.",status:"يحتاج مشروعين مختارين",actions:[portfolio("device","اختيار أعمال الموبايل")]},
  reel:{description:"استعراض فيديو من المشاريع المنشورة.",status:"يعتمد على فيديو مؤهل",actions:[portfolio("reel","اختيار الفيديو")]},
  gallery:{description:"معرض الصور والفيديوهات والتصميمات.",status:settings.gallery?"مفعّل في إعدادات الاستعراض":"معطّل في إعدادات الاستعراض",actions:[{label:"إدارة المشاريع والوسائط",href:"/admin/projects"},portfolio("gallery","إعدادات المعرض")]},

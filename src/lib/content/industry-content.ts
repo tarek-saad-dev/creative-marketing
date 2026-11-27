@@ -13,8 +13,9 @@ export function defaultIndustryContent():IndustryContent{
 }
 export function industryChangedFields(a:IndustryContent,b:IndustryContent){
  const changes:Array<{key:string;before:string;after:string}>=[];
- for(const key of ["kicker","title","highlight","description"] as const)if(a[key]!==b[key])changes.push({key:"مجالاتنا / "+key,before:a[key],after:b[key]});
+ const labels:Record<string,string>={kicker:"النص الصغير",title:"العنوان",highlight:"الكلمة المميزة",description:"الوصف",label:"اسم البطاقة",eyebrow:"النص الإنجليزي",imageUrl:"الصورة",imageAlt:"وصف الصورة"};
+ for(const key of ["kicker","title","highlight","description"] as const)if(a[key]!==b[key])changes.push({key:"مجالاتنا / "+labels[key],before:a[key],after:b[key]});
  if(a.order.join()!==b.order.join())changes.push({key:"مجالاتنا / ترتيب البطاقات",before:a.order.map(id=>a.cards[id].label).join("، "),after:b.order.map(id=>b.cards[id].label).join("، ")});
- for(const id of industryIds)for(const key of ["label","eyebrow","imageUrl","imageAlt"] as const)if(a.cards[id][key]!==b.cards[id][key])changes.push({key:"مجالاتنا / "+id+" / "+key,before:a.cards[id][key],after:b.cards[id][key]});
+ for(const id of industryIds)for(const key of ["label","eyebrow","imageUrl","imageAlt"] as const)if(a.cards[id][key]!==b.cards[id][key])changes.push({key:"مجالاتنا / "+niches.find(n=>n.slug===id)!.label+" / "+labels[key],before:a.cards[id][key],after:b.cards[id][key]});
  return changes;
 }
