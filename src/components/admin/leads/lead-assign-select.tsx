@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState,useTransition } from "react";
 import { assignLeadAction } from "@/server/actions/admin/lead.action";
 
 export function LeadAssignSelect({
@@ -15,6 +15,7 @@ export function LeadAssignSelect({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [assigned,setAssigned]=useState(assignedAdminId??"");
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const value = event.target.value || null;
@@ -24,14 +25,14 @@ export function LeadAssignSelect({
         window.alert(result.error);
         return;
       }
-      router.refresh();
+      setAssigned(value??"");router.refresh();
     });
   }
 
   return (
     <select
       className="admin-input h-10 w-auto"
-      defaultValue={assignedAdminId ?? ""}
+      value={assigned} aria-label="المسؤول عن الطلب"
       disabled={isPending}
       onChange={handleChange}
     >

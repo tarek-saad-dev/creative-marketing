@@ -1,7 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
-import { LeadStatus, type Prisma } from "@/generated/prisma";
+import {cairoToday} from "@/lib/admin/lead-crm";
+import { LeadStatus, Prisma } from "@/generated/prisma";
 
 export const adminLeadListSelect = {
   id: true,
@@ -33,6 +34,8 @@ export type LeadListFilter = {
   sort?: "createdAt_desc" | "createdAt_asc" | "updatedAt_desc";
   page?: number;
   pageSize?: number;
+  assignedAdminId?:string;
+  followup?: "due"|"today"|"overdue";
 };
 
 export async function listLeadsForAdmin(options: LeadListFilter = {}): Promise<{
@@ -41,10 +44,13 @@ export async function listLeadsForAdmin(options: LeadListFilter = {}): Promise<{
   page: number;
   pageSize: number;
 }> {
-  const page = Math.max(1, options.page ?? 1);
+  const requestedPage=Number.isSafeInteger(options.page)&&Number(options.page)>0?Math.min(Number(options.page),100000):1;
   const pageSize = Math.min(100, Math.max(1, options.pageSize ?? 25));
 
+  const followupIds=options.followup?await findFollowupLeadIds(options.followup):undefined;
   const where: Prisma.LeadWhereInput = {
+    ...(followupIds?{id:{in:followupIds}}:{}),
+    ...(options.assignedAdminId?{assignedAdminId:options.assignedAdminId==="unassigned"?null:options.assignedAdminId}:{}),
     ...(options.status ? { status: options.status } : {}),
     ...(options.packageId ? { packageId: options.packageId } : {}),
     ...(options.source
@@ -79,16 +85,15 @@ export async function listLeadsForAdmin(options: LeadListFilter = {}): Promise<{
         ? { updatedAt: "desc" }
         : { createdAt: "desc" };
 
-  const [rows, total] = await Promise.all([
-    prisma.lead.findMany({
+  const total=await prisma.lead.count({where});
+  const page=Math.min(requestedPage,Math.max(1,Math.ceil(total/pageSize)));
+  const rows=await prisma.lead.findMany({
       where,
-      orderBy,
+      orderBy:[orderBy,{id:"asc"}],
       select: adminLeadListSelect,
       skip: (page - 1) * pageSize,
       take: pageSize,
-    }),
-    prisma.lead.count({ where }),
-  ]);
+    });
 
   return { rows, total, page, pageSize };
 }
@@ -99,7 +104,7 @@ export async function findLeadByIdForAdmin(id: string) {
     include: {
       package: { select: { id: true, name: true } },
       assignedAdmin: { select: { id: true, name: true } },
-      events: { orderBy: { createdAt: "desc" } },
+      events: { orderBy: [{createdAt:"desc"},{id:"desc"}],take:100 },
     },
   });
 }
@@ -150,4 +155,39 @@ export async function createLeadEventRow(
     data: { leadId, type, metadata },
     select: { id: true },
   });
+}
+
+/** Existing LeadEvent metadata supports CRM entries without changing the database enum. */
+
+export async function latestLeadFollowups(ids?:string[]){
+ if(ids&&ids.length===0)return [];
+ const condition=ids?Prisma.sql`AND "leadId" IN (${Prisma.join(ids)})`:Prisma.empty;
+ const rows=await prisma.$queryRaw<Array<{leadId:string;dueDate:string|null}>>(Prisma.sql`
+ SELECT DISTINCT ON ("leadId") "leadId", metadata->>'dueDate' AS "dueDate"
+ FROM "LeadEvent" WHERE metadata->>'crmKind' = 'followup' ${condition}
+ ORDER BY "leadId", "createdAt" DESC, id DESC
+ `);
+ return rows;
+}
+export async function findFollowupLeadIds(filter:"due"|"today"|"overdue",today=cairoToday()){
+ const comparator=filter==="today"?Prisma.sql`f."dueDate" = ${today}`:filter==="overdue"?Prisma.sql`f."dueDate" < ${today}`:Prisma.sql`f."dueDate" <= ${today}`;
+ const rows=await prisma.$queryRaw<Array<{id:string}>>(Prisma.sql`
+ SELECT l.id FROM "Lead" l JOIN (
+ SELECT DISTINCT ON ("leadId") "leadId", metadata->>'dueDate' AS "dueDate" FROM "LeadEvent"
+ WHERE metadata->>'crmKind'='followup' ORDER BY "leadId", "createdAt" DESC,id DESC
+ ) f ON f."leadId"=l.id WHERE l.status IN ('NEW','CONTACTED','QUALIFIED') AND ${comparator}
+ `);
+ return rows.map(r=>r.id);
+}
+export async function getLeadCrmOverview(now=new Date()){
+ const today=cairoToday(now);
+ const [groups,due,overdue,unassigned]=await Promise.all([countLeadsByStatus(),findFollowupLeadIds("due",today),findFollowupLeadIds("overdue",today),prisma.lead.count({where:{assignedAdminId:null,status:{in:[LeadStatus.NEW,LeadStatus.CONTACTED,LeadStatus.QUALIFIED]}}})]);
+ const counts=Object.fromEntries(Object.values(LeadStatus).map(status=>[status,groups.find(g=>g.status===status)?._count._all??0])) as Record<LeadStatus,number>;
+ return {counts,due:due.length,overdue:overdue.length,unassigned,today};
+}
+export async function changeLeadStatusWithEvent(id:string,expected:LeadStatus,status:LeadStatus,type:Prisma.LeadEventCreateInput["type"],metadata:Prisma.InputJsonValue){
+ return prisma.$transaction(async tx=>{const updated=await tx.lead.updateMany({where:{id,status:expected},data:{status}});if(updated.count!==1)throw new Error("تغيرت حالة العميل. أعد تحميل الصفحة.");await tx.leadEvent.create({data:{leadId:id,type,metadata}});if(["WON","LOST","ARCHIVED"].includes(status))await tx.leadEvent.create({data:{leadId:id,type:"STATUS_CHANGED",metadata:{crmKind:"followup",dueDate:null,actor:"النظام"}}});return tx.lead.findUniqueOrThrow({where:{id},select:{id:true,status:true,name:true}});});
+}
+export async function writeLeadCrmEvent(id:string,metadata:Prisma.InputJsonValue){
+ return prisma.$transaction(async tx=>{const lead=await tx.lead.findUnique({where:{id},select:{id:true,status:true}});if(!lead)throw new Error("الطلب غير موجود");if(metadata&&typeof metadata==="object"&&!Array.isArray(metadata)&&"crmKind" in metadata&&metadata.crmKind==="followup"&&!["NEW","CONTACTED","QUALIFIED"].includes(lead.status)&&metadata.dueDate!==null)throw new Error("لا يمكن جدولة متابعة لطلب مغلق");await tx.lead.update({where:{id},data:{updatedAt:new Date()}});await tx.leadEvent.create({data:{leadId:id,type:"STATUS_CHANGED",metadata}});return {id};},{isolationLevel:"Serializable"});
 }

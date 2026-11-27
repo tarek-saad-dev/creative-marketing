@@ -8,11 +8,11 @@ import {
 } from "@/lib/validation/admin/lead";
 import {
   assignLeadRow,
-  createLeadEventRow,
+  changeLeadStatusWithEvent,
   findLeadByIdForAdmin,
   listLeadsForAdmin,
   updateLeadInternalNoteRow,
-  updateLeadStatusRow,
+
 } from "@/server/repositories/admin/lead.admin.repository";
 import { findAdminUserById } from "@/server/repositories/admin-user.repository";
 import { revalidatePath } from "next/cache";
@@ -74,16 +74,16 @@ export async function updateLeadStatusAdmin(
     );
   }
 
-  const lead = await updateLeadStatusRow(id, input.status);
   const eventType =
     STATUS_TO_EVENT[input.status] ?? LeadEventType.STATUS_CHANGED;
-  await createLeadEventRow(id, eventType, {
+  const lead=await changeLeadStatusWithEvent(id,current.status,input.status,eventType, {
     from: current.status,
     to: input.status,
     correction: Boolean(options.allowCorrection),
   });
 
   revalidatePath("/admin/leads");
+  revalidatePath("/admin");
   revalidatePath(`/admin/leads/${id}`);
   return lead;
 }
@@ -105,10 +105,11 @@ export async function assignLeadAdmin(id: string, rawInput: unknown) {
 
   if (input.assignedAdminId) {
     const admin = await findAdminUserById(input.assignedAdminId);
-    if (!admin || admin.deletedAt || !admin.isActive) {
+    if (!admin || admin.deletedAt || !admin.isActive || !["ADMIN","OWNER"].includes(admin.role)) {
       throw new Error("لا يمكن التعيين — المسؤول غير موجود أو غير نشط");
     }
   }
 
-  return assignLeadRow(id, input.assignedAdminId);
+  const result=await assignLeadRow(id, input.assignedAdminId);
+  revalidatePath("/admin/leads");revalidatePath(`/admin/leads/${id}`);return result;
 }

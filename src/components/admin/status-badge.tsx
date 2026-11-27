@@ -49,9 +49,9 @@ export function ContentStatusBadge({ status }: { status: string }) {
 const LEAD_STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
   NEW: { label: "جديد", tone: "info" },
   CONTACTED: { label: "تم التواصل", tone: "warning" },
-  QUALIFIED: { label: "مؤهل", tone: "info" },
-  WON: { label: "تم الفوز به", tone: "success" },
-  LOST: { label: "خسارة", tone: "danger" },
+  QUALIFIED: { label: "مؤهل / تفاوض", tone: "info" },
+  WON: { label: "تم التعاقد", tone: "success" },
+  LOST: { label: "لم يتم الاتفاق", tone: "danger" },
   ARCHIVED: { label: "مؤرشف", tone: "neutral" },
 };
 

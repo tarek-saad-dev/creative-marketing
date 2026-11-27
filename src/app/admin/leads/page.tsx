@@ -7,6 +7,8 @@ import { AdminEmptyState } from "@/components/admin/admin-empty-state";
 import { AdminPagination } from "@/components/admin/pagination";
 import { LeadStatusBadge } from "@/components/admin/status-badge";
 import { listAdminLeads } from "@/server/services/admin/lead.admin.service";
+import {getLeadCrmOverview,latestLeadFollowups} from "@/server/repositories/admin/lead.admin.repository";
+import {leadStageLabels,followupState,closedLeadConversion,isDateOnly} from "@/lib/admin/lead-crm";
 import { prisma } from "@/lib/db/prisma";
 
 export const metadata: Metadata = { title: "العملاء المحتملون" };
@@ -28,6 +30,7 @@ type Search = {
   to?: string;
   sort?: string;
   page?: string;
+  followup?:string;assigned?:string;
 };
 
 export default async function AdminLeadsPage({
@@ -35,9 +38,11 @@ export default async function AdminLeadsPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  await requireRole(AdminRole.VIEWER);
-  const sp = await searchParams;
-  const page = Number(sp.page) > 0 ? Number(sp.page) : 1;
+  const user=await requireRole(AdminRole.VIEWER);
+  const raw=await searchParams;
+  const sp=Object.fromEntries(Object.entries(raw).filter(([,value])=>typeof value==="string").map(([key,value])=>[key,(value as string).slice(0,200)])) as Search;
+  const requestedPage=Number.isSafeInteger(Number(sp.page))&&Number(sp.page)>0?Number(sp.page):1;
+  const followup=sp.followup==="due"||sp.followup==="today"||sp.followup==="overdue"?sp.followup:undefined;
   const status = Object.values(LeadStatus).includes(sp.status as LeadStatus)
     ? (sp.status as LeadStatus)
     : undefined;
@@ -47,17 +52,18 @@ export default async function AdminLeadsPage({
       ? sp.sort
       : "createdAt_desc";
 
-  const [{ rows, total, pageSize }, packages] = await Promise.all([
+  const [{ rows, total, pageSize,page }, packages,overview,admins] = await Promise.all([
     listAdminLeads({
       status,
-      search: sp.q?.trim() || undefined,
+      search: typeof sp.q==="string"?sp.q.trim().slice(0,120):undefined,
+      followup,assignedAdminId:sp.assigned==="mine"?user.id:typeof sp.assigned==="string"?sp.assigned.slice(0,160):undefined,
       packageId: sp.packageId || undefined,
       source: sp.source?.trim() || undefined,
       utmSource: sp.utmSource?.trim() || undefined,
-      from: sp.from ? new Date(sp.from) : undefined,
-      to: sp.to ? new Date(`${sp.to}T23:59:59.999Z`) : undefined,
+      from: sp.from&&isDateOnly(sp.from) ? new Date(sp.from) : undefined,
+      to: sp.to&&isDateOnly(sp.to) ? new Date(`${sp.to}T23:59:59.999Z`) : undefined,
       sort,
-      page,
+      page:requestedPage,
       pageSize: 25,
     }),
     prisma.package.findMany({
@@ -65,8 +71,12 @@ export default async function AdminLeadsPage({
       select: { id: true, name: true },
       orderBy: { name: "asc" },
       take: 100,
-    }),
+    }),getLeadCrmOverview(),prisma.adminUser.findMany({where:{deletedAt:null,isActive:true,role:{in:["ADMIN","OWNER"]}},select:{id:true,name:true},orderBy:{name:"asc"}})
   ]);
+  const dueDates=new Map((await latestLeadFollowups(rows.map(r=>r.id))).map(r=>[r.leadId,r.dueDate]));
+  const conversion=closedLeadConversion(overview.counts.WON,overview.counts.LOST);
+  function dueLabel(id:string,status:string){if(!["NEW","CONTACTED","QUALIFIED"].includes(status))return "—";const date=dueDates.get(id);const state=followupState(date,overview.today);return state==="none"?"—":state==="overdue"?"متأخر · "+date:state==="today"?"اليوم":date??"—";}
+  const stats=[{label:"تحتاج متابعة",value:overview.due,href:"?followup=due"},{label:"متأخرة",value:overview.overdue,href:"?followup=overdue"},{label:"غير معينة (مفتوحة)",value:overview.unassigned,href:"?assigned=unassigned"}];
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -74,13 +84,15 @@ export default async function AdminLeadsPage({
     <div className="space-y-4">
       <AdminPageHeader
         title="العملاء المحتملون"
-        description="CRM داخلي — بدون حذف نهائي. الهاتف مقنّع في القائمة."
+        description="متابعة الاستفسارات والتواصل والتعاقدات. الأرقام في القائمة مقنّعة."
         breadcrumbs={[
           { label: "لوحة التحكم", href: "/admin" },
           { label: "العملاء المحتملون" },
         ]}
       />
 
+      <nav aria-label="مراحل المبيعات" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">{Object.entries(overview.counts).map(([stage,count])=><Link key={stage} href={"/admin/leads?status="+stage} className={"admin-card p-3 "+(status===stage?"border-primary bg-primary/5":"")}><p className="text-xs text-foreground-muted">{leadStageLabels[stage as keyof typeof leadStageLabels]}</p><p className="mt-2 text-2xl font-bold">{count}</p></Link>)}</nav>
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">{stats.map(stat=><Link key={stat.label} href={"/admin/leads"+stat.href} className="admin-card p-3"><p className="text-xs text-foreground-muted">{stat.label}</p><p className="mt-2 text-xl font-bold">{stat.value}</p></Link>)}<div className="admin-card p-3"><p className="text-xs text-foreground-muted">نسبة التعاقد (مكتسب ÷ مكتسب وخاسر)</p><p className="mt-2 text-xl font-bold">{conversion===null?"—":conversion+"%"}</p></div></div>
       <form
         className="admin-card grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
         method="get"
@@ -98,13 +110,13 @@ export default async function AdminLeadsPage({
           الحالة
           <select
             name="status"
-            defaultValue={sp.status ?? ""}
+            defaultValue={status ?? ""}
             className="admin-input mt-1"
           >
             <option value="">الكل</option>
             {Object.values(LeadStatus).map(s => (
               <option key={s} value={s}>
-                {s}
+                {leadStageLabels[s]}
               </option>
             ))}
           </select>
@@ -167,6 +179,7 @@ export default async function AdminLeadsPage({
             <option value="updatedAt_desc">آخر تحديث</option>
           </select>
         </label>
+        <label className="text-sm">المتابعة<select name="followup" defaultValue={followup??""} className="admin-input mt-1"><option value="">الكل</option><option value="due">اليوم والمتأخرة</option><option value="today">اليوم</option><option value="overdue">متأخرة</option></select></label><label className="text-sm">المسؤول<select name="assigned" defaultValue={sp.assigned??""} className="admin-input mt-1"><option value="">الكل</option><option value="mine">طلباتي</option><option value="unassigned">غير معيّن</option>{admins.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
         <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
           <button
             type="submit"
@@ -199,9 +212,9 @@ export default async function AdminLeadsPage({
               </Link>
               <p className="mt-1 font-mono text-xs">{maskPhone(lead.phone)}</p>
               <p className="mt-1 text-foreground-muted">
-                {lead.status} · {lead.source ?? "—"} ·{" "}
+                {leadStageLabels[lead.status]} · {lead.source ?? "—"} ·{" "}
                 {lead.createdAt.toISOString().slice(0, 10)}
-              </p>
+              </p><p className="mt-2 text-xs">المسؤول: {lead.assignedAdmin?.name??"غير معيّن"} · المتابعة: {dueLabel(lead.id,lead.status)}</p>
             </li>
           ))
         )}
@@ -217,7 +230,7 @@ export default async function AdminLeadsPage({
               <th>الباقة</th>
               <th>الحالة</th>
               <th>المصدر</th>
-              <th>UTM</th>
+              <th>المسؤول</th><th>المتابعة</th>
               <th>تاريخ</th>
             </tr>
           </thead>
@@ -225,7 +238,7 @@ export default async function AdminLeadsPage({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="py-8 text-center text-foreground-muted"
                 >
                   لا توجد طلبات مطابقة.
@@ -249,9 +262,7 @@ export default async function AdminLeadsPage({
                     <LeadStatusBadge status={lead.status} />
                   </td>
                   <td>{lead.source ?? "—"}</td>
-                  <td className="text-xs" dir="ltr">
-                    {lead.utmSource ?? "—"}
-                  </td>
+                  <td className="text-xs">{lead.assignedAdmin?.name??"غير معيّن"}</td><td className="text-xs">{dueLabel(lead.id,lead.status)}</td>
                   <td className="text-xs">
                     {lead.createdAt
                       .toISOString()
