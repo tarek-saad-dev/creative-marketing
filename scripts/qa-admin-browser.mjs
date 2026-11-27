@@ -31,8 +31,12 @@ try{
  console.log("PASS: 69 admin route/viewport checks and mobile navigation");
  await owner.setViewportSize({width:1440,height:900});
  await visit(owner,"/admin/website");await owner.locator("[data-website-journey]").waitFor();
- assert.equal(await owner.locator("a[href=\"/admin/portfolio#portfolio-hero\"]").count()>0,true);
- await owner.locator("a[href=\"/admin/pages?section=hero\"]").click();await owner.getByLabel("العنوان",{exact:true}).waitFor();
+ await owner.locator('a[href="/admin/website?section=hero"]').filter({hasText:"أول جزء في الموقع"}).last().click();await owner.getByLabel("العنوان",{exact:true}).waitFor();
+ assert.equal(new URL(owner.url()).pathname,"/admin/website");
+ await owner.getByRole("link",{name:"الصور والتصميمات",exact:true}).click();
+ await owner.locator("#portfolio-hero").waitFor();
+ assert.equal(await owner.locator("#portfolio-stream").count(),0,"Only the active portfolio section is rendered");
+ assert.equal(new URL(owner.url()).pathname,"/admin/website");
  await visit(owner,"/admin/pages?section=packages");await owner.getByLabel("عنوان الباقات",{exact:true}).waitFor();
  await expectRedirect(editor,"/admin/website","/admin");
  console.log("PASS: guided website journey, deep-linked editor and role restriction");
@@ -53,7 +57,7 @@ try{
   await overflow(owner,"visual homepage");
   if(viewport.width!==320)await owner.screenshot({path:"qa-admin-artifacts/visual-"+viewport.width+".png",animations:"disabled"});
   await industry.getByRole("link",{name:"تعديل المجالات والصور",exact:true}).click();
-  await owner.waitForURL(u=>u.pathname==="/admin/pages"&&u.searchParams.get("section")==="industries");
+  await owner.waitForURL(u=>u.pathname==="/admin/website"&&u.searchParams.get("section")==="industries");
   await owner.locator("#industry-title").waitFor();
  }
  await owner.setViewportSize({width:1440,height:900});
