@@ -59,3 +59,7 @@ with `next.config.ts`). Non-Cloudinary URLs now correctly fall back to a plain
 `service-category-card.tsx`) instead of crashing. Verified live: created a
 project with an Unsplash cover URL, published it, and confirmed `/work/[slug]`
 renders the hero and gallery correctly instead of erroring.
+
+## Explicit live upload acceptance
+
+The default `npm run admin:test-cloudinary` is config-only. On a trusted local environment with Cloudinary credentials already configured, run `npm run admin:test-cloudinary -- --live` to test a synthetic PNG in both library and project folders. Add `--video /path/to/synthetic.mp4` to also exercise video. Never use a customer file. The probe uses the same signed multipart upload fields as the CMS, validates the versioned delivery URL and metadata, fetches the asset, and destroys only the new returned public ID in the expected folder. No database records are created. An interrupted upload or unexpected public ID may require manual cleanup of QA assets. Live provider acceptance does not replace browser verification of registration, cover selection, and publication. No credentials are printed. Missing credentials fail explicitly in live mode.
