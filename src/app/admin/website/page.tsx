@@ -10,13 +10,13 @@ import {ArrowUpLeft,Eye,LayoutTemplate,Plus} from "lucide-react";
 export const metadata={title:"إدارة الموقع"};
 export const dynamic="force-dynamic";
 type Action={label:string;href:string};
-const edit=(section:HomeSectionId):Action=>({label:"تعديل النصوص والترتيب",href:"/admin/pages?section="+section});
+const edit=(section:HomeSectionId):Action=>({label:["bridge1","bridge2","industries"].includes(section)?"إعدادات ترتيب القسم":"تعديل النصوص والترتيب",href:"/admin/pages?section="+section});
 const content=(section:string,label:string):Action=>({label,href:"/admin/content?section="+section});
 const portfolio=(slot:string,label:string):Action=>({label,href:"/admin/portfolio#portfolio-"+slot});
 export default async function Page(){
  const user=await requireRole(AdminRole.ADMIN);const {data,readiness,brand,editor,portfolio:settings,hero,copy}=await getWebsiteJourneyData();const c=data.counts;
  const cards:Record<HomeSectionId,{description:string;status:string;actions:Action[]}>={
- hero:{description:"النص الرئيسي والأعمال الكبيرة التي يراها الزائر أولًا.",status:!settings.hero.enabled?"عرض الأعمال معطّل":hero.length?hero.length+" مشروع مختار":"نماذج توضيحية / لا توجد أعمال مختارة",actions:[edit("hero"),portfolio("hero","اختيار صور وأعمال الـ Hero"),{label:"إضافة مشروع",href:"/admin/projects/new"}]},
+ hero:{description:"النص الرئيسي والأعمال الكبيرة التي يراها الزائر أولًا.",status:!settings.hero.enabled?"عرض الأعمال معطّل":hero.length?hero.length+" مشروع مختار":c.projectsPublished?"لا توجد أعمال مختارة":"نماذج توضيحية",actions:[edit("hero"),portfolio("hero","اختيار صور وأعمال الـ Hero"),{label:"إضافة مشروع",href:"/admin/projects/new"}]},
  stream:{description:"شريط متحرك يحتاج ثلاثة أعمال منشورة على الأقل.",status:"يعتمد على اختيار المشاريع",actions:[portfolio("stream","اختيار الأعمال")]},
  trust:{description:"الأرقام الموثقة وشعارات العملاء.",status:c.trustMetricsActive+" مؤشر موثق · "+c.clientLogosActive+" شعار",actions:[content("trust","إدارة أرقام الثقة"),content("logos","إدارة شعارات العملاء")]},
  work:{description:"المشاريع المختارة من معرض أعمالك.",status:c.projectsPublished+" مشروع منشور",actions:[{label:"إدارة المشاريع",href:"/admin/projects"},portfolio("selected","اختيار وترتيب الأعمال")]},

@@ -19,14 +19,20 @@ try{
  const guest=await browser.newContext();contexts.push(guest);
  for(const path of ["/admin","/admin/users","/admin/pages","/preview/homepage","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");}
  const owner=await session("owner"),editor=await session("editor"),viewer=await session("viewer"),admin=await session("admin");
- const routes=["/admin","/admin/content","/admin/pages","/admin/projects","/admin/projects/new","/admin/projects/qa-media-project","/admin/media","/admin/portfolio","/admin/brand","/admin/content?section=services","/admin/content?section=packages","/admin/content?section=offers","/admin/content?section=testimonials","/admin/content?section=trust","/admin/content?section=logos","/admin/content?section=faqs","/admin/leads","/admin/leads/qa-lead","/admin/users","/admin/account","/admin/settings","/admin/audit"];
+ const routes=["/admin","/admin/website","/admin/content","/admin/pages","/admin/projects","/admin/projects/new","/admin/projects/qa-media-project","/admin/media","/admin/portfolio","/admin/brand","/admin/content?section=services","/admin/content?section=packages","/admin/content?section=offers","/admin/content?section=testimonials","/admin/content?section=trust","/admin/content?section=logos","/admin/content?section=faqs","/admin/leads","/admin/leads/qa-lead","/admin/users","/admin/account","/admin/settings","/admin/audit"];
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:700}]){
   await owner.setViewportSize(viewport);
   for(const route of routes){await visit(owner,route);await overflow(owner,route);if(route==="/admin"){const contrast=await owner.locator("[data-admin-welcome-title]").evaluate(el=>{const luminance=color=>{const channels=color.match(/\d+(?:\.\d+)?/g).slice(0,3).map(v=>{const n=Number(v)/255;return n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4;});return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};const text=luminance(getComputedStyle(el).color),bg=luminance(getComputedStyle(el.parentElement).backgroundColor);return (Math.max(text,bg)+0.05)/(Math.min(text,bg)+0.05);});assert.ok(contrast>=4.5,"Admin welcome text contrast must be at least 4.5:1");}if(viewport.width!==320&&["/admin","/admin/pages","/admin/media","/admin/users","/admin/leads"].includes(route))await owner.screenshot({path:"qa-admin-artifacts/"+viewport.width+"-"+route.split("/").at(-1)+".png",fullPage:true,animations:"disabled"});}
-  if(viewport.width<1024){await owner.getByRole("button",{name:"فتح القائمة"}).click();await owner.getByRole("dialog").getByRole("link",{name:"مركز المحتوى"}).click();await owner.waitForURL(u=>u.pathname==="/admin/content");assert.equal(await owner.getByRole("dialog").count(),0);}
+  if(viewport.width<1024){await owner.getByRole("button",{name:"فتح القائمة"}).click();await owner.getByRole("dialog").getByRole("link",{name:"إدارة الموقع",exact:true}).click();await owner.waitForURL(u=>u.pathname==="/admin/website");assert.equal(await owner.getByRole("dialog").count(),0);}
  }
- console.log("PASS: 66 admin route/viewport checks and mobile navigation");
+ console.log("PASS: 69 admin route/viewport checks and mobile navigation");
  await owner.setViewportSize({width:1440,height:900});
+ await visit(owner,"/admin/website");await owner.locator("[data-website-journey]").waitFor();
+ assert.equal(await owner.locator("a[href=\"/admin/portfolio#portfolio-hero\"]").count()>0,true);
+ await owner.locator("a[href=\"/admin/pages?section=hero\"]").click();await owner.getByLabel("العنوان",{exact:true}).waitFor();
+ await visit(owner,"/admin/pages?section=packages");await owner.getByLabel("عنوان الباقات",{exact:true}).waitFor();
+ await expectRedirect(editor,"/admin/website","/admin");
+ console.log("PASS: guided website journey, deep-linked editor and role restriction");
  await expectRedirect(viewer,"/admin/projects/new","/admin");await expectRedirect(viewer,"/admin/media","/admin");await expectRedirect(editor,"/admin/pages","/admin");await expectRedirect(admin,"/admin/users","/admin");
  await visit(viewer,"/admin/projects");assert.equal(await viewer.getByRole("link",{name:"إضافة مشروع"}).count(),0);
  await visit(editor,"/admin/projects/new");
