@@ -10,7 +10,7 @@ export async function listOffersForAdmin() {
       offerPackages: {
         orderBy: { displayOrder: "asc" },
         include: {
-          package: { select: { id: true, name: true, originalPrice: true } },
+          package: { select: { id: true, name: true, originalPrice: true,status:true,deletedAt:true } },
         },
       },
     },

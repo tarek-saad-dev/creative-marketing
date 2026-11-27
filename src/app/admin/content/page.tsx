@@ -88,7 +88,7 @@ export default async function AdminContentPage({
       {section === "packages" ? (
         <PackagesPanel canEdit={canEdit} canPublish={canCommercial} filter={["all","PUBLISHED","DRAFT","ARCHIVED","incomplete"].includes(sp.status??"")?sp.status:"all"} editId={sp.edit} newPackage={sp.new==="1"} />
       ) : null}
-      {section === "offers" ? <OffersPanel canEdit={canCommercial} /> : null}
+      {section === "offers" ? <OffersPanel canEdit={canCommercial} editId={sp.edit} newOffer={sp.new==="1"} /> : null}
       {section === "testimonials" ? (
         <TestimonialsPanel canEdit={canEdit} />
       ) : null}

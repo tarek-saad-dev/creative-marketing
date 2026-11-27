@@ -45,3 +45,5 @@ Canonical /admin/projects uses server-filtered status/industry/search, sort and 
 
 ## Services and packages workspace
 Existing /admin/services and /admin/packages redirect to canonical content hub panels; package edit/new deep links are retained. Services search and status/category filters, project counts and direct library picker. Package status and readiness filters, serialized decimal DTOs, feature previews, ADMIN-only published/archived edits and commercial lifecycle; editors may prepare draft packages but not change featured flag. Transactional recheck on package updates and publishing. No production price or offer changes. Authenticated acceptance pending.
+
+Offers now use the canonical content hub, preserve edit/new links, serialize price decimals, display original/discount prices and savings and count actual eligible published packages. No production changes.
