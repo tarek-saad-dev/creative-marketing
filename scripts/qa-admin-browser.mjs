@@ -72,7 +72,7 @@ try{
   response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Homepage Headline"),"Restore was not published");
  }
  await visit(owner,"/admin/pages?section=industries");
- await owner.getByLabel("عنوان مجالاتنا",{exact:true}).fill("QA Industry Headline");
+ await owner.locator("#industry-title").fill("QA Industry Headline");
  await owner.getByLabel("اسم البطاقة",{exact:true}).fill("QA Salon Card");
  await owner.getByLabel("صورة المجال",{exact:true}).fill("/qa-artwork.png");
  await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();
@@ -86,6 +86,20 @@ try{
  await owner.getByRole("button",{name:"نشر",exact:true}).click();await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
  response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Industry Headline"),"Industry restore not published");
  console.log("PASS: industry card draft, preview, publication and rollback");
+ await visit(owner,"/admin/pages?section=process");
+ await owner.getByLabel("عنوان الخطوة",{exact:true}).fill("QA Process Step");
+ await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();await owner.getByText("تم حفظ المسودة فقط.",{exact:true}).waitFor();
+ await visit(owner,"/admin/pages?section=bridge1");
+ await owner.getByLabel("كلمة الفاصل 1",{exact:true}).fill("QA.BRIDGE.");
+ await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();await owner.getByText("تم حفظ المسودة فقط.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");const oldExtra=await response.text();assert.ok(!oldExtra.includes("QA Process Step")&&!oldExtra.includes("QA.BRIDGE."),"Extra homepage draft leaked publicly");
+ const extraPreview=await owner.request.get(base+"/preview/homepage");assert.ok(extraPreview.ok());const previewExtra=await extraPreview.text();assert.ok(previewExtra.includes("QA Process Step")&&previewExtra.includes("QA.BRIDGE."),"Extra homepage preview missing");
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");const liveExtra=await response.text();assert.ok(liveExtra.includes("QA Process Step")&&liveExtra.includes("QA.BRIDGE."),"Extra homepage publication missing");
+ await owner.getByRole("button",{name:"استرجاع كمسودة",exact:true}).first().click();await owner.getByText("تم استرجاع الإصدار كمسودة.",{exact:false}).waitFor();
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
+ response=await guest.request.get(base+"/");const rolledExtra=await response.text();assert.ok(!rolledExtra.includes("QA Process Step")&&!rolledExtra.includes("QA.BRIDGE."),"Extra homepage rollback failed");
+ console.log("PASS: editable process and bridge draft, preview, publish and restore");
  await visit(admin,"/admin/leads/qa-lead");
  await admin.getByRole("button",{name:"اليوم",exact:true}).click();
  await admin.getByRole("button",{name:"حفظ الموعد",exact:true}).click();

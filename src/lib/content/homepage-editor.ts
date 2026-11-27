@@ -31,7 +31,7 @@ export const homeLayoutSchema=z.object({sections:z.array(section).length(ids.len
  if(new Set(v.sections.map(s=>s.id)).size!==ids.length||v.sections[0]?.id!=="hero"||v.sections.at(-1)?.id!=="contact"||v.sections.some(s=>homeSectionMeta[s.id].required&&!s.enabled))ctx.addIssue({code:"custom",message:"ترتيب الأقسام أو الأقسام الأساسية غير صالح"});
 });
 export type HomeLayout=z.infer<typeof homeLayoutSchema>;
-export function defaultHomeLayout():HomeLayout{return {processSteps:defaultProcessSteps(),bridgeWords:defaultBridgeWords(),industries:defaultIndustryContent(),sections:ids.map(id=>({id,enabled:true})),copy:{heroTitle:"",heroDescription:"",heroPrimaryCta:"",heroSecondaryCta:"",packagesTitle:"",processTitle:"",processDescription:"",testimonialsTitle:"",faqTitle:"",contactTitle:"",contactDescription:""}};}
+export function defaultHomeLayout():HomeLayout{return {sections:ids.map(id=>({id,enabled:true})),copy:{heroTitle:"",heroDescription:"",heroPrimaryCta:"",heroSecondaryCta:"",packagesTitle:"",processTitle:"",processDescription:"",testimonialsTitle:"",faqTitle:"",contactTitle:"",contactDescription:""},industries:defaultIndustryContent(),processSteps:defaultProcessSteps(),bridgeWords:defaultBridgeWords()};}
 export const HOME_HISTORY_LIMIT=12;
 const revision=z.number().int().nonnegative();
 const archivedVersionSchema=z.object({id:revision,publicationRevision:revision.nullable(),publishedAt:z.string().datetime().nullable(),archivedAt:z.string().datetime(),layout:homeLayoutSchema});
