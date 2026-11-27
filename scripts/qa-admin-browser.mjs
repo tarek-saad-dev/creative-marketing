@@ -12,7 +12,8 @@ const browser=await chromium.launch({headless:true});
 const errors=[];
 const contexts=[];
 const dismissUnsaved=new WeakSet();
-async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());if(d.type()==="confirm"&&d.message().includes("تعديلات غير محفوظة")&&dismissUnsaved.has(page)){dismissUnsaved.delete(page);await d.dismiss();}else await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.origin===base&&u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
+const unsavedDialogs=new WeakMap();
+async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());if(d.type()==="confirm"&&d.message().includes("تعديلات غير محفوظة")){unsavedDialogs.set(page,(unsavedDialogs.get(page)??0)+1);if(dismissUnsaved.has(page)){dismissUnsaved.delete(page);await d.dismiss();return;}}await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.origin===base&&u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
 async function visit(page,path){const response=await page.goto(base+path,{waitUntil:"domcontentloaded"});assert.ok(response?.ok(),path+" HTTP "+response?.status());assert.equal(new URL(page.url()).pathname,path.split("?")[0],"Unexpected redirect: "+path);await page.locator("#admin-main h1").waitFor();assert.equal(await page.getByText("Application error: a server-side exception has occurred",{exact:false}).count(),0);assert.equal(await page.getByRole("heading",{name:"تعذر تحميل هذه الصفحة",exact:true}).count(),0,path+" error boundary");}
 async function expectRedirect(page,path,target){await page.goto(base+path);await page.waitForURL(u=>u.origin===base&&u.pathname===target);}
 async function overflow(page,path){const dimensions=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(dimensions.scroll<=dimensions.client+2,path+" overflow "+JSON.stringify(dimensions));}
@@ -61,11 +62,18 @@ try{
  console.log("PASS: visual editing links and private section navigation at three widths");
  await expectRedirect(owner,"/admin/content?section=projects","/admin/projects");
  await visit(owner,"/admin/pages");
+ await owner.locator('[data-unsaved-changes-guard][data-ready="true"]').waitFor({state:"attached"});
  await owner.getByLabel("العنوان",{exact:true}).fill("QA Unsaved Navigation");
+ await owner.getByText("تعديلات غير محفوظة",{exact:true}).waitFor();
+ assert.ok(await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).isEnabled(),"Edit must be registered in React state");
+ const previousDialogs=unsavedDialogs.get(owner)??0;
  dismissUnsaved.add(owner);
  await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();
- assert.equal(new URL(owner.url()).pathname,"/admin/pages");assert.equal(await owner.getByLabel("العنوان",{exact:true}).inputValue(),"QA Unsaved Navigation");
+ assert.equal(unsavedDialogs.get(owner),previousDialogs+1,"Cancel must actually display the unsaved changes dialog");
+ assert.equal(new URL(owner.url()).pathname,"/admin/pages");
+ assert.equal(await owner.getByLabel("العنوان",{exact:true}).inputValue(),"QA Unsaved Navigation");
  await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();await owner.waitForURL(u=>u.pathname==="/admin/website");
+ assert.equal(unsavedDialogs.get(owner),previousDialogs+2,"Accept must actually display the unsaved changes dialog");
  console.log("PASS: cancelled navigation preserves unsaved input; canonical project page");
  await expectRedirect(viewer,"/admin/projects/new","/admin");await expectRedirect(viewer,"/admin/media","/admin");await expectRedirect(editor,"/admin/pages","/admin");await expectRedirect(admin,"/admin/users","/admin");
  await visit(viewer,"/admin/projects");assert.equal(await viewer.getByRole("link",{name:"إضافة مشروع"}).count(),0);
