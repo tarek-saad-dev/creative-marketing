@@ -130,3 +130,4 @@
 .shell[data-quiet=true] .violet,.shell[data-quiet=true] .cyan,.shell[data-quiet=true] .mint{opacity:.28;animation:none}
 .shell[data-quiet=true] .grain{opacity:.025}
 .shell[data-quiet=true] :global(.editorial-section)::before{opacity:.35}
+.shell[data-quiet=true] :global(.editorial-section + .editorial-section)::before{opacity:.35}

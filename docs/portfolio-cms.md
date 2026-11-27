@@ -36,3 +36,6 @@ Desktop shows at most three distinct artworks, with the centre dominant and quie
 
 ## Minimal homepage polish
 The initial minimal geometry CI caught side-panel overlap under pointer tilt. This revision isolates old sparse-layout selectors, increases the gap, and checks all four tilt corners across additional viewport/stage sizes. Homepage groups real portfolio sections directly after Hero, omits the repeated concept gallery when no real projects exist, preserves the work anchor, removes decorative word bridges, and shows the trust section only when evidence exists. All published content and independent portfolio switches remain unchanged. A quiet homepage-only mesh reduces saturation without changing niche layouts. Await full CI and live visual acceptance.
+
+## Build gate
+The 180-case geometry workflow and portfolio unit suite passed on the overlap-fix commit, but Vercel reported a failed deployment without detailed logs in GitHub. Remove unreachable legacy panel rules and add separate Prisma generation, Next route type generation, TypeScript checks and compile-only Next build in CI. Compile uses deliberately nonfunctional local DB placeholders and must not migrate, seed or connect to production. The actual Vercel error remains unconfirmed; require successful deployment checks before merge.
