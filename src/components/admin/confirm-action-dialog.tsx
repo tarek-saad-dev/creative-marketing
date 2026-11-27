@@ -22,15 +22,16 @@ export function ConfirmActionDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const [error,setError]=useState("");
 
   return (
     <>
       <span
-        onClick={() => setOpen(true)}
+        onClick={() => {setError("");setOpen(true);}}
         onKeyDown={event => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
-            setOpen(true);
+            setError("");setOpen(true);
           }
         }}
         role="button"
@@ -41,14 +42,15 @@ export function ConfirmActionDialog({
       <Dialog
         open={open}
         onClose={() => !pending && setOpen(false)}
-        className="relative z-50"
+        className="relative z-modal admin-shell"
       >
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="w-full max-w-md rounded-xl bg-background p-5 shadow-lg">
+          <DialogPanel className="admin-shell w-full max-w-md rounded-xl bg-card p-5 text-foreground shadow-lg">
             <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
             <p className="mt-2 text-sm text-foreground-muted">{description}</p>
-            <div className="mt-4 flex justify-end gap-2">
+            {error&&<p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
               <button
                 type="button"
                 className="h-9 rounded-md border border-border px-3 text-sm"
@@ -67,10 +69,8 @@ export function ConfirmActionDialog({
                 }
                 onClick={() => {
                   setPending(true);
-                  void Promise.resolve(onConfirm()).finally(() => {
-                    setPending(false);
-                    setOpen(false);
-                  });
+                  setError("");
+                  void Promise.resolve().then(onConfirm).then(()=>setOpen(false)).catch(()=>setError("تعذر تنفيذ الإجراء. حاول مرة أخرى.")).finally(()=>setPending(false));
                 }}
               >
                 {pending ? "…" : confirmLabel}

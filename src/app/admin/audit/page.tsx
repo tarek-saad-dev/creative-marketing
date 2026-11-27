@@ -11,6 +11,7 @@ import {
 } from "@/server/repositories/admin-audit.repository";
 import { listAdminUsers } from "@/server/repositories/admin-user.repository";
 import { safeMetadataSummary } from "@/server/admin/serialization";
+import {isDateOnly} from "@/lib/admin/lead-crm";
 import { formatDateTime, cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "سجل النشاط" };
@@ -41,16 +42,17 @@ export default async function AdminAuditPage({
   searchParams: Promise<Search>;
 }) {
   await requireRole(AdminRole.ADMIN);
-  const sp = await searchParams;
-  const pageNumber = Number(sp.page) > 0 ? Number(sp.page) : 1;
+  const raw=await searchParams;
+  const sp=Object.fromEntries(Object.entries(raw).filter(([,value])=>typeof value==="string").map(([key,value])=>[key,(value as string).slice(0,200)])) as Search;
+  const pageNumber=Number.isSafeInteger(Number(sp.page))&&Number(sp.page)>0?Math.min(Number(sp.page),100000):1;
 
-  const [{ rows, total, pageSize }, entityTypes, admins] = await Promise.all([
+  const [{ rows, total, pageSize,page }, entityTypes, admins] = await Promise.all([
     listAuditLogs({
       entityType: sp.entityType,
       adminUserId: sp.adminUserId,
       action: sp.action?.trim() || undefined,
-      from: sp.from ? new Date(sp.from) : undefined,
-      to: sp.to ? new Date(`${sp.to}T23:59:59.999Z`) : undefined,
+      from: sp.from&&isDateOnly(sp.from) ? new Date(sp.from) : undefined,
+      to: sp.to&&isDateOnly(sp.to) ? new Date(`${sp.to}T23:59:59.999Z`) : undefined,
       page: pageNumber,
     }),
     listDistinctAuditEntityTypes(),
@@ -247,7 +249,7 @@ export default async function AdminAuditPage({
       </div>
 
       <AdminPagination
-        page={pageNumber}
+        page={page}
         totalPages={totalPages}
         basePath="/admin/audit"
         searchParams={sp}

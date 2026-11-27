@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogPanel } from "@headlessui/react";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { Menu, Sparkles, X } from "lucide-react";
 import type {SimpleAdminRole} from "@/lib/admin/roles";
 import { AdminSidebarNav } from "./admin-sidebar";
@@ -14,7 +14,7 @@ export function AdminMobileNav({ leadsNew = 0,role }: { leadsNew?: number;role:S
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground lg:hidden"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-foreground lg:hidden"
         aria-label="فتح القائمة"
       >
         <Menu className="h-5 w-5" />
@@ -33,9 +33,7 @@ export function AdminMobileNav({ leadsNew = 0,role }: { leadsNew?: number;role:S
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
                     <Sparkles className="h-4 w-4" />
                   </span>
-                  <span className="font-headline text-sm font-bold">
-                    لوحة التحكم
-                  </span>
+                  <DialogTitle className="font-headline text-sm font-bold">لوحة التحكم</DialogTitle>
                 </div>
                 <button
                   type="button"
@@ -47,7 +45,7 @@ export function AdminMobileNav({ leadsNew = 0,role }: { leadsNew?: number;role:S
                 </button>
               </div>
               <div
-                className="flex-1 overflow-y-auto px-3 pb-6 [&_.admin-nav-link]:text-white/75 [&_.admin-nav-link:hover]:bg-white/10 [&_.admin-nav-link:hover]:text-white [&_.admin-nav-link[data-active='true']]:bg-white [&_.admin-nav-link[data-active='true']]:text-primary"
+                className="flex-1 overflow-y-auto px-3 pb-6"
               >
                 <AdminSidebarNav role={role} badgeCounts={{ leadsNew }} onNavigate={()=>setIsOpen(false)} />
               </div>
