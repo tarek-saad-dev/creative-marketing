@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 
 type PageProps = { params: Promise<{ id: string }> };
 
+const CHANNEL_LABELS:Record<string,string>={whatsapp:"واتساب",phone:"مكالمة",meeting:"اجتماع",other:"أخرى"};
 const EVENT_LABELS: Record<string, string> = {
   STATUS_CHANGED: "تغيير الحالة",
   CONTACTED: "تم التواصل",
@@ -36,7 +37,7 @@ function DetailRow({
   return (
     <div className="flex items-start justify-between gap-3 py-1.5 text-sm">
       <span className="text-foreground-muted">{label}</span>
-      <span className="text-end font-medium text-foreground">{value}</span>
+      <span className="min-w-0 break-words whitespace-pre-wrap text-end font-medium text-foreground">{value}</span>
     </div>
   );
 }
@@ -55,7 +56,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
     user.role === AdminRole.OWNER || user.role === AdminRole.ADMIN;
 
   const open=["NEW","CONTACTED","QUALIFIED"].includes(lead.status);
-  const dueDate=(await latestLeadFollowups([id]))[0]?.dueDate??null;
+  const dueDate=open?(await latestLeadFollowups([id]))[0]?.dueDate??null:null;
   const phone=contactPhone(lead.phone);
   return (
     <div>
@@ -77,7 +78,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
           <DetailRow label="الاسم" value={lead.name} />
           <DetailRow
             label="الهاتف"
-            value={<span dir="ltr">{canMutate?lead.phone:lead.phone.replace(/.(?=.{4})/g,"•")}</span>}
+            value={<span dir="ltr">{canMutate?lead.phone:"••••"+lead.phone.replace(/\D/g,"").slice(-2)}</span>}
           />
           {canMutate&&phone&&<div className="my-3 flex flex-wrap gap-2"><a href={"https://wa.me/"+phone} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white">فتح واتساب</a><a href={"tel:+"+phone} className="inline-flex min-h-11 items-center rounded-lg border border-border px-4 text-sm">اتصال</a></div>}
           <DetailRow label="اسم المشروع" value={lead.projectName ?? "—"} />
@@ -152,7 +153,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
                 {lead.events.map(event => {const crm=readCrmEvent(event.metadata);const transition=event.metadata&&typeof event.metadata==="object"&&!Array.isArray(event.metadata)?event.metadata as Record<string,unknown>:null;return (
                   <li key={event.id} className="text-xs">
                     <p className="font-medium text-foreground">
-                      {crm?.kind==="followup"?(crm.dueDate?"متابعة مجدولة · "+crm.dueDate:"إنهاء المتابعة"):crm?.kind==="contact"?"تواصل مسجل · "+({whatsapp:"واتساب",phone:"مكالمة",meeting:"اجتماع",other:"أخرى"}[crm.channel]??crm.channel):EVENT_LABELS[event.type]??event.type}
+                      {crm?.kind==="followup"?(crm.dueDate?"متابعة مجدولة · "+crm.dueDate:"إنهاء المتابعة"):crm?.kind==="contact"?"تواصل مسجل · "+(CHANNEL_LABELS[crm.channel]??crm.channel):EVENT_LABELS[event.type]??event.type}
                     </p>
                     <p className="text-foreground-muted">
                       {formatDateTime(event.createdAt)}{crm?.actor?" · "+crm.actor:""}

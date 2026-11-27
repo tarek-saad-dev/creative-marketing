@@ -83,6 +83,7 @@ export async function updateLeadStatusAdmin(
   });
 
   revalidatePath("/admin/leads");
+  revalidatePath("/admin");
   revalidatePath(`/admin/leads/${id}`);
   return lead;
 }
@@ -104,7 +105,7 @@ export async function assignLeadAdmin(id: string, rawInput: unknown) {
 
   if (input.assignedAdminId) {
     const admin = await findAdminUserById(input.assignedAdminId);
-    if (!admin || admin.deletedAt || !admin.isActive) {
+    if (!admin || admin.deletedAt || !admin.isActive || !["ADMIN","OWNER"].includes(admin.role)) {
       throw new Error("لا يمكن التعيين — المسؤول غير موجود أو غير نشط");
     }
   }

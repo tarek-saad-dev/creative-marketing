@@ -87,7 +87,6 @@ async function requireCrmAdmin(){const user=await getCurrentAdmin();if(!user||![
 export async function addLeadCrmEventAction(id:string,raw:unknown){
  return withAdminMutation({minimumRole:AdminRole.ADMIN,audit:r=>({action:"lead.crm."+r.kind,entityType:"Lead",entityId:r.id})},async()=>{
  const user=await requireCrmAdmin();const input=leadCrmEventSchema.parse(raw);
- const metadata=input.kind==="followup"?{crmKind:"followup",dueDate:input.dueDate,actor:user.name}:{crmKind:"contact",note:input.note,channel:input.channel,actor:user.name};
- const result=await writeLeadCrmEvent(id,metadata);revalidatePath("/admin/leads");revalidatePath("/admin");revalidatePath(`/admin/leads/${id}`);return {...result,kind:input.kind};
+ const result=input.kind==="followup"?await writeLeadCrmEvent(id,{crmKind:"followup",dueDate:input.dueDate,actor:user.name}):await writeLeadCrmEvent(id,{crmKind:"contact",note:input.note,channel:input.channel,actor:user.name});revalidatePath("/admin/leads");revalidatePath("/admin");revalidatePath(`/admin/leads/${id}`);return {...result,kind:input.kind};
  });
 }

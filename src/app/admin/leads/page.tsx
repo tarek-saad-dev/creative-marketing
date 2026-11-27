@@ -39,7 +39,8 @@ export default async function AdminLeadsPage({
   searchParams: Promise<Search>;
 }) {
   const user=await requireRole(AdminRole.VIEWER);
-  const sp = await searchParams;
+  const raw=await searchParams;
+  const sp=Object.fromEntries(Object.entries(raw).filter(([,value])=>typeof value==="string").map(([key,value])=>[key,(value as string).slice(0,200)])) as Search;
   const requestedPage=Number.isSafeInteger(Number(sp.page))&&Number(sp.page)>0?Number(sp.page):1;
   const followup=sp.followup==="due"||sp.followup==="today"||sp.followup==="overdue"?sp.followup:undefined;
   const status = Object.values(LeadStatus).includes(sp.status as LeadStatus)
@@ -74,7 +75,7 @@ export default async function AdminLeadsPage({
   ]);
   const dueDates=new Map((await latestLeadFollowups(rows.map(r=>r.id))).map(r=>[r.leadId,r.dueDate]));
   const conversion=closedLeadConversion(overview.counts.WON,overview.counts.LOST);
-  function dueLabel(id:string,status:string){if(!["NEW","CONTACTED","QUALIFIED"].includes(status))return "—";const date=dueDates.get(id);const state=followupState(date,overview.today);return state==="none"?"—":state==="overdue"?"متأخر · "+date:state==="today"?"اليوم":date;}
+  function dueLabel(id:string,status:string){if(!["NEW","CONTACTED","QUALIFIED"].includes(status))return "—";const date=dueDates.get(id);const state=followupState(date,overview.today);return state==="none"?"—":state==="overdue"?"متأخر · "+date:state==="today"?"اليوم":date??"—";}
   const stats=[{label:"تحتاج متابعة",value:overview.due,href:"?followup=due"},{label:"متأخرة",value:overview.overdue,href:"?followup=overdue"},{label:"غير معينة (مفتوحة)",value:overview.unassigned,href:"?assigned=unassigned"}];
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -91,7 +92,7 @@ export default async function AdminLeadsPage({
       />
 
       <nav aria-label="مراحل المبيعات" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">{Object.entries(overview.counts).map(([stage,count])=><Link key={stage} href={"/admin/leads?status="+stage} className={"admin-card p-3 "+(status===stage?"border-primary bg-primary/5":"")}><p className="text-xs text-foreground-muted">{leadStageLabels[stage as keyof typeof leadStageLabels]}</p><p className="mt-2 text-2xl font-bold">{count}</p></Link>)}</nav>
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">{stats.map(stat=><Link key={stat.label} href={"/admin/leads"+stat.href} className="admin-card p-3"><p className="text-xs text-foreground-muted">{stat.label}</p><p className="mt-2 text-xl font-bold">{stat.value}</p></Link>)}<div className="admin-card p-3"><p className="text-xs text-foreground-muted">نسبة التعاقد من القرارات المغلقة</p><p className="mt-2 text-xl font-bold">{conversion===null?"—":conversion+"%"}</p></div></div>
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">{stats.map(stat=><Link key={stat.label} href={"/admin/leads"+stat.href} className="admin-card p-3"><p className="text-xs text-foreground-muted">{stat.label}</p><p className="mt-2 text-xl font-bold">{stat.value}</p></Link>)}<div className="admin-card p-3"><p className="text-xs text-foreground-muted">نسبة التعاقد (مكتسب ÷ مكتسب وخاسر)</p><p className="mt-2 text-xl font-bold">{conversion===null?"—":conversion+"%"}</p></div></div>
       <form
         className="admin-card grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4"
         method="get"
@@ -109,7 +110,7 @@ export default async function AdminLeadsPage({
           الحالة
           <select
             name="status"
-            defaultValue={sp.status ?? ""}
+            defaultValue={status ?? ""}
             className="admin-input mt-1"
           >
             <option value="">الكل</option>

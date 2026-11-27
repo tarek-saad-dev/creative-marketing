@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import {cairoToday} from "@/lib/admin/lead-crm";
 import { LeadStatus, Prisma } from "@/generated/prisma";
 
 export const adminLeadListSelect = {
@@ -157,7 +158,7 @@ export async function createLeadEventRow(
 }
 
 /** Existing LeadEvent metadata supports CRM entries without changing the database enum. */
-import {cairoToday} from "@/lib/admin/lead-crm";
+
 export async function latestLeadFollowups(ids?:string[]){
  if(ids&&ids.length===0)return [];
  const condition=ids?Prisma.sql`AND "leadId" IN (${Prisma.join(ids)})`:Prisma.empty;
@@ -185,7 +186,7 @@ export async function getLeadCrmOverview(now=new Date()){
  return {counts,due:due.length,overdue:overdue.length,unassigned,today};
 }
 export async function changeLeadStatusWithEvent(id:string,expected:LeadStatus,status:LeadStatus,type:Prisma.LeadEventCreateInput["type"],metadata:Prisma.InputJsonValue){
- return prisma.$transaction(async tx=>{const updated=await tx.lead.updateMany({where:{id,status:expected},data:{status}});if(updated.count!==1)throw new Error("تغيرت حالة العميل. أعد تحميل الصفحة.");await tx.leadEvent.create({data:{leadId:id,type,metadata}});return tx.lead.findUniqueOrThrow({where:{id},select:{id:true,status:true,name:true}});});
+ return prisma.$transaction(async tx=>{const updated=await tx.lead.updateMany({where:{id,status:expected},data:{status}});if(updated.count!==1)throw new Error("تغيرت حالة العميل. أعد تحميل الصفحة.");await tx.leadEvent.create({data:{leadId:id,type,metadata}});if(["WON","LOST","ARCHIVED"].includes(status))await tx.leadEvent.create({data:{leadId:id,type:"STATUS_CHANGED",metadata:{crmKind:"followup",dueDate:null,actor:"النظام"}}});return tx.lead.findUniqueOrThrow({where:{id},select:{id:true,status:true,name:true}});});
 }
 export async function writeLeadCrmEvent(id:string,metadata:Prisma.InputJsonValue){
  return prisma.$transaction(async tx=>{const lead=await tx.lead.findUnique({where:{id},select:{id:true,status:true}});if(!lead)throw new Error("الطلب غير موجود");if(metadata&&typeof metadata==="object"&&!Array.isArray(metadata)&&"crmKind" in metadata&&metadata.crmKind==="followup"&&!["NEW","CONTACTED","QUALIFIED"].includes(lead.status)&&metadata.dueDate!==null)throw new Error("لا يمكن جدولة متابعة لطلب مغلق");await tx.lead.update({where:{id},data:{updatedAt:new Date()}});await tx.leadEvent.create({data:{leadId:id,type:"STATUS_CHANGED",metadata}});return {id};},{isolationLevel:"Serializable"});
