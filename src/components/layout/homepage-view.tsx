@@ -68,19 +68,19 @@ export async function HomepageView({preview=false,previewLayout}:{preview?:boole
   const hasGallery=enabled.has("gallery")&&portfolio.gallery;
   const fallbackWork=<section id="work" className="mx-auto max-w-7xl scroll-mt-nav px-5 py-12"><h2 className="font-headline text-3xl font-bold text-white">كل أعمالنا.</h2><Link href="/work" className="mt-4 inline-flex min-h-11 items-center text-brand-aqua underline">استكشف معرض المشاريع</Link></section>;
   const commercial={offer:data.offer,packages:data.packages,testimonials:data.testimonials,faqs:data.faqs,settings:data.settings};
-  const part=(id:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact")=><CommercialSectionPart part={id} data={commercial} copy={layout.copy}/>;
+  const part=(id:"offer"|"packages"|"process"|"testimonials"|"faq"|"contact")=><CommercialSectionPart part={id} data={commercial} copy={layout.copy} processSteps={layout.processSteps}/>;
   const nodes:Record<HomeSectionId,ReactNode>={
     hero:<PortfolioHero copy={copy} projects={heroProjects} gallery={heroGallery} mockups={portfolio.mockups} showArtwork={portfolio.hero.enabled&&(heroProjects.length>0||(!showcaseProjects.length&&!portfolio.hero.ids.length))} slogan={data.brand.slogan}/>,
     stream:streamProjects.length>=3?<MovingPortfolioStrip projects={streamProjects}/>:null,
     trust:<TrustStrip serviceGroups={data.serviceGroups} trustMetrics={data.trustMetrics} clientLogos={data.clientLogos}/>,
     work:hasWork?<WorkSection projects={selectedProjects}/>:!hasGallery?fallbackWork:null,
-    bridge1:<SectionBridge words={["THINK.","CREATE.","BUILD.","GROW."]}/>,
+    bridge1:<SectionBridge words={layout.bridgeWords.bridge1}/>,
     services:<ServicesSection ecosystem={data.serviceEcosystem}/>,
     industries:<NicheShowcase content={layout.industries}/>,
     device:deviceProjects.length>1?<DeviceShowcase projects={deviceProjects}/>:null,
     reel:reelProjects.length>0?<PortfolioRail projects={reelProjects} showreelOnly/>:null,
     gallery:hasGallery?<CreativeGallery projects={creativeGallery} sectionId={hasWork?"creative-gallery":"work"} showComparisons={portfolio.comparisons}/>:null,
-    bridge2:<SectionBridge words={["IDEAS.","DESIGN.","IMPACT."]}/>,
+    bridge2:<SectionBridge words={layout.bridgeWords.bridge2}/>,
     offer:part("offer"),packages:part("packages"),process:part("process"),testimonials:part("testimonials"),faq:part("faq"),contact:part("contact")
   };
   return (

@@ -13,7 +13,7 @@ export function SectionBridge({ words }: { words: string[] }) {
   return (
     <div ref={ref} className={styles.bridge} aria-hidden="true">
       <motion.div className={styles.line} style={paused ? { x: "0%" } : { x }}>
-        {words.map(word => <span key={word}>{word}<i>✳</i></span>)}
+        {words.map((word,index) => <span key={index}>{word}<i>✳</i></span>)}
       </motion.div>
     </div>
   );
