@@ -168,3 +168,6 @@ test("publish readiness uses identical checks for draft UI and server",()=>{cons
 
 import {minimalHeroPositions} from "../src/lib/content/hero-scene";
 test("minimal hero selects no more than three unique projects",()=>{for(let n=0;n<=20;n++)for(let i=0;i<Math.max(1,n);i++){const slots=minimalHeroPositions(n,i);assert.equal(slots.length,Math.min(n,3));assert.equal(new Set(slots.map(s=>s.index)).size,slots.length);assert.ok(slots.every(s=>Math.abs(s.offset)<=1));}});
+
+import {editorialGridSpans} from "../src/lib/content/editorial-grid";
+test("editorial work grid fills every desktop row for small and large collections",()=>{assert.deepEqual(editorialGridSpans(0),[]);assert.deepEqual(editorialGridSpans(1),[6]);assert.deepEqual(editorialGridSpans(2),[3,3]);for(let n=1;n<=120;n++){const spans=editorialGridSpans(n);assert.equal(spans.length,n);let used=0;for(const span of spans){used+=span;assert.ok(used<=6);if(used===6)used=0;}assert.equal(used,0);}});

@@ -8,7 +8,7 @@ import { CaseStudyLightbox } from "@/components/sections/case-study/case-study-l
 import { buildCreativeGallery, type CreativeGalleryProject, type Comparison, type GalleryEntry } from "@/lib/content/creative-gallery";
 import { mediaAspectRatio } from "@/lib/media/portfolio-layout";
 import { videoPoster } from "@/lib/media/public-media";
-import { getItems, Artwork } from "./immersive-showcase";
+
 import styles from "./creative-gallery.module.css";
 
 function MediaImage({ url, alt, sizes }: { url: string; alt: string; sizes: string }) {
@@ -53,13 +53,13 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery", show
   return (
     <section id={sectionId} className={styles.section} aria-labelledby="creative-gallery-heading">
       <header className={styles.header}>
-        <div><p className={styles.kicker}>CM / CREATIVE FEED</p><h2 id="creative-gallery-heading">كل فريم.<br /><span>ليه حكاية.</span></h2></div>
-        <p className={styles.description}>{entries.length ? "تصفّح تفاصيل الحملات والتصميمات والفيديوهات، وافتح أي عمل بالحجم الكبير." : "دراسات تصميم توضيحية من الاستوديو. ليست أعمال عملاء."}</p>
+        <div><p className={styles.kicker}>CREATIVE GALLERY</p><h2 id="creative-gallery-heading">معرض التصميمات.</h2></div>
+        <p className={styles.description}>{entries.length ? "شوف التصميمات والفيديوهات بالحجم الكامل." : "نعمل حاليًا على تجهيز الأعمال للنشر."}</p>
       </header>
       {hasImages && hasVideos && <div className={styles.filters} aria-label="فلترة المعرض">
         {([{ value: "all", label: "الكل" }, { value: "IMAGE", label: "تصميمات" }, { value: "VIDEO", label: "فيديوهات" }] as const).map(option => <button type="button" key={option.value} aria-pressed={effectiveFilter === option.value} onClick={() => { setFilter(option.value); setLimit(9); setOpenIndex(null); }}>{option.label}</button>)}
       </div>}
-      <div className={styles.grid}>
+      <div className={styles.grid} data-gallery-count={Math.min(shown.length,3)}>
         {shown.length ? shown.map((entry, index) => {
           const thumb = preview(entry);
           return (
@@ -71,10 +71,9 @@ export function CreativeGallery({ projects, sectionId = "creative-gallery", show
               <div className={styles.tileMeta}><Link href={"/work/" + entry.slug}>{entry.projectTitle}</Link><ArrowUpLeft size={15} aria-hidden="true" /></div>
             </article>
           );
-        }) : getItems([]).map(item => <article key={item.id} className={styles.tile}><div className={styles.tileButton}><Artwork item={item} /></div><div className={styles.tileMeta}>{item.title}</div></article>)}
+        }) : null}
       </div>
-      {projects.length > 0 && <Link href="/work" className={styles.more}>كل المشاريع المنشورة <ArrowUpLeft size={17} /></Link>}
-      {filtered.length > limit && <button type="button" className={styles.more} onClick={() => setLimit(value => value + 9)}><Images size={18} aria-hidden="true" /> عرض المزيد من الأعمال</button>}
+      <div className={styles.galleryActions}>{filtered.length > limit && <button type="button" className={styles.more} onClick={() => setLimit(value => value + 9)}><Images size={18} aria-hidden="true" /> عرض المزيد</button>}{projects.length > 0 && <Link href="/work" className={styles.link}>كل المشاريع <ArrowUpLeft size={17} /></Link>}</div>
       {showComparisons && pair && <div className={styles.compareSection}>
         <p className={styles.kicker}>BEFORE / AFTER</p>
         <h2 className={styles.compareHeading}>الفرق واضح.</h2>

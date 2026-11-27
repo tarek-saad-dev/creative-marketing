@@ -39,3 +39,6 @@ The initial minimal geometry CI caught side-panel overlap under pointer tilt. Th
 
 ## Build gate
 The 180-case geometry workflow and portfolio unit suite passed on the overlap-fix commit, but Vercel reported a failed deployment without detailed logs in GitHub. Remove unreachable legacy panel rules and add separate Prisma generation, Next route type generation, TypeScript checks and compile-only Next build in CI. Compile uses deliberately nonfunctional local DB placeholders and must not migrate, seed or connect to production. The actual Vercel error remains unconfirmed; require successful deployment checks before merge.
+
+## Editorial work gallery
+Public project cards remove surrounding chrome and repeated summaries, use contained artwork with metadata outside, and share a responsive grid that fills the final desktop row for one/two remaining projects. The same grid is used in /work. Creative Gallery uses fewer labels, a calm canvas, and a single-column mobile feed; no concept copies when empty. Project details retain descriptions and full media. No changes to project data, dashboard settings, or pricing. Unit test covers 1–120 projects; public visual acceptance remains required.

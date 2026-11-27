@@ -21,6 +21,8 @@ try {
       assert.equal(response?.status(),200);
       await page.locator("#hero").waitFor();
       for(const id of ["work","services","industries","packages","process","contact"]) assert.equal(await page.locator("#"+id).count(),1,"Missing/duplicate section: "+id);
+      const portfolioImages=page.locator("#work img, #creative-gallery img");
+      assert.equal(await portfolioImages.evaluateAll(images=>images.some(img=>getComputedStyle(img).objectFit!=="contain")),false,"Portfolio artwork must stay contained");
       const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
       assert.equal(overflow,false,"Horizontal document overflow");
       assert.equal(await page.locator("button[aria-label='إيقاف الحركة الزخرفية'], #hero button[aria-label='تشغيل العرض التلقائي'], #hero button[aria-label='إيقاف العرض التلقائي']").count(),0,"Hero motion toggles should be removed");

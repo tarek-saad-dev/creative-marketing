@@ -6,3 +6,20 @@
 @media(max-width:600px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tileButton{border-radius:.6rem}.tileIcon{top:.4rem;left:.4rem;padding:.35rem}.tileMeta{font-size:.72rem}.compareStage{aspect-ratio:1}}
 
 .grid{align-items:start}.tileMeta{overflow-wrap:anywhere}.tileMeta svg{flex-shrink:0}.tileButton:focus-visible{outline:3px solid #27e8c7;outline-offset:3px}.more{width:fit-content;max-width:100%;justify-content:center;text-align:center}
+
+/* Editorial work gallery: artwork first, metadata outside, calm surfaces. */
+.section{background:transparent;padding-block:clamp(2.5rem,5vw,5rem)}
+.header{margin-bottom:1.5rem;align-items:baseline}
+.header h2,.compareHeading{font-size:clamp(1.65rem,3.2vw,2.8rem)}
+.kicker{font-size:.65rem;letter-spacing:.14em;margin-bottom:.45rem}
+.description{font-size:.9rem;max-width:24rem}
+.grid{gap:clamp(.85rem,2vw,1.75rem)}
+.grid[data-gallery-count="1"]{grid-template-columns:minmax(0,1fr);max-width:54rem;margin-inline:auto}
+.grid[data-gallery-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tileButton{border:0;border-radius:.55rem;background:#20285d99}
+.tileMeta{padding:.75rem .1rem;color:#f8fafc;font-size:.88rem}
+.tileIcon{background:#1a245acc;padding:.45rem}
+.galleryActions{display:flex;align-items:center;justify-content:center;gap:1.25rem;flex-wrap:wrap;margin-top:1.5rem}
+.galleryActions .more{margin:0}
+.galleryActions:empty{display:none}
+@media(max-width:600px){.grid,.grid[data-gallery-count="2"]{grid-template-columns:minmax(0,1fr);gap:1.25rem}.tileButton{border-radius:.45rem}.tileMeta{font-size:.85rem}.header{gap:.6rem}.galleryActions{gap:.75rem}}
