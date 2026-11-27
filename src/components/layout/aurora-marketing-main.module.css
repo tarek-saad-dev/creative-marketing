@@ -124,3 +124,10 @@
 .cyan{animation:cyan-drift 4s ease-out 1 both}
 .mint{animation:mint-drift 4s ease-out 1 both}
 @media(prefers-reduced-motion:reduce){.mesh > span{animation:none}}
+
+/* Quiet homepage canvas: local section artwork supplies colour, not the mesh. */
+.shell[data-quiet=true] .mesh{background:linear-gradient(155deg,#30216f,#2c1f73 50%,#202f68)}
+.shell[data-quiet=true] .violet,.shell[data-quiet=true] .cyan,.shell[data-quiet=true] .mint{opacity:.28;animation:none}
+.shell[data-quiet=true] .grain{opacity:.025}
+.shell[data-quiet=true] :global(.editorial-section)::before{opacity:.35}
+.shell[data-quiet=true] :global(.editorial-section + .editorial-section)::before{opacity:.35}

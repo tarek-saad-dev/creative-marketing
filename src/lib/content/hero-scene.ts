@@ -33,3 +33,8 @@ export function heroExtraMedia(items:HeroMedia[],selected:number){
   const phone=remaining.find(item=>item.width&&item.height&&item.height>item.width)??remaining[0]??null;
   return {phone,panels:remaining.filter(item=>item.id!==phone?.id).slice(0,4)};
 }
+
+/** Minimal hero: at most three distinct projects, centre + two neighbours. */
+export function minimalHeroPositions(length:number,index:number){
+  return heroScenePositions(length,index).filter(position=>Math.abs(position.offset)<=1);
+}

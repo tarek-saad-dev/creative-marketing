@@ -202,9 +202,6 @@
 .hero .stage[data-count="1"] .scenePanel[data-offset="0"]{width:68%;height:86%;left:50%}
 .hero .stage[data-count="1"][data-phone=true] .scenePanel[data-offset="0"]{left:55%;width:62%}
 .hero .stage[data-count="2"] .scenePanel[data-offset="0"]{width:50%;left:48%;height:84%;transform:translate(-50%,-50%) translateZ(25px) rotateY(-3deg)}
-.hero .stage[data-count="2"] .scenePanel[data-offset="1"]{top:50%;height:55%}
-.hero .stage:not(:has(.scenePanel[data-offset="-2"])) .scenePanel[data-offset="-1"]{top:34%;height:48%}
-.hero .stage:not(:has(.scenePanel[data-offset="2"])) .scenePanel[data-offset="1"]{top:50%;height:54%}
 .hero .stage:not(:has(.scenePanel[data-offset="-2"])) .scenePhone{top:77%;height:35%}
 .hero .scenePanel .artwork,.hero .scenePhone .artwork{border:4px solid transparent}
 .hero .panelArtwork .artwork{border-width:6px}
@@ -309,3 +306,82 @@
   .hero .sceneIdentity,.hero .sceneEdition{gap:.15rem}
   .hero .heroRibbon{letter-spacing:.055em}
 }
+
+/* Minimal immersive hero: one focal artwork, two quiet supporting works.
+   Scoped so the rest of the portfolio and its adaptive frames are untouched. */
+.hero[data-minimal=true]{background:linear-gradient(115deg,#30216f 0%,#2c1f73 44%,#202f68 100%);isolation:isolate}
+.hero[data-minimal=true] .heroGlow{background:radial-gradient(ellipse at 33% 48%,#9069ec40,transparent 46%),radial-gradient(ellipse at 22% 70%,#22d3ee16,transparent 40%)}
+.hero[data-minimal=true] .heroInner{max-width:91rem;gap:clamp(1.6rem,4vw,4.75rem)}
+.hero[data-minimal=true] .heroCopy{gap:1.2rem}
+.hero[data-minimal=true] .heroCopy h1{font-size:clamp(2rem,3.2vw,3.75rem);line-height:1.4}
+.hero[data-minimal=true] .heroCopy .description{max-width:27rem;color:#e5e6f7;line-height:1.9}
+.hero[data-minimal=true] .heroCopy .slogan{color:#d8d9ed;letter-spacing:.11em;font-size:.7rem}
+.hero[data-minimal=true] .ctas{align-items:center;gap:1.1rem}
+.secondaryHeroLink{display:inline-flex;align-items:center;min-height:44px;color:#f8fafc;font-size:.9rem;font-weight:600;text-underline-offset:5px}
+.secondaryHeroLink:hover,.secondaryHeroLink:focus-visible{text-decoration:underline}
+.hero[data-minimal=true] .coverflow{max-width:none}
+.hero[data-minimal=true] .sceneTop{padding:0 .2rem .45rem;border:0;align-items:baseline}
+.hero[data-minimal=true] .sceneTitle{font-size:clamp(1.1rem,1.8vw,1.9rem);letter-spacing:-.05em}
+.hero[data-minimal=true] .editionTitle{font-size:clamp(.52rem,.73vw,.7rem);font-weight:500;letter-spacing:.1em;color:#d6d8ee}
+.hero[data-minimal=true] .stage{overflow:visible;perspective:1900px;margin:.2rem 0 .45rem}
+.hero[data-minimal=true] .sceneHalo{inset:4% 12% 9%;background:radial-gradient(ellipse,#a6a2f02a,transparent 69%)}
+.hero[data-minimal=true] .sceneFloor{background:radial-gradient(ellipse,#151a494d,transparent 68%)}
+.hero[data-minimal=true] .stage .scenePanel{top:50%;padding:2px;box-sizing:border-box;box-shadow:0 16px 36px #171b4b55;opacity:1;transition:transform .45s ease,opacity .25s ease}
+.hero[data-minimal=true] .stage .scenePanel[data-offset="0"]{left:50%;top:50%;width:58%;height:89%;transform:translate(-50%,-50%) translateZ(12px) rotateY(-3deg) rotateX(1deg);box-shadow:0 25px 60px #171b4b66}
+.hero[data-minimal=true] .stage[data-count="1"] .scenePanel[data-offset="0"]{left:50%;width:83%;height:89%}
+.hero[data-minimal=true] .stage .scenePanel[data-offset="-1"],.hero[data-minimal=true] .stage .scenePanel[data-offset="1"]{width:14%;height:42%;top:50%;opacity:.82}
+.hero[data-minimal=true] .stage .scenePanel[data-offset="-1"]{left:10%;transform:translate(-50%,-50%) translateZ(-35px) rotateY(15deg) rotateZ(-2deg)}
+.hero[data-minimal=true] .stage .scenePanel[data-offset="1"]{left:90%;transform:translate(-50%,-50%) translateZ(-35px) rotateY(-15deg) rotateZ(2deg)}
+.hero[data-minimal=true] .stage .scenePanel[data-offset="-2"],.hero[data-minimal=true] .stage .scenePanel[data-offset="2"],.hero[data-minimal=true] .stage .scenePhone{display:none}
+.hero[data-minimal=true] .stage .scenePanel[data-mockup="book"]{padding:2px 4px 3px}
+.hero[data-minimal=true] .stage .scenePanel[data-mockup="plain"]{padding:0;background:transparent;box-shadow:none}
+.hero[data-minimal=true] .scenePanel .mainPanel,.hero[data-minimal=true] .scenePanel .sideButton{border-radius:inherit}
+.hero[data-minimal=true] .panelArtwork{height:100%}
+.hero[data-minimal=true] .scenePanel .artwork,.hero[data-minimal=true] .panelArtwork .artwork{border:0}
+.hero[data-minimal=true] .scenePanel .concept{padding:8%;gap:.12rem}
+.hero[data-minimal=true] .scenePanel .conceptShape{width:45%;right:7%;top:14%;border-width:clamp(3px,4cqi,22px);opacity:.9}
+.hero[data-minimal=true] .scenePanel .conceptWord{font-size:clamp(.45rem,11cqi,4.7rem)}
+.hero[data-minimal=true] .scenePanel .conceptBadge{display:none}
+.hero[data-minimal=true] .expandBadge{padding:.45rem;background:#1a245ad9}
+.hero[data-minimal=true] .stageCaption{padding:.25rem 0 0;margin:0 .15rem;border:0;min-height:48px;gap:.7rem}
+.hero[data-minimal=true] .captionText{gap:.1rem}
+.hero[data-minimal=true] .captionText h2{font-size:clamp(.94rem,1.15vw,1.15rem);line-height:1.45}
+.hero[data-minimal=true] .smallText,.hero[data-minimal=true] .detailLink{font-size:.74rem}
+.hero[data-minimal=true] .controls{gap:.35rem}
+.hero[data-minimal=true] .controls button{width:44px;height:44px;border-color:#ffffff30;background:transparent}
+.minimalMediaPicker{display:flex;justify-content:flex-start;margin:.55rem .15rem 0}
+.minimalMediaPicker label{display:flex;gap:.6rem;align-items:center;font-size:.73rem;color:#e1e5f5}
+.minimalMediaPicker select{color:#fff;background:#30276e;border:1px solid #ffffff36;border-radius:.5rem;padding:.35rem .65rem;min-height:36px;max-width:100%}
+@media(min-width:1001px){
+  .hero[data-minimal=true]{min-height:100svh;padding:calc(var(--nav-height) + 1rem) clamp(1.4rem,4vw,4rem) 1.3rem}
+  .hero[data-minimal=true] .heroInner{grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr)}
+  .hero[data-minimal=true] .stage{height:clamp(280px,calc(100svh - var(--nav-height) - 11.5rem),690px)}
+  .hero[data-minimal=true][data-artwork=false] .heroInner{grid-template-columns:1fr}
+}
+@media(max-width:1000px){.hero[data-minimal=true] .heroCopy{gap:.8rem}.hero[data-minimal=true] .heroInner{gap:1.4rem}.hero[data-minimal=true] .stage{height:clamp(280px,55vw,490px)}}
+@media(max-width:767px){
+  .hero[data-minimal=true]{padding:calc(var(--nav-height) + 1.5rem) 1.15rem 2rem;background:linear-gradient(155deg,#30216f,#2c1f73 54%,#23386b)}
+  .hero[data-minimal=true] .heroGlow{background:radial-gradient(ellipse at 50% 43%,#8c6de634,transparent 57%)}
+  .hero[data-minimal=true] .heroInner{gap:1rem;grid-template-columns:1fr}
+  .hero[data-minimal=true][data-artwork=true] .heroCopy{display:contents}
+  .hero[data-minimal=true][data-artwork=true] .slogan{grid-row:1;text-align:center;font-size:.62rem}
+  .hero[data-minimal=true][data-artwork=true] .heroCopy h1{grid-row:2;text-align:center;font-size:clamp(1.7rem,6.3vw,2.55rem);line-height:1.45}
+  .hero[data-minimal=true][data-artwork=true] .coverflow{grid-row:3}
+  .hero[data-minimal=true][data-artwork=true] .heroCopy .description{grid-row:4;text-align:center;margin:auto;font-size:.88rem}
+  .hero[data-minimal=true][data-artwork=true] .ctas{grid-row:5;justify-content:center;margin:0}
+  .hero[data-minimal=true][data-artwork=true] .secondaryHeroLink{display:none}
+  .hero[data-minimal=true] .sceneTop{padding:.2rem 0;gap:.5rem}
+  .hero[data-minimal=true] .sceneTitle{font-size:clamp(.95rem,3.9vw,1.25rem)}
+  .hero[data-minimal=true] .editionTitle{font-size:.52rem;letter-spacing:.06em}
+  .hero[data-minimal=true] .stage{height:clamp(220px,77vw,440px);margin:.1rem 0 .4rem}
+  .hero[data-minimal=true] .stage .scenePanel[data-offset="-1"],.hero[data-minimal=true] .stage .scenePanel[data-offset="1"]{display:none}
+  .hero[data-minimal=true] .stage .scenePanel[data-offset="0"],.hero[data-minimal=true] .stage[data-count="1"] .scenePanel[data-offset="0"]{width:92%;height:91%;left:50%;top:50%;transform:translate(-50%,-50%) translateZ(0) rotateY(-2deg)}
+  .hero[data-minimal=true] .stageCaption{flex-wrap:nowrap;gap:.4rem;min-height:44px}
+  .hero[data-minimal=true] .captionText h2{font-size:.92rem}
+  .hero[data-minimal=true] .controls{gap:.2rem}
+  .hero[data-minimal=true] .controls button{width:42px;height:42px}
+  .hero[data-minimal=true] .counter{font-size:.66rem}
+}
+
+/* Explicit gap around each artwork, including the two-project case. */
+@media(min-width:768px){.hero[data-minimal=true] .stage[data-count="2"] .scenePanel[data-offset="0"]{left:50%;width:58%;height:89%}.hero[data-minimal=true] .stage[data-count="2"] .scenePanel[data-offset="1"]{top:50%;height:42%}}

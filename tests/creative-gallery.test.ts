@@ -165,3 +165,6 @@ test("brand assets reject unsafe URLs and preserve safe fallback",()=>{const ini
 import {projectDraftSlug,projectPublishChecklist} from "../src/lib/content/project-publishing";
 test("quick draft slugs support Arabic and distinguish identical titles",()=>{assert.equal(projectDraftSlug("حملة ديسمبر","abc123"),"project-abc123");assert.equal(projectDraftSlug("Brand Identity","abc123"),"brand-identity-abc123");assert.notEqual(projectDraftSlug("حملة ديسمبر","a"),projectDraftSlug("حملة ديسمبر","b"));});
 test("publish readiness uses identical checks for draft UI and server",()=>{const project={title:"Test",slug:"test",summary:"Summary",industry:"Education",coverImageUrl:"/cover.jpg",coverImageAlt:"Cover"};assert.ok(projectPublishChecklist(project).every(i=>i.ok));assert.equal(projectPublishChecklist({...project,coverImageUrl:"/movie.mp4"}).filter(i=>!i.ok).length,1);assert.equal(projectPublishChecklist({...project,summary:" "}).filter(i=>!i.ok).length,1);});
+
+import {minimalHeroPositions} from "../src/lib/content/hero-scene";
+test("minimal hero selects no more than three unique projects",()=>{for(let n=0;n<=20;n++)for(let i=0;i<Math.max(1,n);i++){const slots=minimalHeroPositions(n,i);assert.equal(slots.length,Math.min(n,3));assert.equal(new Set(slots.map(s=>s.index)).size,slots.length);assert.ok(slots.every(s=>Math.abs(s.offset)<=1));}});
