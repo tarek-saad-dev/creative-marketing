@@ -34,7 +34,7 @@ export const authConfig = {
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.credentialVersion=token.credentialVersion;
+        session.user.credentialVersion=typeof token.credentialVersion === "string" ? token.credentialVersion : undefined;
         session.user.role = (token.role as AdminRole) ?? "VIEWER";
         session.user.name = token.name ?? "";
         session.user.email = token.email ?? "";
