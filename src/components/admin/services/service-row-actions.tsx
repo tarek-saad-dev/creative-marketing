@@ -9,17 +9,18 @@ import {
 
 export function ServiceRowActions({
   id,
-  isActive,
+  isActive,canArchive=false,
 }: {
   id: string;
-  isActive: boolean;
+  isActive: boolean;canArchive?:boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function toggle() {
     startTransition(async () => {
-      await toggleServiceActiveAction(id, !isActive);
+      const result=await toggleServiceActiveAction(id, !isActive);
+      if(!result.ok){window.alert(result.error);return;}
       router.refresh();
     });
   }
@@ -46,14 +47,14 @@ export function ServiceRowActions({
       >
         {isActive ? "تعطيل" : "تفعيل"}
       </button>
-      <button
+      {canArchive&&<button
         type="button"
         disabled={isPending}
         onClick={archive}
         className="inline-flex h-8 items-center rounded-md px-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
       >
         أرشفة
-      </button>
+      </button>}
     </div>
   );
 }

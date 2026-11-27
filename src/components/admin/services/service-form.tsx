@@ -1,5 +1,7 @@
 "use client";
 
+import {MediaPicker} from "@/components/admin/media/media-picker";
+import {ResilientImage} from "@/components/ui/resilient-media";
 import { useRouter } from "next/navigation";
 import {
   serviceInputSchema,
@@ -166,6 +168,7 @@ export function ServiceForm({
             >
               <input className="admin-input" dir="ltr" {...register("icon")} />
             </Field>
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-3"><div className="relative h-24 w-32 overflow-hidden rounded-lg bg-[#252c69]"><ResilientImage src={watch("imageUrl")} alt={nameAr||"صورة الخدمة"} sizes="128px"/></div><MediaPicker imagesOnly disabled={formState.isSubmitting} onPick={item=>setValue("imageUrl",item.url,{shouldDirty:true,shouldValidate:true})}/></div>
             <Field
               label="رابط صورة (اختياري)"
               error={formState.errors.imageUrl?.message}

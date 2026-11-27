@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {isImageCandidate} from "@/lib/media/public-media";
 
 export const serviceCategorySchema = z.enum([
   "THINK",
@@ -22,7 +23,7 @@ export const serviceInputSchema = z.object({
   descriptionAr: z.string().trim().min(2, "الوصف بالعربية مطلوب").max(4000),
   descriptionEn: z.string().trim().min(2, "الوصف بالإنجليزية مطلوب").max(4000),
   icon: z.string().trim().max(80).optional().or(z.literal("")),
-  imageUrl: z.string().trim().max(1000).optional().or(z.literal("")),
+  imageUrl: z.string().trim().max(1000).refine(v=>!v||isImageCandidate(v),"رابط الصورة غير صالح").optional().or(z.literal("")),
   isActive: z.boolean().default(true),
   displayOrder: z.coerce.number().int().min(0).default(0),
 });

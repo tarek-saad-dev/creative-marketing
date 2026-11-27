@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import {ResilientImage} from "@/components/ui/resilient-media";
 import { Pencil, X } from "lucide-react";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { ToneBadge } from "@/components/admin/status-badge";
@@ -21,18 +22,21 @@ const CATEGORY_ORDER: ServiceCategory[] = ["THINK", "CREATE", "BUILD", "GROW"];
 
 export function ServicesGroupedPanel({
   services,
-  readOnly = false,
+  readOnly = false,canArchive=false,
 }: {
   services: ServiceAdminListItem[];
-  readOnly?: boolean;
+  readOnly?: boolean;canArchive?:boolean;
 }) {
   const [editing, setEditing] = useState<ServiceAdminListItem | null>(null);
 
+  const [query,setQuery]=useState(""),[categoryFilter,setCategoryFilter]=useState("all"),[activeFilter,setActiveFilter]=useState("all");
+  const filtered=services.filter(s=>(categoryFilter==="all"||s.category===categoryFilter)&&(activeFilter==="all"||(activeFilter==="active")===s.isActive)&&[s.nameAr,s.nameEn,s.slug].join(" ").toLowerCase().includes(query.trim().toLowerCase()));
   return (
     <>
+      <div className="admin-card grid gap-3 p-4 sm:grid-cols-3"><label className="text-sm">بحث<input value={query} onChange={e=>setQuery(e.target.value)} className="admin-input mt-1" placeholder="اسم الخدمة"/></label><label className="text-sm">المجموعة<select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)} className="admin-input mt-1"><option value="all">الكل</option>{CATEGORY_ORDER.map(c=><option key={c} value={c}>{GROUP_LABELS[c]}</option>)}</select></label><label className="text-sm">الحالة<select value={activeFilter} onChange={e=>setActiveFilter(e.target.value)} className="admin-input mt-1"><option value="all">الكل</option><option value="active">فعالة</option><option value="inactive">معطلة</option></select></label><p className="text-xs text-foreground-muted sm:col-span-3">{filtered.length} من {services.length} خدمة</p></div>
       <div className="space-y-6">
-        {CATEGORY_ORDER.map(category => {
-          const group = services.filter(s => s.category === category);
+        {CATEGORY_ORDER.filter(c=>categoryFilter==="all"||categoryFilter===c).map(category => {
+          const group = filtered.filter(s => s.category === category);
           return (
             <section key={category} className="space-y-3">
               <h3 className="font-headline text-base font-bold text-foreground">
@@ -63,12 +67,14 @@ export function ServicesGroupedPanel({
                           tone={service.isActive ? "success" : "neutral"}
                         />
                       </div>
+                      {service.imageUrl&&<div className="relative h-28 overflow-hidden rounded-lg bg-[#252c69]"><ResilientImage src={service.imageUrl} alt={service.nameAr} sizes="320px"/></div>}
+                      <p className="text-xs text-foreground-muted">{service.projectCount} أعمال مرتبطة · ترتيب {service.displayOrder}</p>
                       <p className="line-clamp-2 text-sm text-foreground-muted">
                         {service.summaryAr}
                       </p>
                       {readOnly ? null : (
                         <div className="mt-auto flex flex-wrap items-center gap-1">
-                          <ServiceMoveControls id={service.id} />
+                          {!query&&activeFilter==="all"&&<ServiceMoveControls id={service.id} />}
                           <button
                             type="button"
                             onClick={() => setEditing(service)}
@@ -79,7 +85,7 @@ export function ServicesGroupedPanel({
                           </button>
                           <ServiceRowActions
                             id={service.id}
-                            isActive={service.isActive}
+                            isActive={service.isActive} canArchive={canArchive}
                           />
                         </div>
                       )}

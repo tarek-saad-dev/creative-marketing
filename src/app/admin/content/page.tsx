@@ -84,7 +84,7 @@ export default async function AdminContentPage({
         <SettingsPanel canEdit={canCommercial} />
       ) : null}
       {section === "projects" ? <ProjectsPanel canEdit={canEdit} /> : null}
-      {section === "services" ? <ServicesPanel canEdit={canEdit} /> : null}
+      {section === "services" ? <ServicesPanel canEdit={canEdit} canArchive={canCommercial} /> : null}
       {section === "packages" ? (
         <PackagesPanel canEdit={canEdit} canPublish={canCommercial} />
       ) : null}
