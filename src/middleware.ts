@@ -24,12 +24,16 @@ export default function middleware(request: NextRequest, event: NextFetchEvent) 
       loginUrl.port = "";
     }
   }
-  return auth(req => {
+  const guarded = auth(req => {
     if (req.nextUrl.pathname === "/admin/login" || req.auth?.user) {
       return NextResponse.next();
     }
     return NextResponse.redirect(loginUrl);
-  })(request, event);
+  });
+  // Auth.js overload inference selects AppRouteHandlerFn for a one-argument
+  // callback; this invocation is its middleware adapter, with a NextFetchEvent.
+  const run = guarded as unknown as (request: NextRequest, event: NextFetchEvent) => ReturnType<typeof guarded>;
+  return run(request, event);
 }
 
 export const config = {
