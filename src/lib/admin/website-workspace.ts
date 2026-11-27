@@ -21,3 +21,13 @@ export function sectionTabs(id:HomeSectionId):{id:WorkspaceTab;label:string}[]{
 export function readWorkspaceSection(raw:unknown):HomeSectionId|null{return typeof raw==="string"&&Object.prototype.hasOwnProperty.call(homeSectionMeta,raw)?raw as HomeSectionId:null}
 export function readWorkspaceTab(id:HomeSectionId,raw:unknown):WorkspaceTab{const tabs=sectionTabs(id);return tabs.find(t=>t.id===raw)?.id??tabs[0].id;}
 export function websiteSectionHref(id:HomeSectionId,tab?:WorkspaceTab){return "/admin/website?section="+id+(tab?"&tab="+tab:"");}
+
+// The only supported project origins are artwork sections, never arbitrary return URLs.
+export function readProjectOrigin(raw:unknown):HomeSectionId|null{
+ const id=readWorkspaceSection(raw);
+ return id&&artworkSlots[id]?id:null;
+}
+export function projectOriginQuery(origin:HomeSectionId|null){return origin?"?from="+encodeURIComponent(origin):"";}
+export function artworkReturnHref(origin:HomeSectionId,projectId?:string){
+ return websiteSectionHref(origin,"artwork")+(projectId?"&project="+encodeURIComponent(projectId):"");
+}

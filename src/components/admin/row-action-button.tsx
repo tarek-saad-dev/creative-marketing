@@ -13,6 +13,7 @@ export function RowActionButton({
   variant = "default",
   className,
   disabled = false,
+  successHref,
 }: {
   id: string;
   action: (id: string) => Promise<AdminMutationResult<unknown>>;
@@ -21,6 +22,7 @@ export function RowActionButton({
   variant?: "default" | "primary" | "danger";
   className?: string;
   disabled?: boolean;
+  successHref?:string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -31,7 +33,7 @@ export function RowActionButton({
     if (confirmMessage && !window.confirm(confirmMessage)) return;
     setError("");
     startTransition(async () => {
-      try{const result=await action(id);if(!result.ok){setError(result.error);return;}router.refresh();}catch{setError("تعذر تنفيذ الإجراء. أعد تحميل الصفحة للتحقق من الحالة.");}
+      try{const result=await action(id);if(!result.ok){setError(result.error);return;}if(successHref)router.push(successHref);router.refresh();}catch{setError("تعذر تنفيذ الإجراء. أعد تحميل الصفحة للتحقق من الحالة.");}
     });
   }
 

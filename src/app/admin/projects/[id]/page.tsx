@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {readProjectOrigin,artworkReturnHref,projectOriginQuery,sectionNames} from "@/lib/admin/website-workspace";
 import { ResilientImage } from "@/components/ui/resilient-media";
 import { projectPublishChecklist } from "@/lib/content/project-publishing";
 import type { Metadata } from "next";
@@ -27,11 +28,12 @@ import { isCloudinaryConfigured } from "@/lib/env/server";
 export const metadata: Metadata = { title: "تعديل مشروع" };
 export const dynamic = "force-dynamic";
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = { params: Promise<{ id: string }>;searchParams:Promise<{from?:string}> };
 
-export default async function EditAdminProjectPage({ params }: PageProps) {
+export default async function EditAdminProjectPage({ params,searchParams }: PageProps) {
   const user=await requireRole(AdminRole.EDITOR);
   const { id } = await params;
+  const origin=["ADMIN","OWNER"].includes(user.role)?readProjectOrigin((await searchParams).from):null;
   const [project, services] = await Promise.all([
     getAdminProjectById(id),
     listAdminServices(),
@@ -63,6 +65,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
                 id={project.id}
                 action={publishProjectAction}
                 label="نشر"
+                successHref={origin?artworkReturnHref(origin,project.id):undefined}
                 confirmMessage="نشر المشروع للجمهور وإضافته إلى المعارض؟"
                 disabled={!readyToPublish}
                 variant="primary"
@@ -83,6 +86,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
         }
       />
 
+      {origin&&<div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm"><div><p className="font-bold">بتجهز شغل لقسم: {sectionNames[origin]}</p><p className="mt-1 text-foreground-muted">{project.status===ContentStatus.PUBLISHED?"المشروع منشور. ارجع للقسم عشان تختار عرضه.":"أضف التصميمات والغلاف، ثم انشر المشروع للعودة للقسم تلقائيًا."}</p></div><Link href={artworkReturnHref(origin,project.status===ContentStatus.PUBLISHED?project.id:undefined)} className="inline-flex min-h-11 items-center rounded-lg border border-primary px-4 font-semibold text-primary">العودة للقسم</Link></div>}
       <div className="mb-4 grid gap-2 sm:grid-cols-3">{[{label:"01 · البيانات",done:publishChecklist.slice(0,4).every(i=>i.ok),href:"#details"},{label:"02 · الوسائط والغلاف",done:publishChecklist.slice(4).every(i=>i.ok),href:"#media"},{label:"03 · النشر",done:project.status===ContentStatus.PUBLISHED,href:"#publish"}].map(step=><a key={step.label} href={step.href} className={"rounded-lg border p-3 text-sm "+(step.done?"border-primary/50 text-primary":"border-border text-foreground-muted")}>{step.done?"✓ ":""}{step.label}</a>)}</div>
       {project.status!==ContentStatus.PUBLISHED&&<div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4"><p className="text-xs font-semibold text-primary">خطوتك التالية</p><h2 className="mt-1 font-bold">{!publishChecklist.slice(0,4).every(i=>i.ok)?"أكمل بيانات المشروع":!publishChecklist.slice(4).every(i=>i.ok)?"أضف التصميمات وحدد الغلاف":"راجع المشروع ثم انشره"}</h2><a href={!publishChecklist.slice(0,4).every(i=>i.ok)?"#details":!readyToPublish?"#media":"#publish"} className="mt-2 inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">متابعة الخطوة</a></div>}
       <div id="publish" className="mb-4 scroll-mt-nav rounded-lg border border-border bg-muted/30 p-3 text-sm">
@@ -102,7 +106,7 @@ export default async function EditAdminProjectPage({ params }: PageProps) {
       </div>
 
       <div className="mb-4 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-[160px_1fr]"><div className="relative aspect-square overflow-hidden rounded-lg bg-muted"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt || project.title} sizes="160px" /></div><div className="space-y-2"><h2 className="font-bold">معاينة الغلاف في الموقع</h2><p className="text-sm text-foreground-muted">أضف الوسائط ثم اختر صورة كغلاف. المشاريع المنشورة تظهر تلقائيًا في المعارض حسب الترتيب والتمييز.</p>{project.status===ContentStatus.PUBLISHED && <Link href={"/work/"+project.slug} target="_blank" className="text-sm text-primary underline">فتح صفحة المشروع المنشورة</Link>}</div></div>
-      {project.status===ContentStatus.PUBLISHED&&<section className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><h2 className="font-bold text-emerald-800">المشروع منشور — الخطوة التالية</h2><p className="mt-1 text-sm leading-6 text-emerald-800">يمكن للزوار مشاهدة المشروع الآن. إذا كان الاختيار التلقائي مفعّلًا، يمكن أن يظهر في استعراض الموقع حسب ترتيبه.</p><div className="mt-3 flex flex-wrap gap-2">{["ADMIN","OWNER"].includes(user.role)&&<Link href="#placement" className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">اختيار ظهور المشروع في الواجهة</Link>}<Link href="/admin/projects/new" className="inline-flex min-h-10 items-center rounded-lg border border-emerald-300 px-3 text-sm font-semibold text-emerald-800">إضافة مشروع آخر</Link>{["ADMIN","OWNER"].includes(user.role)&&<Link href="/admin/website" className="inline-flex min-h-10 items-center px-3 text-sm text-primary">العودة لإدارة الموقع</Link>}</div></section>}
+      {project.status===ContentStatus.PUBLISHED&&<section className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><h2 className="font-bold text-emerald-800">المشروع منشور — الخطوة التالية</h2><p className="mt-1 text-sm leading-6 text-emerald-800">يمكن للزوار مشاهدة المشروع الآن. إذا كان الاختيار التلقائي مفعّلًا، يمكن أن يظهر في استعراض الموقع حسب ترتيبه.</p><div className="mt-3 flex flex-wrap gap-2">{["ADMIN","OWNER"].includes(user.role)&&<Link href="#placement" className="inline-flex min-h-10 items-center rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground">اختيار ظهور المشروع في الواجهة</Link>}<Link href={"/admin/projects/new"+projectOriginQuery(origin)} className="inline-flex min-h-10 items-center rounded-lg border border-emerald-300 px-3 text-sm font-semibold text-emerald-800">إضافة مشروع آخر</Link>{["ADMIN","OWNER"].includes(user.role)&&<Link href="/admin/website" className="inline-flex min-h-10 items-center px-3 text-sm text-primary">العودة لإدارة الموقع</Link>}</div></section>}
       {placement&&<ProjectPlacement projectId={project.id} settings={readPortfolioSettings(placement[0])} projects={placement[1].map(p=>({id:p.id,primaryMediaType:p.primaryMediaType,primaryMediaUrl:p.primaryMediaUrl}))}/>}
       <div className="mt-4 flex flex-col gap-6">
         <div id="details" className={"admin-card scroll-mt-nav p-4 "+(!readyToPublish&&publishChecklist.slice(0,4).every(i=>i.ok)?"order-2":"order-1")}>

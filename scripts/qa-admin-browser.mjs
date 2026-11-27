@@ -124,6 +124,23 @@ try{
  await visit(owner,projectPath);
  await owner.locator("#placement").getByText("الواجهة الرئيسية",{exact:true}).locator("..").getByText(/ترتيب 1/).waitFor();
  console.log("PASS: batch media selection, duplicate protection and owner project placement");
+ await visit(owner,"/admin/website?section=hero&tab=artwork");
+ await owner.getByRole("link",{name:"إضافة مشروع جديد",exact:true}).click();
+ await owner.waitForURL(u=>u.pathname==="/admin/projects/new"&&u.searchParams.get("from")==="hero");
+ await owner.getByLabel("اسم المشروع",{exact:true}).fill("QA Context Project");
+ await owner.getByLabel("المجال",{exact:true}).fill("QA");
+ await owner.getByLabel("وصف مختصر",{exact:true}).fill("Synthetic contextual project");
+ await owner.getByRole("button",{name:"حفظ المسودة وإضافة التصميمات"}).click();
+ await owner.waitForURL(u=>/^\/admin\/projects\/[^/]+$/.test(u.pathname)&&u.pathname!=="/admin/projects/new"&&u.searchParams.get("from")==="hero");
+ const contextProjectId=new URL(owner.url()).pathname.split("/").at(-1);
+ await owner.getByRole("button",{name:"اختيار من المكتبة"}).last().click();
+ await owner.getByRole("dialog").getByRole("button",{name:"اختيار QA Media Project",exact:true}).click();
+ await owner.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
+ await owner.getByRole("button",{name:"نشر",exact:true}).click();
+ await owner.waitForURL(u=>u.pathname==="/admin/website"&&u.searchParams.get("section")==="hero"&&u.searchParams.get("project")===contextProjectId);
+ await owner.getByText("المشروع الذي فتحته للتو",{exact:true}).waitFor();
+ console.log("PASS: contextual project creation and publication returns to originating artwork section");
+
  // Verify a draft can be published but is not made live merely by saving.
  await visit(owner,"/admin/pages");
  const heroTitle=owner.getByLabel("العنوان",{exact:true});

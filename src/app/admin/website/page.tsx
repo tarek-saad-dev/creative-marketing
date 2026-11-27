@@ -20,7 +20,7 @@ import {ArrowUpLeft,Eye,Settings2,ChevronDown} from "lucide-react";
 export const metadata={title:"إدارة الموقع"};
 export const dynamic="force-dynamic";
 const action="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold text-primary";
-export default async function Page({searchParams}:{searchParams:Promise<{section?:string;tab?:string;status?:string;edit?:string;new?:string}>}){
+export default async function Page({searchParams}:{searchParams:Promise<{section?:string;tab?:string;status?:string;edit?:string;new?:string;project?:string}>}){
  const user=await requireRole(AdminRole.ADMIN);
  const sp=await searchParams,selected=readWorkspaceSection(sp.section);
  const {readiness,editor,portfolio,copy}=await getWebsiteJourneyData();
@@ -38,10 +38,10 @@ export default async function Page({searchParams}:{searchParams:Promise<{section
  {!selected?<><WebsiteJourney readiness={readiness} role={user.role} compact/><section className="admin-card space-y-4 p-4 sm:p-5"><h2 className="font-headline text-xl font-bold">عاوز تعدّل إيه؟</h2><div className="grid gap-3 sm:grid-cols-2">{([{id:"hero",desc:"العنوان والصور اللي العميل بيشوفها أول ما يدخل."},{id:"work",desc:"اختار الأعمال اللي تظهر للزوار."},{id:"services",desc:"عدّل اللي بتقدمه للعملاء."},{id:"packages",desc:"عدّل الأسعار والمميزات."},{id:"industries",desc:"الصالونات والمدرسين والكتب."},{id:"contact",desc:"بيانات الشركة وطرق التواصل."}] as const).map(item=><Link key={item.id} href={websiteSectionHref(item.id)} className="rounded-xl border border-border p-4 hover:border-primary"><p className="font-bold">{sectionNames[item.id]}</p><p className="mt-1 text-sm leading-6 text-foreground-muted">{item.desc}</p><span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">تعديل<ArrowUpLeft size={14}/></span></Link>)}</div></section><div className="admin-card flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-bold">الشعار والهوية</p><p className="text-xs text-foreground-muted">اللوجو الذي يظهر أعلى وأسفل الموقع.</p></div><Link href="/admin/brand" className={action}>تعديل الشعار</Link></div></>:<>
  <section className="admin-card space-y-3 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-headline text-xl font-bold">{sectionNames[selected]}</h2><p className="mt-1 text-xs text-foreground-muted">{layout.sections.find(s=>s.id===selected)?.enabled?"مُفعّل في التخطيط":"مخفي"}</p></div><Link href={"/preview/homepage?edit=1#visual-"+selected} className={action}><Eye size={16}/>شوفه في الموقع</Link></div>
  {sectionTabs(selected).length>1&&<nav aria-label="أدوات القسم" className="flex flex-wrap gap-2 border-t border-border pt-3">{sectionTabs(selected).map(t=><Link key={t.id} href={websiteSectionHref(selected,t.id)} aria-current={tab===t.id?"page":undefined} className={"inline-flex min-h-11 items-center rounded-lg px-4 text-sm font-semibold "+(tab===t.id?"bg-[#2c1f73] text-white":"bg-muted text-foreground")}>{t.label}</Link>)}</nav>}</section>
- {tab==="artwork"&&artworkSlots[selected]&&<PortfolioControlForm key={selected} initial={portfolio} projects={projects} focus={artworkSlots[selected]}/>}
+ {tab==="artwork"&&artworkSlots[selected]&&<PortfolioControlForm key={selected} initial={portfolio} projects={projects} focus={artworkSlots[selected]} origin={selected} recentProjectId={typeof sp.project==="string"?sp.project:undefined}/>}
  {tab==="logos"&&<LogosPanel canEdit/>}
  {tab==="content"&&selected==="services"&&<ServicesPanel canEdit canArchive/>}
- {tab==="content"&&selected==="packages"&&<PackagesPanel canEdit canPublish filter={["all","PUBLISHED","DRAFT","ARCHIVED","incomplete"].includes(sp.status??"")?sp.status:"all"} editId={sp.edit} newPackage={sp.new==="1"}/>}
+ {tab==="content"&&selected==="packages"&&<PackagesPanel canEdit canPublish baseHref="/admin/website?section=packages" filter={["all","PUBLISHED","DRAFT","ARCHIVED","incomplete"].includes(sp.status??"")?sp.status:"all"} editId={sp.edit} newPackage={sp.new==="1"}/>}
  {tab==="content"&&selected==="offer"&&<OffersPanel canEdit editId={sp.edit} newOffer={sp.new==="1"}/>}
  {tab==="content"&&selected==="testimonials"&&<TestimonialsPanel canEdit/>}
  {tab==="content"&&selected==="trust"&&<TrustPanel canEdit/>}

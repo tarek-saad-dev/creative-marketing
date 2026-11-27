@@ -229,3 +229,6 @@ test("SEO uses configured canonical origin, rejects unsafe values and resolves s
 
 import {sectionGroups,sectionTabs,readWorkspaceSection,readWorkspaceTab} from "../src/lib/admin/website-workspace";
 test("task-first website workspace covers every section and safely resolves tabs",()=>{assert.equal(new Set(sectionGroups.flatMap(g=>[...g.sections])).size,17);assert.equal(readWorkspaceSection("toString"),null);assert.equal(readWorkspaceTab("hero","bad"),"content");assert.equal(readWorkspaceTab("stream","bad"),"artwork");assert.deepEqual(sectionTabs("hero").map(t=>t.id),["content","artwork"]);});
+
+import {readProjectOrigin,artworkReturnHref,projectOriginQuery} from "../src/lib/admin/website-workspace";
+test("project return flow allows only known artwork sections",()=>{assert.equal(readProjectOrigin("hero"),"hero");assert.equal(readProjectOrigin("gallery"),"gallery");for(const value of ["packages","__proto__","https://evil.example","//evil.example",["hero"]])assert.equal(readProjectOrigin(value),null);assert.equal(projectOriginQuery("hero"),"?from=hero");assert.equal(artworkReturnHref("hero","a&b"),"/admin/website?section=hero&tab=artwork&project=a%26b");});
