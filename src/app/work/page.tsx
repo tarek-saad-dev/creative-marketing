@@ -10,7 +10,7 @@ import { AuroraMarketingMain } from "@/components/layout/aurora-marketing-main";
 import { PortfolioBrowser } from "@/components/sections/work/portfolio-browser";
 
 export const dynamic="force-dynamic";
-export const metadata: Metadata={title:"معرض الأعمال",description:"تصفّح مشاريع Creative Marketing المنشورة في التصميم والهوية والمحتوى والفيديو.",alternates:{canonical:"/work"}};
+export const metadata: Metadata={title:"معرض الأعمال",description:"تصفّح مشاريع Creative Marketing المنشورة في التصميم والهوية والمحتوى والفيديو.",alternates:{canonical:"/work"},openGraph:{title:"معرض الأعمال | Creative Marketing",description:"تصفّح مشاريع Creative Marketing المنشورة في التصميم والهوية والمحتوى والفيديو.",url:"/work",locale:"ar_EG"}};
 export default async function WorkIndex(){
   const [projects,settings]=await Promise.all([getPublishedShowcaseProjects(),getAllSiteSettings()]);
   const brandName=typeof settings["brand.name"]==="string"?settings["brand.name"]:"Creative Marketing";

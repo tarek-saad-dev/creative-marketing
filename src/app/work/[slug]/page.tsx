@@ -16,19 +16,13 @@ import { CaseStudyView } from "@/components/sections/case-study/case-study-view"
 import { DraftPreviewBanner } from "@/components/preview/draft-preview-banner";
 import { buildContactAndSocialLinks } from "@/components/sections/hero/hero-copy";
 import { isUsableMediaUrl } from "@/lib/media/public-media";
+import {getPublicSeo} from "@/server/services/seo.service";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
-
-function getSiteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
-}
 
 function asString(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
@@ -57,10 +51,11 @@ export async function generateMetadata({
   if (!project) {
     return {
       title: "المشروع غير موجود",
+      robots: {index:false,follow:false},
     };
   }
 
-  const siteUrl = getSiteUrl();
+  const {origin:siteUrl}=await getPublicSeo();
   const canonical = `${siteUrl}/work/${project.slug}`;
   const ogImages = isUsableMediaUrl(project.coverImageUrl)
     ? [

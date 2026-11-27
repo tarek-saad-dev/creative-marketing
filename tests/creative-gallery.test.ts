@@ -216,3 +216,13 @@ test("launch copy fills empty overrides only, preserves media and layout, and is
  const snapshot=structuredClone(initial);const next=fillLaunchCopy(initial);
  assert.deepEqual(initial,snapshot);assert.equal(next.copy.heroTitle,"عنوان خاص");assert.equal(next.copy.contactTitle,launchCopy.contactTitle);assert.deepEqual(next.industries,initial.industries);assert.deepEqual(next.sections,initial.sections);assert.ok(launchLayoutSchema.safeParse(next).success);assert.deepEqual(fillLaunchCopy(next),next);
 });
+
+import {canonicalOrigin,readSeo} from "../src/lib/content/seo";
+test("SEO uses configured canonical origin, rejects unsafe values and resolves sharing images",()=>{
+ assert.equal(canonicalOrigin("https://example.com/"),"https://example.com");
+ for(const url of ["javascript:alert(1)","http://example.com","https://user:pass@example.com","https://example.com/path","https://example.com/?x=1"])assert.equal(canonicalOrigin(url),null);
+ const seo=readSeo({"seo.siteUrl":"https://example.com","seo.siteTitle":"عنوان","seo.metaDescriptionAr":"وصف","seo.ogImageUrl":"/brand.png"},{publicUrl:"https://other.example"});
+ assert.deepEqual(seo,{origin:"https://example.com",title:"عنوان",description:"وصف",image:"https://example.com/brand.png"});
+ assert.equal(readSeo({"seo.siteUrl":"bad","seo.ogImageUrl":"//evil.example/a.png"},{productionHost:"cm.vercel.app"}).origin,"https://cm.vercel.app");
+ assert.equal(readSeo({"seo.ogImageUrl":"//evil.example/a.png"},{publicUrl:"https://example.com"}).image,undefined);
+});

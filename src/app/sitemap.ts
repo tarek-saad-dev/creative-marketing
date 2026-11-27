@@ -2,15 +2,11 @@ import { niches } from "@/lib/content/niches";
 import type { MetadataRoute } from "next";
 import { getPublishedProjectSlugs } from "@/server/services/project.service";
 
-function getSiteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
-}
+import {getPublicSeo} from "@/server/services/seo.service";
+export const dynamic="force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = getSiteUrl();
+  const {origin:siteUrl}=await getPublicSeo();
 
   let slugs: string[] = [];
   try {
@@ -22,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: siteUrl,
-      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
     },
@@ -30,7 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...niches.map(niche => ({ url: siteUrl + niche.path, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...slugs.map(slug => ({
       url: `${siteUrl}/work/${slug}`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
