@@ -17,7 +17,7 @@ export default async function AdminDashboardPage(){
  const c=data.counts;
  const stats=[{label:"طلبات جديدة",value:c.leadsNew,detail:c.leadsTotal+" إجمالي الطلبات",href:"/admin/leads?status=NEW",icon:Users},{label:"أعمال منشورة",value:c.projectsPublished,detail:c.projectsDraft+" مسودة",href:"/admin/projects",icon:Briefcase},{label:"الباقات المنشورة",value:c.packagesPublished,detail:c.packagesDraft+" مسودة",href:"/admin/content?section=packages",icon:Package},{label:"الخدمات النشطة",value:c.services,detail:"إدارة الخدمات",href:"/admin/content?section=services",icon:FileText}];
  const optional=new Set(["no-active-offer","no-testimonials","single-admin"]);
- const guided=new Set(journey?["no-published-projects","whatsapp-missing","packages-invalid-price"]:[]);
+ const guided=new Set(journey?["no-published-projects","whatsapp-missing"]:[]);
  const warnings=data.warnings.filter(w=>!optional.has(w.id)&&!guided.has(w.id)&&w.id!=="leads-new");
  const suggestions=data.warnings.filter(w=>optional.has(w.id)&& (w.id!=="single-admin"||commercial));
  return <div className="space-y-6">
