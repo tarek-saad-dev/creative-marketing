@@ -48,7 +48,7 @@ try{
   await owner.waitForURL(u=>u.pathname==="/preview/homepage"&&u.searchParams.get("edit")==="1");
   const sections=owner.locator("[data-visual-section]");
   assert.equal(await sections.count(),17,"All sections must remain editable even when hidden or empty");
-  await owner.locator('nav[aria-label="انتقال إلى قسم"] a[href="#visual-industries"]').click();
+  await owner.locator("#visual-section-select").selectOption("industries");
   await owner.waitForURL(u=>u.hash==="#visual-industries");
   await owner.waitForFunction(()=>{const target=document.getElementById("visual-industries"),bar=document.querySelector("[data-visual-toolbar]");if(!target||!bar)return false;const y=target.getBoundingClientRect().top;return y>=bar.getBoundingClientRect().bottom-3&&y<window.innerHeight*0.75;});
   const industry=owner.locator('[data-visual-section="industries"]');
@@ -94,7 +94,7 @@ try{
  await editor.getByRole("heading",{name:"QA Draft Work",exact:true}).waitFor();
  const projectPath=new URL(editor.url()).pathname;
  assert.notEqual(projectPath,"/admin/projects/new","Draft must navigate to a persisted project");
- await editor.getByRole("button",{name:"اختيار من المكتبة"}).last().click();
+ await editor.locator("#media").getByRole("button",{name:"اختيار من المكتبة",exact:true}).click();
  await editor.getByRole("dialog").getByRole("button",{name:"اختيار QA Media Project",exact:true}).click();
  await editor.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
  await editor.getByRole("button",{name:"اختيار عدة ملفات",exact:true}).click();
@@ -134,8 +134,9 @@ try{
  await owner.getByRole("button",{name:"حفظ المسودة وإضافة التصميمات"}).click();
  await owner.waitForURL(u=>/^\/admin\/projects\/[^/]+$/.test(u.pathname)&&u.pathname!=="/admin/projects/new"&&u.searchParams.get("from")==="hero");
  const contextProjectId=new URL(owner.url()).pathname.split("/").at(-1);
- await owner.getByRole("button",{name:"اختيار من المكتبة"}).last().click();
- await owner.getByRole("dialog").getByRole("button",{name:"اختيار QA Media Project",exact:true}).click();
+ await owner.locator("#media").getByRole("button",{name:"اختيار من المكتبة",exact:true}).click();
+ await owner.getByRole("dialog").getByLabel("بحث الوسائط").fill("/qa-artwork.png");
+ await owner.getByRole("dialog").locator('[data-media-url="/qa-artwork.png"]').getByRole("button",{name:/^اختيار /}).click();
  await owner.getByText("جاهزية النشر: مكتمل",{exact:false}).waitFor();
  await owner.getByRole("button",{name:"نشر",exact:true}).click();
  await owner.waitForURL(u=>u.pathname==="/admin/website"&&u.searchParams.get("section")==="hero"&&u.searchParams.get("project")===contextProjectId);
