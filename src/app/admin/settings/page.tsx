@@ -1,3 +1,4 @@
+import { MEDIA_LIBRARY_KEY } from "@/lib/media/library";
 import { HOMEPAGE_EDITOR_KEY } from "@/lib/content/homepage-editor";
 import { BRAND_ASSETS_KEY } from "@/lib/content/brand-assets";
 import { PORTFOLIO_SETTING_KEY } from "@/lib/content/portfolio-settings";
@@ -34,7 +35,7 @@ export default async function AdminSettingsPage() {
   ]);
 
   const structuredKeySet = new Set<string>(
-    [...Object.values(STRUCTURED_SETTING_KEYS), PORTFOLIO_SETTING_KEY, BRAND_ASSETS_KEY,HOMEPAGE_EDITOR_KEY]
+    [...Object.values(STRUCTURED_SETTING_KEYS), PORTFOLIO_SETTING_KEY, BRAND_ASSETS_KEY,HOMEPAGE_EDITOR_KEY,MEDIA_LIBRARY_KEY]
   );
   const extraSettings = settings.filter(s => !structuredKeySet.has(s.key));
   const isOwner = user.role === AdminRole.OWNER;

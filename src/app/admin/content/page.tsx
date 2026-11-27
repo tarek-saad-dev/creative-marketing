@@ -79,7 +79,7 @@ export default async function AdminContentPage({
         {sectionMeta.description}
       </p>
 
-      {data&&<CmsOverview data={data} canCommercial={canCommercial}/>}
+      {data&&<CmsOverview data={data} canCommercial={canCommercial} canEdit={canEdit}/>}
       {section === "settings" ? (
         <SettingsPanel canEdit={canCommercial} />
       ) : null}

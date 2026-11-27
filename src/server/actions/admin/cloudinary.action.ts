@@ -2,6 +2,7 @@
 
 import { AdminRole } from "@/generated/prisma";
 import { z } from "zod";
+import {getCurrentAdmin} from "@/server/auth/require-admin";
 import { withAdminMutation } from "@/server/auth/admin-mutation";
 import {
   createSignedUploadParams,
@@ -10,6 +11,7 @@ import {
 } from "@/server/services/cloudinary.service";
 
 const folderKeys = [
+  "library",
   "projects",
   "testimonials",
   "clientLogos",
@@ -34,6 +36,7 @@ export async function getCloudinaryUploadSignatureAction(
       : signatureSchema.parse(folderKeyOrInput);
 
   return withAdminMutation({ minimumRole: AdminRole.EDITOR }, async () => {
+    const live=await getCurrentAdmin();if(!live||live.role==="VIEWER")throw new Error("ليس لديك صلاحية رفع الوسائط");
     if (!isCloudinaryConfigured()) {
       throw new Error("رفع الوسائط غير مُفعّل — أضف إعدادات Cloudinary أولًا");
     }

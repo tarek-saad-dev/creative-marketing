@@ -1,5 +1,6 @@
 import "server-only";
 
+import {MEDIA_LIBRARY_KEY} from "@/lib/media/library";
 import {HOMEPAGE_EDITOR_KEY} from "@/lib/content/homepage-editor";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma";
@@ -132,6 +133,7 @@ function parseSettingValue(raw: string): Prisma.InputJsonValue {
 
 export async function upsertSiteSettingAdmin(rawInput: unknown) {
   const input = siteSettingInputSchema.parse(rawInput);
+  if(input.key===MEDIA_LIBRARY_KEY)throw new Error("استخدم مكتبة الوسائط");
   if(input.key===HOMEPAGE_EDITOR_KEY)throw new Error("استخدم محرر الصفحة الرئيسية");
   const value = parseSettingValue(input.value);
   const description = input.description?.trim() || undefined;
@@ -143,6 +145,7 @@ export async function upsertSiteSettingAdmin(rawInput: unknown) {
 
 export async function deleteSiteSettingAdmin(id: string) {
   const existing=await prisma.siteSetting.findUnique({where:{id},select:{key:true}});
+  if(existing?.key===MEDIA_LIBRARY_KEY)throw new Error("استخدم مكتبة الوسائط");
   if(existing?.key===HOMEPAGE_EDITOR_KEY)throw new Error("استخدم محرر الصفحة الرئيسية");
   const setting = await prisma.siteSetting.delete({
     where: { id },
