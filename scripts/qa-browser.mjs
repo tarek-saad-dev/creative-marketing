@@ -30,7 +30,7 @@ try {
       }
       const privatePreview=await page.request.get(new URL("/preview/project/qa-private",base.origin).toString(),{maxRedirects:0});
       assert.ok([302,303,307,308].includes(privatePreview.status()),"Private preview must require login");
-      for(const path of ["/preview/homepage","/preview/homepage?version=1"]){const res=await page.request.get(new URL(path,base.origin).toString(),{maxRedirects:0});assert.ok([302,303,307,308].includes(res.status()),"Homepage preview must require login");}
+      for(const path of ["/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1"]){const res=await page.request.get(new URL(path,base.origin).toString(),{maxRedirects:0});assert.ok([302,303,307,308].includes(res.status()),"Homepage preview must require login");}
       const stage=page.locator("#hero [data-hero-stage]");
       async function assertSceneBounds(){
         const stageBounds=await stage.boundingBox();

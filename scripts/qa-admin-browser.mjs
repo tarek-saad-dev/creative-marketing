@@ -17,7 +17,7 @@ async function expectRedirect(page,path,target){await page.goto(base+path);await
 async function overflow(page,path){const dimensions=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(dimensions.scroll<=dimensions.client+2,path+" overflow "+JSON.stringify(dimensions));}
 try{
  const guest=await browser.newContext();contexts.push(guest);
- for(const path of ["/admin","/admin/users","/admin/pages","/preview/homepage","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");}
+ for(const path of ["/admin","/admin/users","/admin/pages","/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");}
  const owner=await session("owner"),editor=await session("editor"),viewer=await session("viewer"),admin=await session("admin");
  const routes=["/admin","/admin/website","/admin/content","/admin/pages","/admin/projects","/admin/projects/new","/admin/projects/qa-media-project","/admin/media","/admin/portfolio","/admin/brand","/admin/content?section=services","/admin/content?section=packages","/admin/content?section=offers","/admin/content?section=testimonials","/admin/content?section=trust","/admin/content?section=logos","/admin/content?section=faqs","/admin/leads","/admin/leads/qa-lead","/admin/users","/admin/account","/admin/settings","/admin/audit"];
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:700}]){
@@ -33,6 +33,29 @@ try{
  await visit(owner,"/admin/pages?section=packages");await owner.getByLabel("عنوان الباقات",{exact:true}).waitFor();
  await expectRedirect(editor,"/admin/website","/admin");
  console.log("PASS: guided website journey, deep-linked editor and role restriction");
+ await expectRedirect(editor,"/preview/homepage?edit=1","/admin");
+ for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:700}]){
+  await owner.setViewportSize(viewport);
+  await visit(owner,"/admin/website");
+  await owner.getByRole("link",{name:"تعديل من شكل الموقع",exact:true}).click();
+  await owner.waitForURL(u=>u.pathname==="/preview/homepage"&&u.searchParams.get("edit")==="1");
+  const sections=owner.locator("[data-visual-section]");
+  assert.equal(await sections.count(),17,"All sections must remain editable even when hidden or empty");
+  await owner.locator('nav[aria-label="انتقال إلى قسم"] a[href="#visual-industries"]').click();
+  await owner.waitForURL(u=>u.hash==="#visual-industries");
+  const industry=owner.locator('[data-visual-section="industries"]');
+  await industry.getByRole("link",{name:"تعديل المجالات والصور",exact:true}).waitFor();
+  assert.equal(await industry.locator("[inert] #industries").count(),1,"Visitor-facing links must be inert");
+  await overflow(owner,"visual homepage");
+  if(viewport.width!==320)await owner.screenshot({path:"qa-admin-artifacts/visual-"+viewport.width+".png",animations:"disabled"});
+  await industry.getByRole("link",{name:"تعديل المجالات والصور",exact:true}).click();
+  await owner.waitForURL(u=>u.pathname==="/admin/pages"&&u.searchParams.get("section")==="industries");
+  await owner.locator("#industry-title").waitFor();
+ }
+ await owner.setViewportSize({width:1440,height:900});
+ const visitorHtml=await (await guest.request.get(base+"/")).text();
+ assert.ok(!visitorHtml.includes('data-visual-section='),"Editor controls leaked to public homepage");
+ console.log("PASS: visual editing links and private section navigation at three widths");
  await expectRedirect(viewer,"/admin/projects/new","/admin");await expectRedirect(viewer,"/admin/media","/admin");await expectRedirect(editor,"/admin/pages","/admin");await expectRedirect(admin,"/admin/users","/admin");
  await visit(viewer,"/admin/projects");assert.equal(await viewer.getByRole("link",{name:"إضافة مشروع"}).count(),0);
  await visit(editor,"/admin/projects/new");
@@ -78,6 +101,7 @@ try{
  await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();
  await owner.getByText("تم حفظ المسودة فقط.",{exact:true}).waitFor();
  response=await guest.request.get(base+"/");assert.ok(!(await response.text()).includes("QA Industry Headline"),"Industry draft leaked publicly");
+ const visualDraft=await owner.request.get(base+"/preview/homepage?edit=1");assert.ok(visualDraft.ok());assert.ok((await visualDraft.text()).includes("QA Industry Headline"),"Visual editor must use saved draft");
  const industryPreview=await owner.request.get(base+"/preview/homepage");assert.ok(industryPreview.ok());assert.ok((await industryPreview.text()).includes("QA Industry Headline"),"Industry draft preview missing");
  await owner.getByRole("button",{name:"نشر",exact:true}).click();
  await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
