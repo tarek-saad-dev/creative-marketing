@@ -30,3 +30,6 @@ Replaces tiny showcase labels with a two-level editorial title, portfolio index 
 
 ## Project publishing studio
 Quick creation collects title, industry, summary and optional client/services, uses a server-generated unique ASCII slug (including Arabic-only titles), saves only a draft, then navigates to media. Optional first-image cover assignment is conditional and transactional, draft-only and never replaces an existing cover. Media supports file drop. One readiness checklist is reused for server publish and admin views. Deleted projects cannot be edited. No migration, actual uploads or production project mutations. Authenticated end-to-end acceptance remains required.
+
+## Minimal immersive hero
+Desktop shows at most three distinct artworks, with the centre dominant and quieter side panels. Mobile shows only the centre; navigation is manual via arrows or swipe. No repeated ribbon, phone, dot row, or frame labels. Keeps a concise editorial title and explicit concept disclosure. Multi-media selection remains available through a compact select and full-screen viewer. Background illumination is localized to the hero, preserving other sections. Full viewport desktop and contain media remain requirements; CSS geometry and public browser QA updated for the new composition. No database or actual artwork changes.

@@ -10,10 +10,10 @@ const failures=[];
 try{
   for(const [viewport,width,height] of [[1920,1120,690],[1440,840,608],[1366,810,476],[1024,600,476],[768,700,422],[390,364,246],[320,294,205]]){
     const page=await browser.newPage({viewport:{width:viewport,height:900},reducedMotion:"no-preference"});
-    for(const offsets of [[0],[0,1],[-1,0,1],[-1,0,1,2],[-2,-1,0,1,2],[-1,0],[-2,-1,0,1]]){
-      for(const phone of [false,true]){
+    for(const offsets of [[0],[0,1],[-1,0,1],[-1,0]]){
+      for(const phone of [false]){
         const markup=offsets.map(offset=>'<div class="scenePanel" data-offset="'+offset+'"></div>').join("")+(phone?'<div class="scenePhone"></div>':'');
-        await page.setContent('<style>*{box-sizing:border-box}body{margin:0}'+css+' .fixture .stage{margin:0}.fixture .sceneRig,.fixture .scenePanel{transition:none!important}</style><div class="hero fixture" style="padding:0;min-height:0;display:block"><div class="stage" data-count="'+offsets.length+'" data-phone="'+phone+'" style="width:'+width+'px;height:'+height+'px"><div class="sceneRig">'+markup+'</div></div></div>');
+        await page.setContent('<style>*{box-sizing:border-box}body{margin:0}'+css+' .fixture .stage{margin:0}.fixture .sceneRig,.fixture .scenePanel{transition:none!important}</style><div class="hero fixture" data-minimal="true" style="padding:0;min-height:0;display:block"><div class="stage" data-count="'+offsets.length+'" data-phone="'+phone+'" style="width:'+width+'px;height:'+height+'px"><div class="sceneRig">'+markup+'</div></div></div>');
         for(const [x,y] of [[0,0],[1.5,2],[-1.5,-2]]){
           const issues=await page.evaluate(([x,y])=>{
             const rig=document.querySelector(".sceneRig");
