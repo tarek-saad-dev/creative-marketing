@@ -39,3 +39,6 @@ Admin-only interface redesign, preserving the restored public UI. Grouped role-a
 
 ## Central media library V1
 Editor+ library aggregates referenced project, cover, service, logo, testimonial and brand assets with URL deduplication, usage labels, search/filter and paginated display. Independent signed uploads register in a bounded SiteSetting (500 assets), with namespace validation and serializable update; existing reference queries have per-source limits. Project and brand pickers reuse URLs without duplicating files. No destructive deletion, Cloudinary inventory synchronization or private storage; upload only publishable media. No migration or production uploads. Authenticated upload and reuse testing pending.
+
+## Projects workspace
+Canonical /admin/projects uses server-filtered status/industry/search, sort and 18-item pagination with actual status counts. CMS project panel links to the same workspace. Viewer has no mutation controls, editor may edit/publish/archive, ADMIN+ may soft-delete/restore. Cover selection uses MediaPicker with a contained preview, and generic forms display success and handle network errors. CI browser jobs pin Ubuntu 24.04 because ubuntu-latest switched to a runner whose Microsoft apt source failed with HTTP 403 during Chromium dependencies; restore independent TypeScript gate. No public design or data changes.

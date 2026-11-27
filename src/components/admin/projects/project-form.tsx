@@ -1,5 +1,7 @@
 "use client";
 
+import {MediaPicker} from "@/components/admin/media/media-picker";
+import {ResilientImage} from "@/components/ui/resilient-media";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -231,10 +233,9 @@ export function ProjectForm({
             {step === 3 ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <p className="sm:col-span-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-foreground-muted">
-                  أضف رابط الصورة. يمكنك استخدام روابط الصور الآن، وربط
-                  Cloudinary لاحقًا. بعد الحفظ استخدم مدير الوسائط لإضافة
-                  المزيد.
+                  اختر الغلاف من مكتبة الوسائط أو استخدم رابط صورة. احفظ المشروع لتطبيق التغيير.
                 </p>
+                <div className="sm:col-span-2 flex flex-wrap items-center gap-3"><div className="relative h-32 w-40 overflow-hidden rounded-lg bg-[#252c69]"><ResilientImage src={watch("coverImageUrl")} alt={watch("coverImageAlt")||title||"الغلاف"} sizes="160px"/></div><MediaPicker imagesOnly disabled={formState.isSubmitting} onPick={item=>{setValue("coverImageUrl",item.url,{shouldDirty:true,shouldValidate:true});setValue("coverImageAlt",item.altText||title||item.name,{shouldDirty:true,shouldValidate:true});}}/></div>
                 <Field
                   label="صورة الغلاف"
                   error={formState.errors.coverImageUrl?.message}

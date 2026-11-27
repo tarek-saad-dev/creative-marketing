@@ -1,4 +1,5 @@
 import "server-only";
+import {PROJECT_PAGE_SIZE,type ProjectFilters} from "@/lib/admin/project-filters";
 import { planMediaMove, planMediaDrop } from "@/lib/media/portfolio-layout";
 
 import { prisma } from "@/lib/db/prisma";
@@ -347,4 +348,24 @@ export async function dropProjectMedia(projectId:string,mediaId:string,targetId:
     for(const item of planMediaDrop(items,mediaId,targetId))await tx.projectMedia.update({where:{id:item.id},data:{displayOrder:item.displayOrder}});
     return project;
   },{isolationLevel:"Serializable",timeout:20000});
+}
+
+export async function queryProjectsForAdmin(filters:ProjectFilters){
+ const where:Prisma.ProjectWhereInput={
+  deletedAt:filters.status==="deleted"?{not:null}:null,
+  ...(filters.status==="published"?{status:ContentStatus.PUBLISHED}:filters.status==="draft"?{status:ContentStatus.DRAFT}:filters.status==="archived"?{status:ContentStatus.ARCHIVED}:{}),
+  ...(filters.industry?{industry:filters.industry}:{}),
+  ...(filters.q?{OR:[{title:{contains:filters.q,mode:"insensitive"}},{clientName:{contains:filters.q,mode:"insensitive"}},{industry:{contains:filters.q,mode:"insensitive"}},{slug:{contains:filters.q,mode:"insensitive"}}]}:{})
+ };
+ const [total,grouped,deleted,industries]=await Promise.all([
+  prisma.project.count({where}),
+  prisma.project.groupBy({by:["status"],where:{deletedAt:null},_count:{_all:true},orderBy:{status:"asc"}}),
+  prisma.project.count({where:{deletedAt:{not:null}}}),
+  prisma.project.findMany({where:{deletedAt:null,industry:{not:null}},select:{industry:true},distinct:["industry"],orderBy:{industry:"asc"}})
+ ]);
+ const pages=Math.max(1,Math.ceil(total/PROJECT_PAGE_SIZE));const page=Math.min(filters.page,pages);
+ const orderBy:Prisma.ProjectOrderByWithRelationInput[]=filters.sort==="name"?[{title:"asc"},{id:"asc"}]:filters.sort==="oldest"?[{updatedAt:"asc"},{id:"asc"}]:[{updatedAt:"desc"},{id:"asc"}];
+ const rows=await prisma.project.findMany({where,orderBy,skip:(page-1)*PROJECT_PAGE_SIZE,take:PROJECT_PAGE_SIZE,select:adminProjectListSelect});
+ const count=(status:ContentStatus)=>grouped.find(g=>g.status===status)?._count._all??0;
+ return {rows,total,page,pages,industries:industries.flatMap(i=>i.industry?[i.industry]:[]),counts:{all:grouped.reduce((sum,g)=>sum+g._count._all,0),published:count(ContentStatus.PUBLISHED),draft:count(ContentStatus.DRAFT),archived:count(ContentStatus.ARCHIVED),deleted}};
 }
