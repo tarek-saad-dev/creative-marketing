@@ -14,7 +14,7 @@ export function roleAtLeast(
   role: string | null | undefined,
   minimum: SimpleAdminRole
 ): boolean {
-  if (!role || !(role in ROLE_RANK)) return false;
+  if (!role || !Object.prototype.hasOwnProperty.call(ROLE_RANK,role)) return false;
   return ROLE_RANK[role as SimpleAdminRole] >= ROLE_RANK[minimum];
 }
 
@@ -27,3 +27,8 @@ export function canEditContent(role: string | null | undefined): boolean {
 export function canEditCommercial(role: string | null | undefined): boolean {
   return roleAtLeast(role, "ADMIN");
 }
+
+export const teamAssignableRoles=["ADMIN","EDITOR","VIEWER"] as const;
+export type TeamAssignableRole=typeof teamAssignableRoles[number];
+export function canManageTeam(role:string|null|undefined){return role==="OWNER";}
+export function canManageTeamMember(actor:{id:string;role:string},target:{id:string;role:string;deletedAt?:unknown}){return canManageTeam(actor.role)&&actor.id!==target.id&&target.role!=="OWNER"&&!target.deletedAt;}

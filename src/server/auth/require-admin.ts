@@ -3,7 +3,8 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import type { AdminRole } from "@/generated/prisma";
-import { findAdminUserById } from "@/server/repositories/admin-user.repository";
+import {matchesCredentialVersion} from "@/server/auth/credential-version";
+import { findAdminCredentialById } from "@/server/repositories/admin-user.repository";
 import type { AdminUserSafe } from "@/server/repositories/admin-user.repository";
 
 export type AdminSessionUser = {
@@ -29,8 +30,8 @@ export async function getCurrentAdmin(): Promise<AdminSessionUser | null> {
   const user = session?.user;
   if (!user?.id || !user.email) return null;
 
-  const dbUser = await findAdminUserById(user.id);
-  if (!dbUser || !dbUser.isActive || dbUser.deletedAt) {
+  const dbUser = await findAdminCredentialById(user.id);
+  if (!dbUser || !dbUser.isActive || dbUser.deletedAt || !matchesCredentialVersion(user.credentialVersion,dbUser.passwordHash)) {
     return null;
   }
 

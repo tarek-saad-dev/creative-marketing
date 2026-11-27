@@ -1,7 +1,7 @@
 import "server-only";
 
 import { ZodError } from "zod";
-import { auth } from "@/auth";
+import {getCurrentAdmin} from "@/server/auth/require-admin";
 import type { AdminRole, Prisma } from "@/generated/prisma";
 import { hasRoleAtLeast, type AdminSessionUser } from "@/server/auth/types";
 import { logAdminAction } from "@/server/services/admin-audit.service";
@@ -18,15 +18,7 @@ export type AdminMutationResult<T> =
 
 /** Reads the current admin session without redirecting. For Server Actions. */
 export async function getSessionAdmin(): Promise<AdminSessionUser | null> {
-  const session = await auth();
-  const user = session?.user;
-  if (!user?.id || !user.email) return null;
-  return {
-    id: user.id,
-    name: user.name ?? "",
-    email: user.email,
-    role: user.role,
-  };
+  return getCurrentAdmin();
 }
 
 export type AdminAuditInfo = {
