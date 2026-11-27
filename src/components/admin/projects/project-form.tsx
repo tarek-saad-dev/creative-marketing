@@ -12,7 +12,7 @@ import {
 } from "@/server/actions/admin/project.action";
 import { AdminEntityForm } from "@/components/admin/admin-entity-form";
 import { Field } from "@/components/admin/field";
-import { isImageCandidate } from "@/lib/media/public-media";
+import { projectPublishChecklist } from "@/lib/content/project-publishing";
 import { slugify } from "@/lib/utils";
 import type { AdminProjectDetail } from "@/server/repositories/admin/project.admin.repository";
 
@@ -29,19 +29,14 @@ function PublishChecklist({
 }: {
   values: {
     title?: string;
+    slug?: string;
     industry?: string;
     summary?: string;
     coverImageUrl?: string;
     coverImageAlt?: string;
   };
 }) {
-  const items = [
-    { label: "الاسم", ok: Boolean(values.title?.trim()) },
-    { label: "المجال", ok: Boolean(values.industry?.trim()) },
-    { label: "الوصف", ok: Boolean(values.summary?.trim()) },
-    { label: "صورة الغلاف", ok: isImageCandidate(values.coverImageUrl) },
-    { label: "وصف الصورة", ok: Boolean(values.coverImageAlt?.trim()) },
-  ];
+  const items = projectPublishChecklist(values);
   const ready = items.every(i => i.ok);
 
   return (
@@ -121,6 +116,7 @@ export function ProjectForm({
         const title = watch("title");
         return (
           <div className="space-y-4">
+            {Object.keys(formState.errors).length>0&&<div role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive"><p className="font-semibold">راجع الحقول قبل الحفظ</p>{Object.entries(formState.errors).map(([key,error])=><button key={key} type="button" className="block min-h-9 text-start underline" onClick={()=>setStep(["title","slug","clientName","industry","summary"].includes(key)?1:["challenge","solution","duration","resultText"].includes(key)?2:["coverImageUrl","coverImageAlt"].includes(key)?3:key==="serviceIds"?4:5)}>{error?.message?.toString()||"راجع "+key}</button>)}</div>}
             <div className="flex flex-wrap gap-1">
               {STEPS.map(item => (
                 <button

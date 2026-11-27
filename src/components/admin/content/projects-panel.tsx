@@ -4,22 +4,10 @@ import { ContentStatus } from "@/generated/prisma";
 import { ContentStatusBadge } from "@/components/admin/status-badge";
 import { PreviewButton } from "@/components/admin/preview-button";
 import { listAdminProjects } from "@/server/services/admin/project.admin.service";
-import { isUsableMediaUrl } from "@/lib/media/public-media";
+import { ResilientImage } from "@/components/ui/resilient-media";
+import { projectPublishChecklist } from "@/lib/content/project-publishing";
 import { ViewerReadonlyBanner } from "@/components/admin/content/content-helpers";
 
-function isVisuallyReady(project: {
-  title: string;
-  industry: string | null;
-  coverImageUrl: string | null;
-  coverImageAlt: string | null;
-}): boolean {
-  return (
-    Boolean(project.title?.trim()) &&
-    Boolean(project.industry?.trim()) &&
-    isUsableMediaUrl(project.coverImageUrl) &&
-    Boolean(project.coverImageAlt?.trim())
-  );
-}
 
 export async function ProjectsPanel({ canEdit }: { canEdit: boolean }) {
   const projects = await listAdminProjects({ includeDeleted: false });
@@ -64,23 +52,10 @@ export async function ProjectsPanel({ canEdit }: { canEdit: boolean }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {projects.map(project => {
-            const ready = isVisuallyReady(project);
+            const ready = projectPublishChecklist(project).every(item=>item.ok);
             return (
               <article key={project.id} className="admin-card overflow-hidden">
-                <div className="aspect-[16/10] bg-muted">
-                  {isUsableMediaUrl(project.coverImageUrl) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={project.coverImageUrl}
-                      alt={project.coverImageAlt || project.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-foreground-muted">
-                      بدون غلاف
-                    </div>
-                  )}
-                </div>
+                <div className="relative aspect-[16/10] bg-muted"><ResilientImage src={project.coverImageUrl} alt={project.coverImageAlt||project.title} sizes="(max-width:640px) 100vw, 320px" /></div>
                 <div className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -108,19 +83,20 @@ export async function ProjectsPanel({ canEdit }: { canEdit: boolean }) {
                   </p>
 
                   <div className="flex flex-wrap gap-2">
-                    <Link
+                    {canEdit&&<Link
                       href={`/admin/projects/${project.id}`}
                       className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground"
                     >
                       تعديل
-                    </Link>
-                    {project.status === ContentStatus.PUBLISHED ||
-                    project.status === ContentStatus.DRAFT ? (
+                    </Link>}
+                    {canEdit&&(project.status === ContentStatus.PUBLISHED ||
+                    project.status === ContentStatus.DRAFT) ? (
                       <PreviewButton
                         path={`/work/${project.slug}`}
                         label="معاينة المشروع"
                       />
                     ) : null}
+                    {canEdit&&<Link href={"/preview/project/"+project.id} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center text-xs text-primary underline">معاينة Hero</Link>}
                   </div>
                 </div>
               </article>

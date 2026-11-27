@@ -23,12 +23,14 @@ export function ProjectMediaManager({
   media,
   cloudinaryConfigured,
   coverImageUrl,
+  canAutoCover=false,
 }: {
   projectId: string;
   projectSlug: string;
   media: MediaRow[];
   cloudinaryConfigured: boolean;
   coverImageUrl: string | null;
+  canAutoCover?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -36,6 +38,7 @@ export function ProjectMediaManager({
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [uploadSummary,setUploadSummary]=useState<string | null>(null);
   const uploadLock=useRef(false);
+  const [autoCover,setAutoCover]=useState(true);
   const dragged=useRef<string|null>(null);
   const [dropTarget,setDropTarget]=useState<string|null>(null);
 
@@ -59,6 +62,7 @@ export function ProjectMediaManager({
     startTransition(async () => {
       const result = await addProjectMediaAction({
         projectId,
+        autoCover:canAutoCover&&!coverImageUrl&&autoCover,
         type,
         url,
         altText,
@@ -92,7 +96,7 @@ export function ProjectMediaManager({
       bytes?: number; width?: number; height?: number; duration?: number; eager?: Array<{secure_url:string}>;
     };
     const result = await addProjectMediaAction({
-      projectId,type,url:raw.secure_url,
+      projectId,type,url:raw.secure_url,autoCover:canAutoCover&&!coverImageUrl&&autoCover,
       thumbnailUrl:type==="VIDEO" ? (videoPoster(raw.secure_url,raw.eager?.[0]?.secure_url)||"") : raw.secure_url,
       altText:"",caption:"",displayOrder,cloudinaryPublicId:raw.public_id,
       resourceType:raw.resource_type,format:raw.format??"",bytes:raw.bytes??null,
@@ -146,10 +150,11 @@ export function ProjectMediaManager({
         project: {projectSlug}
       </p>
 
+      {canAutoCover&&!coverImageUrl&&<label className="flex min-h-11 items-center gap-2 rounded-lg border border-border p-3 text-sm"><input type="checkbox" checked={autoCover} disabled={pending||Boolean(uploadProgress)} onChange={e=>setAutoCover(e.target.checked)}/>استخدم أول صورة تُرفع كغلاف للمسودة (لن يستبدل غلافًا موجودًا)</label>}
       {cloudinaryConfigured ? (
-        <div className="space-y-3 rounded-xl border border-dashed border-border p-4">
+        <div className="space-y-3 rounded-xl border border-dashed border-border p-4" onDragOver={e=>{if(e.dataTransfer.types.includes("Files"))e.preventDefault();}} onDrop={e=>{if(!e.dataTransfer.files.length)return;e.preventDefault();void uploadBatch(Array.from(e.dataTransfer.files));}}>
           <p className="font-semibold">رفع مجموعة صور وفيديوهات</p>
-          <p className="text-xs text-foreground-muted">اختر أكثر من ملف. يتم الرفع بالترتيب، وتظهر نتيجة كل ملف في حالة الخطأ.</p>
+          <p className="text-xs text-foreground-muted">اختر أو اسحب أكثر من ملف هنا. يتم الرفع بالترتيب، وتظهر نتيجة كل ملف في حالة الخطأ.</p>
           <label className="inline-flex min-h-11 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
             اختيار الملفات
             <input type="file" multiple accept="image/*,video/*" className="sr-only" disabled={pending || Boolean(uploadProgress)} onChange={event=>{const files=Array.from(event.target.files||[]);event.target.value="";void uploadBatch(files);}} />
