@@ -11,18 +11,21 @@ await mkdir("qa-admin-artifacts",{recursive:true});
 const browser=await chromium.launch({headless:true});
 const errors=[];
 const contexts=[];
-async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
+const dismissUnsaved=new WeakSet();
+const unsavedDialogs=new WeakMap();
+async function session(role,credential=password){const context=await browser.newContext({viewport:{width:1440,height:900}});contexts.push(context);const page=await context.newPage();page.setDefaultTimeout(20000);page.on("pageerror",e=>errors.push(role+": "+e.message));page.on("dialog",async d=>{if(d.type()==="alert")errors.push(role+": "+d.message());if(d.type()==="confirm"&&d.message().includes("تعديلات غير محفوظة")){unsavedDialogs.set(page,(unsavedDialogs.get(page)??0)+1);if(dismissUnsaved.has(page)){dismissUnsaved.delete(page);await d.dismiss();return;}}await d.accept();});await page.goto(base+"/admin/login");await page.locator("#email").fill(role+"@example.test");await page.locator("#password").fill(credential);await page.getByRole("button",{name:"تسجيل الدخول",exact:true}).click();await page.waitForURL(u=>u.origin===base&&u.pathname==="/admin");await page.locator("#admin-main h1").waitFor();return page;}
 async function visit(page,path){const response=await page.goto(base+path,{waitUntil:"domcontentloaded"});assert.ok(response?.ok(),path+" HTTP "+response?.status());assert.equal(new URL(page.url()).pathname,path.split("?")[0],"Unexpected redirect: "+path);await page.locator("#admin-main h1").waitFor();assert.equal(await page.getByText("Application error: a server-side exception has occurred",{exact:false}).count(),0);assert.equal(await page.getByRole("heading",{name:"تعذر تحميل هذه الصفحة",exact:true}).count(),0,path+" error boundary");}
-async function expectRedirect(page,path,target){await page.goto(base+path);await page.waitForURL(u=>u.pathname===target);}
+async function expectRedirect(page,path,target){await page.goto(base+path);await page.waitForURL(u=>u.origin===base&&u.pathname===target);}
 async function overflow(page,path){const dimensions=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert.ok(dimensions.scroll<=dimensions.client+2,path+" overflow "+JSON.stringify(dimensions));}
 try{
  const guest=await browser.newContext();contexts.push(guest);
- for(const path of ["/admin","/admin/users","/admin/pages","/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");}
+ for(const path of ["/admin","/admin?utm_source=qa","/admin/users","/admin/pages","/admin/projects","/preview/homepage","/preview/homepage?edit=1","/preview/homepage?version=1","/preview/project/qa-media-project"]){const response=await guest.request.get(base+path,{maxRedirects:0});assert.ok([302,303,307,308].includes(response.status()),path+" must require login");const location=response.headers().location;assert.ok(location,path+" missing Location");const target=new URL(location,base);assert.equal(target.origin,base,path+" must stay on request origin");assert.equal(target.pathname,"/admin/login");}
+ console.log("PASS: same-origin guest redirects despite mismatched AUTH_URL");
  const owner=await session("owner"),editor=await session("editor"),viewer=await session("viewer"),admin=await session("admin");
  const routes=["/admin","/admin/website","/admin/content","/admin/pages","/admin/projects","/admin/projects/new","/admin/projects/qa-media-project","/admin/media","/admin/portfolio","/admin/brand","/admin/content?section=services","/admin/content?section=packages","/admin/content?section=offers","/admin/content?section=testimonials","/admin/content?section=trust","/admin/content?section=logos","/admin/content?section=faqs","/admin/leads","/admin/leads/qa-lead","/admin/users","/admin/account","/admin/settings","/admin/audit"];
  for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:700}]){
   await owner.setViewportSize(viewport);
-  for(const route of routes){await visit(owner,route);await overflow(owner,route);if(route==="/admin"){const contrast=await owner.locator("[data-admin-welcome-title]").evaluate(el=>{const luminance=color=>{const channels=color.match(/\d+(?:\.\d+)?/g).slice(0,3).map(v=>{const n=Number(v)/255;return n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4;});return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};const text=luminance(getComputedStyle(el).color),bg=luminance(getComputedStyle(el.parentElement).backgroundColor);return (Math.max(text,bg)+0.05)/(Math.min(text,bg)+0.05);});assert.ok(contrast>=4.5,"Admin welcome text contrast must be at least 4.5:1");}if(viewport.width!==320&&["/admin","/admin/pages","/admin/media","/admin/users","/admin/leads"].includes(route))await owner.screenshot({path:"qa-admin-artifacts/"+viewport.width+"-"+route.split("/").at(-1)+".png",fullPage:true,animations:"disabled"});}
+  for(const route of routes){await visit(owner,route);await overflow(owner,route);if(route==="/admin"){const contrast=await owner.locator("[data-admin-welcome-title]").evaluate(el=>{const luminance=color=>{const channels=color.match(/\d+(?:\.\d+)?/g).slice(0,3).map(v=>{const n=Number(v)/255;return n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4;});return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};const text=luminance(getComputedStyle(el).color),bg=luminance(getComputedStyle(el.parentElement).backgroundColor);return (Math.max(text,bg)+0.05)/(Math.min(text,bg)+0.05);});assert.ok(contrast>=4.5,"Admin welcome text contrast must be at least 4.5:1");}if(viewport.width!==320&&["/admin","/admin/website","/admin/pages","/admin/media","/admin/users","/admin/leads","/admin/projects/qa-media-project"].includes(route))await owner.screenshot({path:"qa-admin-artifacts/"+viewport.width+"-"+route.split("/").at(-1)+".png",fullPage:true,animations:"disabled"});}
   if(viewport.width<1024){await owner.getByRole("button",{name:"فتح القائمة"}).click();await owner.getByRole("dialog").getByRole("link",{name:"إدارة الموقع",exact:true}).click();await owner.waitForURL(u=>u.pathname==="/admin/website");assert.equal(await owner.getByRole("dialog").count(),0);}
  }
  console.log("PASS: 69 admin route/viewport checks and mobile navigation");
@@ -43,6 +46,7 @@ try{
   assert.equal(await sections.count(),17,"All sections must remain editable even when hidden or empty");
   await owner.locator('nav[aria-label="انتقال إلى قسم"] a[href="#visual-industries"]').click();
   await owner.waitForURL(u=>u.hash==="#visual-industries");
+  await owner.waitForFunction(()=>{const target=document.getElementById("visual-industries"),bar=document.querySelector("[data-visual-toolbar]");if(!target||!bar)return false;const y=target.getBoundingClientRect().top;return y>=bar.getBoundingClientRect().bottom-3&&y<window.innerHeight*0.75;});
   const industry=owner.locator('[data-visual-section="industries"]');
   await industry.getByRole("link",{name:"تعديل المجالات والصور",exact:true}).waitFor();
   assert.equal(await industry.locator("[inert] #industries").count(),1,"Visitor-facing links must be inert");
@@ -56,6 +60,25 @@ try{
  const visitorHtml=await (await guest.request.get(base+"/")).text();
  assert.ok(!visitorHtml.includes('data-visual-section='),"Editor controls leaked to public homepage");
  console.log("PASS: visual editing links and private section navigation at three widths");
+ await expectRedirect(owner,"/admin/content?section=projects","/admin/projects");
+ await visit(owner,"/admin/pages");
+ await owner.locator('[data-unsaved-changes-guard][data-ready="true"]').waitFor({state:"attached"});
+ await owner.getByLabel("العنوان",{exact:true}).fill("QA Unsaved Navigation");
+ await owner.getByText("تعديلات غير محفوظة",{exact:true}).waitFor();
+ assert.ok(await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).isEnabled(),"Edit must be registered in React state");
+ const previousDialogs=unsavedDialogs.get(owner)??0;
+ dismissUnsaved.add(owner);
+ await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();
+ assert.equal(unsavedDialogs.get(owner),previousDialogs+1,"Cancel must actually display the unsaved changes dialog");
+ assert.equal(new URL(owner.url()).pathname,"/admin/pages");
+ const retainedTitle=owner.locator("#home-copy-heroTitle");
+ await retainedTitle.waitFor({state:"visible"});
+ assert.equal(await retainedTitle.inputValue(),"QA Unsaved Navigation","Cancelled navigation must retain the edited title");
+ assert.equal(await owner.getByRole("textbox",{name:"العنوان",exact:true}).count(),1,"Title accessible name must not include its entered value");
+ assert.equal(new URL(owner.url()).pathname,"/admin/pages");
+ await owner.getByRole("link",{name:"العودة لإدارة الموقع",exact:true}).click();await owner.waitForURL(u=>u.pathname==="/admin/website");
+ assert.equal(unsavedDialogs.get(owner),previousDialogs+2,"Accept must actually display the unsaved changes dialog");
+ console.log("PASS: cancelled navigation preserves unsaved input; canonical project page");
  await expectRedirect(viewer,"/admin/projects/new","/admin");await expectRedirect(viewer,"/admin/media","/admin");await expectRedirect(editor,"/admin/pages","/admin");await expectRedirect(admin,"/admin/users","/admin");
  await visit(viewer,"/admin/projects");assert.equal(await viewer.getByRole("link",{name:"إضافة مشروع"}).count(),0);
  await visit(editor,"/admin/projects/new");
@@ -103,6 +126,8 @@ try{
  await heroTitle.fill("QA Homepage Headline");
  await owner.getByRole("button",{name:"حفظ مسودة",exact:true}).click();
  await owner.getByText("تم حفظ المسودة فقط.",{exact:true}).waitFor();
+ await visit(owner,"/admin");await owner.getByRole("link",{name:/مسودة موقع بانتظار النشر/}).waitFor();
+ await owner.getByRole("link",{name:/مسودة موقع بانتظار النشر/}).click();await owner.waitForURL(u=>u.pathname==="/admin/pages");
  let response=await guest.request.get(base+"/");assert.ok(response.ok());assert.ok(!(await response.text()).includes("QA Homepage Headline"),"Draft leaked publicly");
  await owner.getByRole("button",{name:"نشر",exact:true}).click();
  await owner.getByText("تم نشر الصفحة.",{exact:true}).waitFor();
@@ -205,6 +230,16 @@ try{
  const personal=await session("admin",ownPassword);await visit(personal,"/admin/account");
  console.log("PASS: personal password change revokes prior session and permits fresh login");
  console.log("PASS: password reset invalidates old session and new credentials work");
+ const sessionCookie = c=>/^(?:__Secure-)?authjs\.session-token(?:\.\d+)?$/.test(c.name);
+ assert.ok((await personal.context().cookies()).some(sessionCookie),"Expected authenticated session cookie before logout");
+ await personal.getByRole("button",{name:/خروج/}).click();
+ await personal.waitForURL(u=>u.origin===base&&u.pathname==="/admin/login");
+ assert.ok(!(await personal.context().cookies()).some(sessionCookie),"Logout must clear every session cookie chunk");
+ const loggedOut=await personal.request.get(base+"/admin",{maxRedirects:0});
+ assert.ok([302,303,307,308].includes(loggedOut.status()),"Logout must deny subsequent protected request");
+ assert.equal(new URL(loggedOut.headers().location,base).href,base+"/admin/login");
+ await expectRedirect(personal,"/admin","/admin/login");
+ console.log("PASS: logout clears session cookies and denies subsequent protected request");
  assert.deepEqual(errors,[],"Browser runtime errors");
  console.log("Admin acceptance passed: protected routes, 3 viewport sizes, draft project, media reuse, homepage publication, CRM, live role, suspension and password reset");
 }catch(e){for(const [i,context] of contexts.entries()){const pages=context.pages();if(pages.length)await pages[0].screenshot({path:"qa-admin-artifacts/failure-"+i+".png",fullPage:true}).catch(()=>{});}throw e;}finally{await browser.close();}

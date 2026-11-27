@@ -27,7 +27,8 @@ jobs:
       CM_QA_LOCAL_DATABASE: '1'
       DATABASE_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
       DIRECT_URL: postgresql://cmqa:local-qa-only@127.0.0.1:5432/cm_admin_qa?sslmode=require
-      AUTH_URL: http://127.0.0.1:3000
+      # Deliberately differs from browser origin to catch redirect leaks.
+      AUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: 'true'
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
       NEXT_TELEMETRY_DISABLED: '1'
@@ -59,7 +60,15 @@ jobs:
           cat /tmp/cm-qa-bridge.log
       - run: npx tsx scripts/qa-admin-fixtures.ts
       - run: npm install --no-save --package-lock=false --ignore-scripts playwright
-      - run: npx playwright install --with-deps chromium
+      - name: Install Chromium and system dependencies
+        shell: bash
+        run: |
+          # Hosted runner's unrelated Microsoft feed returned HTTP 403.
+          # Disable only the dedicated Microsoft feed on this disposable runner.
+          for source in /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources; do
+            if [ -f "$source" ]; then sudo mv "$source" "$source.disabled"; fi
+          done
+          npx playwright install --with-deps chromium
       - run: npm run build
       - name: Start isolated application and execute browser acceptance
         run: |

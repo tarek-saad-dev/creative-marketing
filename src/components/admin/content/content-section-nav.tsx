@@ -19,7 +19,7 @@ export function ContentSectionNav({ active }: { active: ContentSectionId }) {
           className="admin-input"
           value={active}
           onChange={event => {
-            window.location.href = `/admin/content?section=${event.target.value}`;
+            window.location.href = event.target.value==="projects"?"/admin/projects":`/admin/content?section=${event.target.value}`;
           }}
         >
           {CONTENT_SECTIONS.map(section => (
@@ -40,7 +40,7 @@ export function ContentSectionNav({ active }: { active: ContentSectionId }) {
           return (
             <Link
               key={section.id}
-              href={`/admin/content?section=${section.id}`}
+              href={section.id==="projects"?"/admin/projects":`/admin/content?section=${section.id}`}
               aria-current={isActive ? "page" : undefined}
               className={
                 isActive
