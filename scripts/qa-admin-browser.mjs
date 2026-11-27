@@ -255,8 +255,17 @@ try{
  console.log("PASS: password reset invalidates old session and new credentials work");
  const sessionCookie = c=>/^(?:__Secure-)?authjs\.session-token(?:\.\d+)?$/.test(c.name);
  assert.ok((await personal.context().cookies()).some(sessionCookie),"Expected authenticated session cookie before logout");
+ // Authenticated GET and RSC prefetch must not emit a refreshed session cookie:
+ // those responses may finish after logout and restore a stale JWT.
+ for(const request of [await personal.request.get(base+"/admin/account"),await personal.request.get(base+"/admin/projects",{headers:{RSC:"1","Next-Router-Prefetch":"1"}})]){
+  assert.ok(request.ok(),"Protected request should succeed before logout");
+  assert.ok(!request.headersArray().some(h=>h.name.toLowerCase()==="set-cookie"&&/authjs\.session-token/.test(h.value)),"Read-only admin requests must not rotate JWT cookies");
+ }
+ const inflight=personal.request.get(base+"/admin/projects",{headers:{RSC:"1","Next-Router-Prefetch":"1"}});
  await personal.getByRole("button",{name:/خروج/}).click();
+ await inflight;
  await personal.waitForURL(u=>u.origin===base&&u.pathname==="/admin/login");
+ await personal.locator("#email").waitFor({state:"visible"});
  assert.ok(!(await personal.context().cookies()).some(sessionCookie),"Logout must clear every session cookie chunk");
  const loggedOut=await personal.request.get(base+"/admin",{maxRedirects:0});
  assert.ok([302,303,307,308].includes(loggedOut.status()),"Logout must deny subsequent protected request");

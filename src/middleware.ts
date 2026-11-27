@@ -34,12 +34,12 @@ export default async function middleware(request: NextRequest, event: NextFetchE
   // callback; this invocation is its middleware adapter, with a NextFetchEvent.
   const run = guarded as unknown as (request: NextRequest, event: NextFetchEvent) => ReturnType<typeof guarded>;
   const response = await run(request, event);
-  // Auth.js refreshes the session in middleware. A refreshed Set-Cookie on
-  // the same POST as a server action can overwrite the action's logout cookie.
-  // Keep authentication checks, but leave mutation cookie writes to the action.
-  if (request.method !== "GET" && request.method !== "HEAD" && response instanceof Response) {
-    response.headers.delete("set-cookie");
-  }
+  // This guard is read-only: Auth.js emits rolling JWT Set-Cookie headers
+  // even for GET/RSC prefetch requests. A late response can resurrect a cookie
+  // after a concurrent logout. Do not rotate session cookies in middleware.
+  // Sign-in/sign-out actions still write cookies; the original 12h JWT expiry
+  // remains enforced. Page/action authorization still checks live DB roles.
+  if (response instanceof Response) response.headers.delete("set-cookie");
   return response;
 }
 
