@@ -81,6 +81,7 @@ function readUtm(): Record<string, string | undefined> {
 }
 
 type LeadFunnelProviderProps = {
+  readOnly?:boolean;
   children: ReactNode;
   packages: LeadFunnelPackageOption[];
   services: LeadFunnelServiceOption[];
@@ -91,7 +92,7 @@ export function LeadFunnelProvider({
   children,
   packages,
   services,
-  hasWhatsApp,
+  hasWhatsApp,readOnly=false,
 }: LeadFunnelProviderProps) {
   const openVersion = useRef(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -105,6 +106,7 @@ export function LeadFunnelProvider({
   const [stepIndex, setStepIndex] = useState(0);
 
   const open = useCallback(async (options: OpenOptions) => {
+    if(readOnly)return;
     const version = ++openVersion.current;
     setSessionId(null);
     setSource(options.source);
@@ -146,15 +148,15 @@ export function LeadFunnelProvider({
         });
       }
     }
-  }, []);
+  }, [readOnly]);
 
   const close = useCallback(async () => {
     ++openVersion.current;
-    if (sessionId && stepIndex > 0) {
+    if (!readOnly&&sessionId && stepIndex > 0) {
       await recordLeadAbandonedAction({ sessionId, step: `step_${stepIndex}` });
     }
     setIsOpen(false);
-  }, [sessionId, stepIndex]);
+  }, [sessionId, stepIndex,readOnly]);
 
   const value = useMemo(
     () => ({
@@ -171,7 +173,7 @@ export function LeadFunnelProvider({
   return (
     <LeadFunnelContext.Provider value={value}>
       {children}
-      {isOpen ? (
+      {isOpen&&!readOnly ? (
         <LeadDialog
           sessionId={sessionId}
           selectedPackageId={selectedPackageId}

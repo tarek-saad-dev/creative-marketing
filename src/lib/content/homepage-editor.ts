@@ -30,14 +30,42 @@ export const homeLayoutSchema=z.object({sections:z.array(section).length(ids.len
 });
 export type HomeLayout=z.infer<typeof homeLayoutSchema>;
 export function defaultHomeLayout():HomeLayout{return {sections:ids.map(id=>({id,enabled:true})),copy:{heroTitle:"",heroDescription:"",heroPrimaryCta:"",heroSecondaryCta:"",packagesTitle:"",processTitle:"",processDescription:"",testimonialsTitle:"",faqTitle:"",contactTitle:"",contactDescription:""}};}
-export const homeEditorSchema=z.object({revision:z.number().int().nonnegative(),published:homeLayoutSchema,draft:homeLayoutSchema.nullable()});
+export const HOME_HISTORY_LIMIT=12;
+const revision=z.number().int().nonnegative();
+const archivedVersionSchema=z.object({id:revision,publicationRevision:revision.nullable(),publishedAt:z.string().datetime().nullable(),archivedAt:z.string().datetime(),layout:homeLayoutSchema});
+export type HomeArchivedVersion=z.infer<typeof archivedVersionSchema>;
+const baseEditorSchema=z.object({revision,published:homeLayoutSchema,draft:homeLayoutSchema.nullable()});
+export const homeEditorSchema=baseEditorSchema.extend({history:z.array(archivedVersionSchema).max(HOME_HISTORY_LIMIT).default([]),publishedRevision:revision.nullable().default(null),publishedAt:z.string().datetime().nullable().default(null)});
 export type HomeEditorState=z.infer<typeof homeEditorSchema>;
-export function readHomeEditor(raw:unknown):HomeEditorState{const parsed=homeEditorSchema.safeParse(raw);return parsed.success?parsed.data:{revision:0,published:defaultHomeLayout(),draft:null};}
-export const homeEditorMutationSchema=z.discriminatedUnion("action",[z.object({action:z.literal("save"),revision:z.number().int().nonnegative(),layout:homeLayoutSchema}),z.object({action:z.literal("publish"),revision:z.number().int().nonnegative()}),z.object({action:z.literal("discard"),revision:z.number().int().nonnegative()})]);
-export function applyHomeEditorMutation(state:HomeEditorState,raw:unknown):HomeEditorState{
+export function readHomeEditor(raw:unknown):HomeEditorState{
+ const base=baseEditorSchema.safeParse(raw);
+ if(!base.success)return {revision:0,published:defaultHomeLayout(),draft:null,history:[],publishedRevision:null,publishedAt:null};
+ // A missing or corrupt history must not replace a valid live layout.
+ const source=raw as Record<string,unknown>;
+ const history=Array.isArray(source.history)?source.history.flatMap(value=>{const parsed=archivedVersionSchema.safeParse(value);return parsed.success&&parsed.data.id<=base.data.revision?[parsed.data]:[];}):[];
+ const seen=new Set<number>();
+ const unique=history.sort((a,b)=>b.id-a.id).filter(item=>{if(seen.has(item.id))return false;seen.add(item.id);return true;}).slice(0,HOME_HISTORY_LIMIT);
+ const publishedRevision=revision.nullable().safeParse(source.publishedRevision);
+ const publishedAt=z.string().datetime().nullable().safeParse(source.publishedAt);
+ return {...base.data,history:unique,publishedRevision:publishedRevision.success?publishedRevision.data:null,publishedAt:publishedAt.success?publishedAt.data:null};
+}
+export const homeEditorMutationSchema=z.discriminatedUnion("action",[z.object({action:z.literal("save"),revision,layout:homeLayoutSchema}),z.object({action:z.literal("publish"),revision}),z.object({action:z.literal("discard"),revision}),z.object({action:z.literal("restore"),revision,versionId:revision})]);
+export function applyHomeEditorMutation(state:HomeEditorState,raw:unknown,now=new Date()):HomeEditorState{
  const input=homeEditorMutationSchema.parse(raw);
  if(input.revision!==state.revision)throw new Error("تم تعديل الصفحة من جلسة أخرى. أعد تحميل المحرر قبل الحفظ.");
- if(input.action==="save")return {...state,revision:state.revision+1,draft:input.layout};
- if(input.action==="publish"){if(!state.draft)throw new Error("لا توجد مسودة للنشر");return {revision:state.revision+1,published:state.draft,draft:null};}
- return {...state,revision:state.revision+1,draft:null};
+ const nextRevision=state.revision+1;
+ if(input.action==="save")return {...state,revision:nextRevision,draft:input.layout};
+ if(input.action==="restore"){const version=state.history.find(item=>item.id===input.versionId);if(!version)throw new Error("الإصدار غير موجود");return {...state,revision:nextRevision,draft:structuredClone(version.layout)};}
+ if(input.action==="publish"){
+  if(!state.draft)throw new Error("لا توجد مسودة للنشر");
+  const timestamp=now.toISOString();
+  const previous={id:nextRevision,publicationRevision:state.publishedRevision,publishedAt:state.publishedAt,archivedAt:timestamp,layout:state.published};
+  return {...state,revision:nextRevision,published:state.draft,draft:null,publishedRevision:nextRevision,publishedAt:timestamp,history:[previous,...state.history].slice(0,HOME_HISTORY_LIMIT)};
+ }
+ return {...state,revision:nextRevision,draft:null};
+}
+export function describeHomeChanges(published:HomeLayout,draft:HomeLayout){
+ const sections=draft.sections.flatMap((section,index)=>{const previous=published.sections.find(s=>s.id===section.id)!;const oldIndex=published.sections.findIndex(s=>s.id===section.id);return oldIndex!==index||previous.enabled!==section.enabled?[{id:section.id,from:oldIndex+1,to:index+1,wasEnabled:previous.enabled,enabled:section.enabled}]:[];});
+ const copy=(Object.keys(draft.copy) as Array<keyof HomeLayout["copy"]>).filter(key=>draft.copy[key]!==published.copy[key]).map(key=>({key,before:published.copy[key],after:draft.copy[key]}));
+ return {sections,copy};
 }
